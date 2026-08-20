@@ -1,0 +1,19 @@
+{
+  "name": "CIR Quest — Une saison fiscale",
+  "short_name": "CIR Quest",
+  "description": "Serious game de simulation du métier de consultant CIR. Outil pédagogique, données fictives.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#002235",
+  "theme_color": "#002C49",
+  "lang": "fr-FR",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

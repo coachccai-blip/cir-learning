@@ -1,0 +1,55 @@
+{
+  "actionPoints": { "day": 5, "night": 4 },
+  "energy": {
+    "start": 100,
+    "nightFull": -12,
+    "nightNormal": -6,
+    "overtime": -20,
+    "weekend": 10,
+    "rest": 15,
+    "debriefSuccess": 8,
+    "thresholds": { "fit": 80, "tired": 49, "exhausted": 24 },
+    "restfulNightBonus": 5
+  },
+  "tolerance": { "discovery": 0.15, "onboarding": 0.05, "expert": 0.01 },
+  "hints": { "discovery": 99, "onboarding": 2, "expert": 0 },
+  "eventChance": 0.33,
+  "auditSecurityThreshold": 60,
+  "defaultFeeRate": 0.2,
+  "seasonRevenueTarget": 300000,
+  "seasonDepositsTarget": 4,
+  "nonEligibleProspectRatio": 0.25,
+  "xp": {
+    "dialogueChoice": { "optimal": 40, "acceptable": 25, "tempting": 10, "poor": 0 },
+    "baseAccuracy": { "min": 100, "max": 300 },
+    "deposit": 500,
+    "auditPassed": 800,
+    "codexRead": 5,
+    "cardCorrect": 15
+  },
+  "grades": [
+    { "id": "stagiaire", "label": "Stagiaire", "xp": 0 },
+    { "id": "junior", "label": "Consultant Junior", "xp": 800 },
+    { "id": "consultant", "label": "Consultant", "xp": 2200 },
+    { "id": "senior", "label": "Consultant Senior", "xp": 4500 },
+    { "id": "manager", "label": "Manager", "xp": 8000 }
+  ],
+  "promise": {
+    "inRange": 15,
+    "belowSmall": -10,
+    "belowLarge": -35,
+    "aboveMax": 5,
+    "aboveMaxProfitability": -5,
+    "largeGapThreshold": 0.15
+  },
+  "finalScore": {
+    "security": 0.3,
+    "relation": 0.25,
+    "profitability": 0.2,
+    "revenue": 0.15,
+    "accuracy": 0.1,
+    "revenueCapRatio": 1.2,
+    "penaltyDeadline": 4,
+    "penaltyReassessment": 10
+  }
+}
