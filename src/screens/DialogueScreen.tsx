@@ -1,0 +1,239 @@
+import { useEffect, useMemo, useState } from 'react';
+import { STR } from '../i18n/fr';
+import { useStore } from '../state/store';
+import { scenarioById } from '../data/scenarios/index';
+import { CLIENTS } from '../data/clients';
+import { codexById } from '../data/codex';
+import { Avatar } from '../avatars/Avatar';
+import {
+  advance,
+  displayOrder,
+  getNode,
+  maskedChoiceIndex,
+  resolveChoice,
+  sessionScore,
+  startSession,
+  type DialogueSession,
+} from '../engine/dialogue/runner';
+import { expressionForMood } from '../engine/dialogue/mood';
+import type { DialogueChoice, Expression } from '../engine/types';
+
+export function DialogueScreen() {
+  const ctx = useStore((s) => s.dialogue);
+  const save = useStore((s) => s.save);
+  const applyGauges = useStore((s) => s.applyGauges);
+  const applyEnergy = useStore((s) => s.applyEnergy);
+  const unlockCodex = useStore((s) => s.unlockCodex);
+  const endDialogue = useStore((s) => s.endDialogue);
+  const toast = useStore((s) => s.toast);
+
+  const scenario = useMemo(() => (ctx ? scenarioById(ctx.scenarioId) : null), [ctx]);
+  const client = ctx?.clientId ? CLIENTS.find((c) => c.id === ctx.clientId) : undefined;
+  const clientState = save?.portfolio.find((p) => p.clientId === ctx?.clientId);
+
+  const [session, setSession] = useState<DialogueSession | null>(null);
+  const [mood, setMood] = useState(clientState?.mood ?? client?.contact.initialMood ?? 60);
+  const [flags, setFlags] = useState<string[]>([]);
+  const [promise, setPromise] = useState<{ min: number; max: number; kind: 'range' | 'precise' } | null>(null);
+  const [declined, setDeclined] = useState(false);
+  const [feedback, setFeedback] = useState<DialogueChoice | null>(null);
+  const [feedbackDeltas, setFeedbackDeltas] = useState<{ relation: number; security: number; profitability: number } | null>(null);
+
+  useEffect(() => {
+    if (scenario) {
+      setSession(startSession(scenario));
+      setMood(clientState?.mood ?? client?.contact.initialMood ?? 60);
+      setFlags([]);
+      setPromise(null);
+      setDeclined(false);
+      setFeedback(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ctx?.scenarioId]);
+
+  const node = scenario && session?.currentNodeId ? getNode(scenario, session.currentNodeId) : null;
+
+  const order = useMemo(() => {
+    if (!scenario || !node || !save) return [];
+    return displayOrder(save.seed, scenario.id, node);
+  }, [scenario, node, save]);
+
+  const maskedIdx = useMemo(() => {
+    if (!scenario || !node || !save) return -1;
+    return maskedChoiceIndex(save.seed, scenario.id, node.id, save.energy);
+  }, [scenario, node, save]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (feedback) {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          proceed();
+        }
+        return;
+      }
+      const n = parseInt(e.key, 10);
+      if (n >= 1 && n <= order.length) pick(order[n - 1], n - 1);
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order, feedback]);
+
+  if (!ctx || !scenario || !session) return null;
+
+  const expression: Expression = feedback
+    ? (feedback.effects.mood ?? 0) >= 0
+      ? 'satisfait'
+      : 'agace'
+    : expressionForMood(mood);
+
+  function pick(choice: DialogueChoice, idx: number) {
+    if (!save || !scenario || !session || feedback || idx === maskedIdx) return;
+    const archetype = client?.contact.archetype ?? null;
+    const res = resolveChoice(choice, archetype, save.energy);
+    applyGauges(res.gauges, choice.feedback.what);
+    if (choice.effects.energy) applyEnergy(choice.effects.energy, choice.feedback.what);
+    setMood((m) => Math.max(0, Math.min(100, m + res.mood)));
+    if (choice.flags) setFlags((f) => Array.from(new Set([...f, ...choice.flags!])));
+    if (choice.flags?.includes('a_dit_non')) setDeclined(true);
+    if (choice.promise) setPromise({ min: choice.promise.min, max: choice.promise.max, kind: choice.promise.kind });
+    if (choice.feedback.codexUnlock) {
+      unlockCodex(choice.feedback.codexUnlock);
+    }
+    setFeedback(choice);
+    setFeedbackDeltas(res.gauges);
+    setSession((s) => (s ? advance(s, choice, res.score) : s));
+  }
+
+  function proceed() {
+    if (!feedback || !session) return;
+    setFeedback(null);
+    if (session.currentNodeId === null) {
+      finish();
+    }
+  }
+
+  function finish() {
+    if (!session || !ctx) return;
+    const score = sessionScore(session);
+    endDialogue({
+      clientId: ctx.clientId,
+      kind: ctx.kind,
+      score,
+      flags,
+      promise,
+      prospectId: ctx.prospectId,
+      declined,
+    });
+    if (score >= 80) toast(`${STR.dialogue.scoreLabel} : ${score}/100`);
+  }
+
+  const speaker = node?.speaker ?? '';
+  const avatarSeed = client?.contact.avatarSeed ?? speaker;
+  const codexUnlock = feedback?.feedback.codexUnlock ? codexById(feedback.feedback.codexUnlock) : null;
+  const finished = session.currentNodeId === null && feedback === null;
+
+  return (
+    <div className="container">
+      <div className="row" style={{ marginBottom: 16 }}>
+        <h2>{scenario.title}</h2>
+        <span className="spacer" />
+        {client && (
+          <span className="tag">
+            {STR.common.mood} {Math.round(mood)}
+          </span>
+        )}
+      </div>
+
+      <div className="dialogue-wrap">
+        <div className="panel speaker-card">
+          <div className="avatar">
+            <Avatar seed={avatarSeed} expression={expression} />
+          </div>
+          <strong>{speaker}</strong>
+          {client && (
+            <>
+              <div className="muted" style={{ fontSize: '0.8rem' }}>
+                {client.contact.role}
+              </div>
+              <div className="mood-bar" aria-hidden>
+                <div className="mood-fill" style={{ width: `${mood}%` }} />
+              </div>
+            </>
+          )}
+          {scenario.objectives && (
+            <div style={{ marginTop: 16, textAlign: 'left', fontSize: '0.8rem' }}>
+              <strong>{STR.dialogue.objectives}</strong>
+              <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+                {scenario.objectives.map((o, i) => (
+                  <li key={i} className="muted">
+                    {o}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <div>
+          {node && <div className="bubble">{node.text}</div>}
+
+          {!feedback && !finished && node && (
+            <div className="choices" role="group" aria-label="Vos réponses">
+              {order.map((choice, i) => {
+                const masked = i === maskedIdx;
+                return (
+                  <button
+                    key={choice.id}
+                    className={`choice${masked ? ' choice-masked' : ''}`}
+                    onClick={() => pick(choice, i)}
+                    disabled={masked}
+                  >
+                    <span className="choice-key">{i + 1}</span>
+                    <span>{masked ? `(${STR.dialogue.masked})` : choice.text}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {feedback && (
+            <div className="feedback">
+              {feedbackDeltas && (
+                <div className="deltas">
+                  <span className={feedbackDeltas.relation >= 0 ? 'delta-pos' : 'delta-neg'}>
+                    {STR.gauges.relation} {feedbackDeltas.relation >= 0 ? '+' : ''}
+                    {feedbackDeltas.relation}
+                  </span>
+                  <span className={feedbackDeltas.security >= 0 ? 'delta-pos' : 'delta-neg'}>
+                    {STR.gauges.security} {feedbackDeltas.security >= 0 ? '+' : ''}
+                    {feedbackDeltas.security}
+                  </span>
+                  <span className={feedbackDeltas.profitability >= 0 ? 'delta-pos' : 'delta-neg'}>
+                    {STR.gauges.profitability} {feedbackDeltas.profitability >= 0 ? '+' : ''}
+                    {feedbackDeltas.profitability}
+                  </span>
+                </div>
+              )}
+              <div>
+                <strong>{feedback.feedback.what}</strong> {feedback.feedback.why}
+              </div>
+              <div className="rule">💡 {feedback.feedback.rule}</div>
+              {codexUnlock && (
+                <div className="codex-unlock">
+                  📄 {STR.dialogue.codexUnlocked} : « {codexUnlock.title} »
+                </div>
+              )}
+              <div style={{ marginTop: 14 }}>
+                <button className="btn btn-primary" onClick={proceed} autoFocus>
+                  {session.currentNodeId === null ? STR.dialogue.finish : STR.dialogue.continue} (Espace)
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
