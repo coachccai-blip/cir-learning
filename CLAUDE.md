@@ -1,4 +1,4 @@
-# CIR Quest — repère projet
+# Learn CIR (ex-CIR Quest) — repère projet
 
 Le document de référence fonctionnel est **`docs/BRIEF.md`**. Toute décision de
 gameplay, de données ou de design doit s'y conformer ; si une ambiguïté apparaît,

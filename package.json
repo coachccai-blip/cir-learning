@@ -1,9 +1,9 @@
 {
-  "name": "cir-quest",
+  "name": "learn-cir",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "CIR Quest — serious game de simulation du métier de consultant CIR (Leyton France)",
+  "description": "Learn CIR — serious game de simulation du métier de consultant CIR (Leyton France)",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

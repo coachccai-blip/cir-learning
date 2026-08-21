@@ -21,7 +21,7 @@ export function OptionsScreen() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'cirquest-partie.json';
+    a.download = 'learn-cir-partie.json';
     a.click();
     URL.revokeObjectURL(url);
   }

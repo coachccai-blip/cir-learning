@@ -1,6 +1,6 @@
 {
-  "name": "CIR Quest — Une saison fiscale",
-  "short_name": "CIR Quest",
+  "name": "Learn CIR — Une saison fiscale",
+  "short_name": "Learn CIR",
   "description": "Serious game de simulation du métier de consultant CIR. Outil pédagogique, données fictives.",
   "start_url": "./",
   "scope": "./",

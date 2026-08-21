@@ -20,7 +20,7 @@ export function LeaderboardScreen() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'cirquest-classement.json';
+    a.download = 'learn-cir-classement.json';
     a.click();
     URL.revokeObjectURL(url);
   }

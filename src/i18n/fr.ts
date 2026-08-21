@@ -2,7 +2,7 @@
 // i18n dès le lot 1 (§17) : aucune chaîne visible codée en dur dans un composant.
 
 export const STR = {
-  appTitle: 'CIR Quest',
+  appTitle: 'Learn CIR',
   appTagline: 'Une saison fiscale chez Leyton',
   disclaimer:
     'Les cas, entreprises et montants sont fictifs. Ce jeu est un outil pédagogique et ne constitue en aucun cas un conseil fiscal. Les barèmes reflètent l’état du droit au 20 août 2026 (LF 2026 promulguée le 19 février 2026).',
