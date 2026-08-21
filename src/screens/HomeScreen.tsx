@@ -2,6 +2,7 @@ import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { ALL_PORTRAITS } from '../avatars/portraits';
 import { isUnlocked, journeyComplete, JOURNEY } from '../engine/journey';
+import { Icon } from '../ui/Icon';
 
 /**
  * Scène d'accueil. Les visages des clients et prospects flottent autour du
@@ -78,25 +79,25 @@ export function HomeScreen() {
         <p className="home-pitch">{STR.appPitch}</p>
         <div className="home-menu">
           <button className="btn btn-primary" onClick={() => go('mode')}>
-            {STR.menu.newGame}
+            <Icon name="play" size={18} /> {STR.menu.newGame}
           </button>
           {save && (
             <button className="btn" onClick={() => go(save.finished ? 'end' : save.phase === 'DAY' ? 'day' : 'night')}>
-              {STR.menu.continue} — {STR.hud.cycle} {save.cycle}
+              <Icon name="arrowRight" size={17} /> {STR.menu.continue} — {STR.hud.cycle} {save.cycle}
             </button>
           )}
           <button className="btn" onClick={() => go('freemode')}>
-            {STR.menu.freeMode}
+            <Icon name="history" size={17} /> {STR.menu.freeMode}
           </button>
           <div className="home-menu-row">
             <button className="btn" onClick={() => go('codex')}>
-              {STR.menu.codex}
+              <Icon name="book" size={17} /> {STR.menu.codex}
             </button>
             <button className="btn" onClick={() => go('leaderboard')}>
-              {STR.menu.leaderboard}
+              <Icon name="trophy" size={17} /> {STR.menu.leaderboard}
             </button>
             <button className="btn" onClick={() => go('options')}>
-              {STR.menu.options}
+              <Icon name="sliders" size={17} /> {STR.menu.options}
             </button>
           </div>
         </div>
@@ -110,16 +111,22 @@ export function HomeScreen() {
                 key={m}
                 className={`journey-pill${done ? ' is-done' : ''}${locked ? ' is-locked' : ''}`}
               >
-                <span className="journey-pill-mark">{done ? '✓' : locked ? '🔒' : i + 1}</span>
+                <span className="journey-pill-mark">
+                  {done ? <Icon name="check" size={13} /> : locked ? <Icon name="lock" size={13} /> : i + 1}
+                </span>
                 {STR.modes[m].label}
               </span>
             );
           })}
           {journeyComplete(progress) && (
-            <span className="journey-pill is-done">🏁 {STR.journey.complete}</span>
+            <span className="journey-pill is-done">
+              <Icon name="flag" size={14} /> {STR.journey.complete}
+            </span>
           )}
         </div>
-        <p className="disclaimer">⚠️ {STR.disclaimer}</p>
+        <p className="disclaimer">
+          <Icon name="info" size={14} /> {STR.disclaimer}
+        </p>
       </div>
     </div>
   );

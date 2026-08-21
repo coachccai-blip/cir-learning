@@ -5,6 +5,7 @@ import { clientById } from '../data/clients';
 import { caseForClient } from '../state/dossier';
 import { cardsetById } from '../data/cards';
 import { Avatar } from '../avatars/Avatar';
+import { Icon } from '../ui/Icon';
 import { buildAuditFindings, resolveAudit } from '../engine/audit';
 import { shuffleForDisplay } from '../engine/rng';
 import ruleset from '../data/rules/ruleset-2026.json';
@@ -69,7 +70,7 @@ export function AuditScreen() {
             {interim ? STR.audit.noInterim : STR.audit.noAudit}
           </p>
           <button className="btn btn-primary" onClick={toEnd}>
-            {STR.end.title} →
+            {STR.end.title} <Icon name="arrowRight" size={17} />
           </button>
         </div>
       </div>
@@ -120,15 +121,17 @@ export function AuditScreen() {
               remboursés {result.feesRefunded.toLocaleString('fr-FR')} €
             </p>
           )}
-          <ul style={{ marginTop: 12 }}>
+          <ul className="verdict-list">
             {result.findings.map((f) => (
               <li
                 key={f.finding.id}
-                className={f.defended ? 'delta-pos' : f.mitigated ? '' : 'delta-neg'}
+                className={f.defended ? 'verdict-ok' : f.mitigated ? 'verdict-mid' : 'verdict-bad'}
               >
-                {f.defended ? '✓ ' : f.mitigated ? '~ ' : '✗ '}
-                {f.finding.label}
-                {f.mitigated && <span className="muted"> — {STR.audit.mitigated}</span>}
+                <Icon name={f.defended ? 'check' : f.mitigated ? 'dash' : 'cross'} size={16} />
+                <span>
+                  {f.finding.label}
+                  {f.mitigated && <span className="muted"> — {STR.audit.mitigated}</span>}
+                </span>
               </li>
             ))}
           </ul>
@@ -140,7 +143,7 @@ export function AuditScreen() {
               toEnd();
             }}
           >
-            {interim ? STR.audit.backToWork : STR.end.title} →
+            {interim ? STR.audit.backToWork : STR.end.title} <Icon name="arrowRight" size={17} />
           </button>
         </div>
       </div>
@@ -194,8 +197,11 @@ export function AuditScreen() {
       <p className="muted">{STR.audit.intro}</p>
 
       {idx === 0 && flashbacks.length > 0 && (
-        <div className="feedback" style={{ marginTop: 12, borderLeftColor: 'var(--gauge-security-bad)' }}>
-          <strong>Le vérificateur a relu vos échanges.</strong>
+        <div className="feedback" style={{ marginTop: 12, borderLeftColor: 'var(--neg)' }}>
+          <div className="panel-title" style={{ marginBottom: 8 }}>
+            <Icon name="search" size={18} />
+            <h3>{STR.audit.reread}</h3>
+          </div>
           {flashbacks.map((f) => (
             <div key={`${f.scenarioId}-${f.choiceId}`} style={{ marginTop: 8, fontSize: '0.9rem' }}>
               <span className="muted">Semaine {f.cycle}, vous aviez déclaré :</span>
@@ -205,17 +211,22 @@ export function AuditScreen() {
         </div>
       )}
 
-      <div className="panel" style={{ marginTop: 12 }}>
-        <strong>{STR.audit.pieces} :</strong>{' '}
-        {target.piecesCollected.length === 0 ? (
-          <span className="muted">{STR.audit.noPieces}</span>
-        ) : (
-          target.piecesCollected.map((p) => (
-            <span className="tag tag-accent" key={p} style={{ marginRight: 6 }}>
-              {p.replace('piece_', '').replace(/_/g, ' ')}
-            </span>
-          ))
-        )}
+      <div className="panel-flat" style={{ marginTop: 16 }}>
+        <div className="row" style={{ gap: 8 }}>
+          <span className="stat-label">
+            <Icon name="shield" size={15} /> {STR.audit.pieces}
+          </span>
+          {target.piecesCollected.length === 0 ? (
+            <span className="muted">{STR.audit.noPieces}</span>
+          ) : (
+            target.piecesCollected.map((p) => (
+              <span className="tag tag-ok" key={p}>
+                <Icon name="check" size={13} />
+                {p.replace('piece_', '').replace(/_/g, ' ')}
+              </span>
+            ))
+          )}
+        </div>
       </div>
 
       <div className="dialogue-wrap" style={{ marginTop: 16 }}>
@@ -229,7 +240,11 @@ export function AuditScreen() {
           </div>
           <div className="muted" style={{ marginTop: 8, fontSize: '0.8rem' }}>
             {STR.audit.question} {idx + 1} / {findings.length}
-            {relance && <div className="tag tag-accent" style={{ marginTop: 6 }}>{STR.audit.relance}</div>}
+            {relance && (
+              <div className="tag tag-warn" style={{ marginTop: 8 }}>
+                <Icon name="scale" size={13} /> {STR.audit.relance}
+              </div>
+            )}
           </div>
         </div>
         <div>

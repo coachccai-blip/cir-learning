@@ -13,7 +13,15 @@ la lever explicitement avec l'utilisateur et mettre à jour le brief.
   ruleset daté.
 - **Aucune chaîne de texte visible codée en dur** dans un composant : le chrome
   d'UI vit dans `src/i18n/fr.ts`, le contenu de jeu dans `src/data/`.
-- Charte de marque **CIR Corp** (entreprise fictive) : `#002C49` dominant, `#FF6633` en accent seulement. Aucune référence à une entreprise réelle dans le contenu.
+- Charte de marque **CIR Corp** (entreprise fictive) : `#002C49` et `#FF6633`
+  habillent le **chrome** (barre haute, accueil, boutons d'action). Partout où il
+  y a des phrases à lire, les surfaces sont **neutres** et les couleurs
+  sémantiques ne servent qu'aux icônes, aux liserés et aux chiffres courts —
+  jamais à un paragraphe. Écart à la charte assumé pour la lisibilité, verrouillé
+  par `tests/ui/readability.test.ts`. Aucune référence à une entreprise réelle
+  dans le contenu.
+- **Pictogrammes vectoriels** (`src/ui/Icon.tsx`), pas d'émoji comme mobilier
+  d'interface ; un émoji expressif au maximum par paragraphe.
 - TypeScript strict, aucun `any`.
 
 ## Commandes

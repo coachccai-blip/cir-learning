@@ -517,3 +517,47 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
     technicien de contredire sa direction avec son propre visage ; et les
     options offrent une réinitialisation du parcours, pour refaire jouer les
     deux saisons à quelqu'un d'autre.
+
+## Passe d'interface : lisibilité et pictogrammes
+
+85. **Le texte ne se pose plus sur une surface colorée.** En phase Technique,
+    les panneaux étaient bleu soutenu (`#0a3552`) et l'on y écrivait en vert,
+    en orange et en rouge : deux couleurs superposées, sur les écrans les plus
+    denses du jeu. Les surfaces de contenu sont désormais neutres — blanc le
+    jour, ardoise la nuit — et le bleu de marque ne subsiste qu'en fond de page
+    et dans le chrome. C'est un écart assumé à la charte CIR Corp, décidé pour
+    la lisibilité, et `CLAUDE.md` porte la règle nouvelle.
+86. **Les couleurs sémantiques ne portent plus de phrases.** Un avertissement
+    d'assiette était un paragraphe entier en rouge ; c'est maintenant une note à
+    encre courante, avec un liseré et un pictogramme colorés (`.note`). La
+    couleur reste admise sur les chiffres courts — un « −10 » se lit d'un coup
+    d'œil, pas une explication de trois lignes.
+87. **Contrastes mesurés, pas estimés** (`tests/ui/readability.test.ts`). Le
+    test lit `tokens.css` et calcule les rapports réels : 7:1 pour le texte
+    courant et le texte secondaire, 4,5:1 pour les encres sémantiques, sur
+    chacune des trois surfaces de contenu, dans les deux phases. Il vérifie
+    aussi que ces surfaces restent quasi neutres (écart entre canaux ≤ 22) et
+    que chaque rôle défini le jour l'est aussi la nuit.
+88. **Un `var(--x)` sans définition ne lève aucune erreur** : la propriété est
+    simplement ignorée. C'est ainsi que le bandeau de fin de saison s'est
+    retrouvé transparent, son texte sombre posé sur le dégradé sombre de
+    l'écran. Un test recense désormais les variables employées sans définition.
+89. **Pictogrammes vectoriels** (`src/ui/Icon.tsx`, 43 tracés). Les émojis
+    d'interface changeaient de dessin selon le système, ne se dimensionnaient
+    pas et imposaient leur couleur. Les tracés suivent `currentColor`,
+    s'alignent sur l'œil de la police et gardent la même graisse partout. Une
+    variante pleine sert les étoiles de difficulté.
+90. **Les émojis restent, mais à leur place** : célébrations plein écran et
+    badges, jamais comme mobilier. Un test scanne écrans et composants et
+    refuse tout émoji dans cette couche, ainsi que deux émojis sur une même
+    ligne.
+91. **Corrections de mise en page révélées par la passe** : les étiquettes
+    n'étaient plus en capitales (un libellé de secteur y perdait le double de
+    largeur), les lignes de portefeuille rejettent leur bloc d'actions à la
+    ligne au lieu d'écraser le nom de l'entreprise, les montants s'alignent en
+    chasse fixe, et l'alerte d'échéance ne se déclenche plus au coup d'envoi de
+    saison — une échéance sans sanction affichée en rouge dès le premier écran
+    apprend au joueur à ignorer l'alerte.
+92. **La narration de dossier ne répète plus le nom du client.** L'écran
+    d'assiette affichait « Ovalis Nutrition — Ovalis Nutrition cherche à… » ;
+    le préfixe ne s'ajoute plus quand la narration commence déjà par le nom.

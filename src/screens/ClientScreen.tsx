@@ -1,4 +1,5 @@
 import { STR } from '../i18n/fr';
+import { Icon } from '../ui/Icon';
 import { useStore } from '../state/store';
 import { clientById } from '../data/clients';
 import { Avatar } from '../avatars/Avatar';
@@ -44,7 +45,10 @@ export function ClientScreen() {
                 {STR.common.sector} : {c.sectorLabel}
               </span>
               <span className="tag">
-                {STR.common.difficulty} : {'★'.repeat(c.profileDifficulty)}
+                {STR.common.difficulty} :{' '}
+          {Array.from({ length: c.profileDifficulty }, (_, k) => (
+            <Icon key={k} name="star" size={14} />
+          ))}
               </span>
               <span className="tag">{c.headcount} salariés</span>
             </div>
@@ -63,15 +67,22 @@ export function ClientScreen() {
               </div>
             </div>
             {cs.promise && (
-              <p style={{ marginTop: 12, color: 'var(--accent-text)' }}>
-                {STR.common.promise} : {cs.promise.min.toLocaleString('fr-FR')}–{cs.promise.max.toLocaleString('fr-FR')} €
-                {cs.promise.kind === 'precise' ? ' (chiffre précis engagé)' : ' (fourchette)'}
-              </p>
+              <div className="note note-warn" style={{ marginTop: 14 }}>
+                <Icon name="target" size={16} />
+                <span>
+                  <strong>{STR.common.promise}</strong> : {cs.promise.min.toLocaleString('fr-FR')}–
+                  {cs.promise.max.toLocaleString('fr-FR')} €{' '}
+                  {cs.promise.kind === 'precise' ? STR.common.promisePrecise : STR.common.promiseRange}
+                </span>
+              </div>
             )}
           </div>
 
           <div className="panel">
-            <h3>{STR.common.pieces}</h3>
+            <div className="panel-title">
+              <Icon name="shield" size={19} />
+              <h3>{STR.common.pieces}</h3>
+            </div>
             {cs.piecesCollected.length === 0 ? (
               <p className="muted">Aucune pièce collectée pour l’instant.</p>
             ) : (

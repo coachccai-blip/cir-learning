@@ -1,4 +1,5 @@
 import { STR } from '../i18n/fr';
+import { Icon } from '../ui/Icon';
 import { useStore } from '../state/store';
 import { GaugesBar } from '../components/Gauges';
 import { clientById } from '../data/clients';
@@ -57,13 +58,13 @@ export function NightScreen() {
         </div>
         <span className="spacer" />
         <button className="btn btn-ghost" onClick={() => go('codex')}>
-          {STR.menu.codex}
+          <Icon name="book" size={17} /> {STR.menu.codex}
         </button>
         <button className="btn btn-sm" onClick={overtime} disabled={save.overtimeUsedThisNight}>
-          {STR.activities.overtime}
+          <Icon name="clock" size={15} /> {STR.activities.overtime}
         </button>
         <button className="btn btn-brand" onClick={() => go('bilan')}>
-          {STR.hud.toBilan} →
+          <Icon name="arrowRight" size={17} /> {STR.hud.toBilan}
         </button>
       </div>
 
@@ -71,20 +72,26 @@ export function NightScreen() {
         <GaugesBar gauges={save.gauges} deltas={lastDeltas} />
       </div>
 
-      <h3>{STR.night.dossiers}</h3>
+      <div className="panel-title">
+        <Icon name="doc" size={19} />
+        <h3>{STR.night.dossiers}</h3>
+      </div>
       {dossiers.length === 0 && (
         <div className="panel" style={{ textAlign: 'center', padding: 'var(--sp-6)' }}>
-          <div style={{ fontSize: '2rem' }}>🔬</div>
+          <Icon name="technique" size={40} className="empty-icon" />
           <p className="muted">{STR.night.noDossiers}</p>
           {(() => {
             const lead = save.portfolio.find((cs) => cs.dossierState === 'LEAD' || cs.dossierState === 'QUALIFIED');
-            return lead ? (
-              <p style={{ fontSize: '0.9rem' }}>
-                💡 Conseil : demain, {lead.dossierState === 'LEAD' ? 'faites le rendez-vous découverte avec' : 'envoyez la proposition à'}{' '}
-                <strong>{clientById(lead.clientId).name}</strong> pour ouvrir votre premier dossier.
-              </p>
-            ) : (
-              <p style={{ fontSize: '0.9rem' }}>💡 Profitez-en pour lire quelques fiches codex — ça rapporte de l’XP.</p>
+            const tip = lead
+              ? lead.dossierState === 'LEAD'
+                ? STR.night.tipDiscovery(clientById(lead.clientId).name)
+                : STR.night.tipProposal(clientById(lead.clientId).name)
+              : STR.night.tipCodex;
+            return (
+              <div className="note note-info" style={{ marginTop: 12, textAlign: 'left' }}>
+                <Icon name="bulb" size={16} />
+                <span>{tip}</span>
+              </div>
             );
           })()}
         </div>
@@ -95,25 +102,45 @@ export function NightScreen() {
           const a = nightAction(cs);
           return (
             <div className="list-item" key={cs.clientId}>
-              <div style={{ flex: 1 }}>
+              <div className="list-main">
                 <strong>{c.name}</strong>
                 <div className="muted" style={{ fontSize: '0.82rem' }}>
                   {c.sectorLabel} · {dossierLabel(cs.dossierState)}
                 </div>
                 <div className="row" style={{ gap: 6, marginTop: 6 }}>
-                  {cs.scores.qualification !== null && <span className="tag">Qualif {cs.scores.qualification}%</span>}
-                  {cs.scores.base !== null && <span className="tag">Assiette {Math.round(cs.scores.base * 100)}%</span>}
-                  {cs.scores.justification !== null && <span className="tag">Justif {cs.scores.justification}</span>}
-                  {cs.piecesCollected.length > 0 && <span className="tag tag-accent">{cs.piecesCollected.length} pièces</span>}
+                  {cs.scores.qualification !== null && (
+                    <span className="tag">
+                      <Icon name="cards" size={13} /> {STR.night.scoreQualif(cs.scores.qualification)}
+                    </span>
+                  )}
+                  {cs.scores.base !== null && (
+                    <span className="tag">
+                      <Icon name="euro" size={13} /> {STR.night.scoreBase(Math.round(cs.scores.base * 100))}
+                    </span>
+                  )}
+                  {cs.scores.justification !== null && (
+                    <span className="tag">
+                      <Icon name="doc" size={13} /> {STR.night.scoreJustif(cs.scores.justification)}
+                    </span>
+                  )}
+                  {cs.piecesCollected.length > 0 && (
+                    <span className="tag tag-accent">
+                      <Icon name="shield" size={13} /> {STR.night.pieces(cs.piecesCollected.length)}
+                    </span>
+                  )}
                 </div>
               </div>
+              <div className="list-actions">
               {a ? (
                 <button className="btn btn-primary" onClick={() => openMinigame(cs)} disabled={save.actionPoints < a.cost}>
-                  {a.label} ({a.cost})
+                  <Icon name="play" size={15} /> {a.label} ({a.cost})
                 </button>
               ) : (
-                <span className="tag tag-accent">Dossier prêt</span>
+                <span className="tag tag-ok">
+                  <Icon name="check" size={13} /> {STR.night.ready}
+                </span>
               )}
+              </div>
             </div>
           );
         })}

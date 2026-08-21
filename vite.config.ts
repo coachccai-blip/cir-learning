@@ -12,5 +12,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts'],
+    // Sans cela Vitest remplace les feuilles de style par une chaîne vide :
+    // le test de contraste des thèmes lit le fichier de tokens tel quel.
+    css: true,
   },
 } as ReturnType<typeof defineConfig>);

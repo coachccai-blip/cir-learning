@@ -24,6 +24,7 @@ export const MILESTONES: CalendarMilestone[] = [
     date: '1ᵉʳ septembre',
     label: 'Ouverture de saison — objectifs annuels de Sophie Meyer',
     consequence: 'Aucune sanction : c’est le point de départ.',
+    alert: false,
   },
   {
     id: 'ms_proposals',

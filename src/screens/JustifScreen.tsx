@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { STR } from '../i18n/fr';
+import { Icon } from '../ui/Icon';
 import { useStore } from '../state/store';
 import { clientById } from '../data/clients';
 import { justifForSector } from '../data/justif';
@@ -81,7 +82,10 @@ export function JustifScreen() {
       <div className="stack" style={{ marginTop: 16 }}>
         {blocks.map((b) => (
           <div className="panel" key={b.id}>
-            <h3>{b.title}</h3>
+            <div className="panel-title">
+              <Icon name="doc" size={19} />
+              <h3>{b.title}</h3>
+            </div>
             <p className="muted" style={{ fontSize: '0.85rem' }}>
               {b.hint}
             </p>

@@ -1,4 +1,5 @@
 import { STR } from '../i18n/fr';
+import { Icon } from '../ui/Icon';
 import { useStore } from '../state/store';
 import { useState } from 'react';
 import { GaugesBar } from '../components/Gauges';
@@ -101,10 +102,10 @@ export function DayScreen() {
         </div>
         <span className="spacer" />
         <button className="btn btn-ghost" onClick={() => go('codex')}>
-          {STR.menu.codex}
+          <Icon name="book" size={17} /> {STR.menu.codex}
         </button>
         <button className="btn btn-brand" onClick={switchPhase}>
-          {STR.hud.toNight} →
+          <Icon name="technique" size={17} /> {STR.hud.toNight}
         </button>
       </div>
 
@@ -114,7 +115,10 @@ export function DayScreen() {
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1fr)' }}>
         <section className="stack">
-          <h3>{STR.day.crm}</h3>
+          <div className="panel-title">
+            <Icon name="users" size={19} />
+            <h3>{STR.day.crm}</h3>
+          </div>
           {save.portfolio.map((cs) => {
             const c = clientById(cs.clientId);
             const action = clientAction(cs);
@@ -131,22 +135,32 @@ export function DayScreen() {
                 >
                   <Avatar seed={c.contact.avatarSeed} mood={cs.mood} />
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="list-main">
                   <div className="row" style={{ gap: 8 }}>
                     <strong>{c.name}</strong>
-                    <span className="tag">{c.sectorLabel}</span>
-                    <span className="tag">{'★'.repeat(c.profileDifficulty)}</span>
+                    <span className="tag" title={c.sectorLabel}>
+                      {c.sectorLabel}
+                    </span>
+                    <span className="tag" title={`${STR.common.difficulty} ${c.profileDifficulty}/3`}>
+                      {[1, 2, 3].map((k) => (
+                        <Icon key={k} name="star" size={13} filled={k <= c.profileDifficulty} />
+                      ))}
+                    </span>
                   </div>
                   <div className="muted" style={{ fontSize: '0.82rem' }}>
                     {c.contact.name} · {c.contact.role} — {STR.common.trust} {Math.round(cs.trust)}
                   </div>
                   {cs.promise && (
-                    <div style={{ fontSize: '0.78rem', color: 'var(--accent-text)' }}>
-                      {STR.common.promise} : {cs.promise.min.toLocaleString('fr-FR')}–{cs.promise.max.toLocaleString('fr-FR')} €
+                    <div className="inline-note">
+                      <Icon name="target" size={14} />
+                      <span>
+                        {STR.common.promise} : {cs.promise.min.toLocaleString('fr-FR')}–
+                        {cs.promise.max.toLocaleString('fr-FR')} €
+                      </span>
                     </div>
                   )}
                 </div>
-                <div className="stack" style={{ gap: 6 }}>
+                <div className="list-actions is-stacked">
                   <button
                     className="btn btn-sm"
                     onClick={() => {
@@ -161,9 +175,10 @@ export function DayScreen() {
                       {action.label} ({action.cost})
                     </button>
                   ) : (
-                    <span className="tag" title="Rien à faire de jour sur ce dossier">
+                    <span className="tag" title={STR.day.nothingToday}>
+                      <Icon name={cs.dossierState === 'CLOSED' || cs.dossierState === 'DEPOSITED' ? 'check' : 'technique'} size={13} />
                       {cs.dossierState === 'CLOSED' || cs.dossierState === 'DEPOSITED'
-                        ? 'Mission terminée'
+                        ? STR.day.missionDone
                         : STR.day.handledInTech}
                     </span>
                   )}
@@ -174,13 +189,14 @@ export function DayScreen() {
         </section>
 
         <section className="stack">
-          <h3>
-            📬 Boîte de réception{' '}
-            {unreadMails > 0 && <span className="tag tag-accent">{unreadMails} non lu{unreadMails > 1 ? 's' : ''}</span>}
-          </h3>
+          <div className="panel-title">
+            <Icon name="inbox" size={19} />
+            <h3>{STR.day.inbox}</h3>
+            {unreadMails > 0 && <span className="tag tag-accent">{STR.day.unread(unreadMails)}</span>}
+          </div>
           {mails.length === 0 && (
             <p className="muted" style={{ fontSize: '0.85rem' }}>
-              Rien de nouveau cette semaine.
+              {STR.day.noMail}
             </p>
           )}
           {mails.map((m) => {
@@ -203,8 +219,9 @@ export function DayScreen() {
                   <div className="mail-body">
                     {m.body}
                     {m.codexUnlock && codexById(m.codexUnlock) && (
-                      <div style={{ marginTop: 6, fontSize: '0.8rem', color: 'var(--accent-text)' }}>
-                        📄 Fiche liée : « {codexById(m.codexUnlock)!.title} »
+                      <div className="inline-note" style={{ marginTop: 8 }}>
+                        <Icon name="doc" size={14} />
+                        <span>{STR.day.linkedSheet(codexById(m.codexUnlock)!.title)}</span>
                       </div>
                     )}
                   </div>
@@ -213,13 +230,16 @@ export function DayScreen() {
             );
           })}
 
-          <h3 style={{ marginTop: 8 }}>{STR.day.prospects}</h3>
+          <div className="panel-title" style={{ marginTop: 8 }}>
+            <Icon name="phone" size={19} />
+            <h3>{STR.day.prospects}</h3>
+          </div>
           <div className="row">
             <button className="btn btn-sm" onClick={networking} disabled={save.actionPoints < 2}>
-              {STR.activities.networking} (2)
+              <Icon name="users" size={15} /> {STR.activities.networking} (2)
             </button>
             <button className="btn btn-sm" onClick={rest} disabled={save.actionPoints < 1}>
-              {STR.activities.rest} (1)
+              <Icon name="bolt" size={15} /> {STR.activities.rest} (1)
             </button>
           </div>
           {newProspects.length === 0 && <p className="muted">{STR.day.noProspects}</p>}
@@ -228,7 +248,7 @@ export function DayScreen() {
               <div className="avatar" title="Interlocuteur au téléphone — visage inconnu avant signature">
                 <AnonymousAvatar gender={p.gender} />
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="list-main">
                 <strong>{p.company}</strong>
                 <div className="muted" style={{ fontSize: '0.8rem' }}>
                   {p.contactName} · {p.size} sal. — {p.hook}
@@ -237,32 +257,43 @@ export function DayScreen() {
                   {STR.common.estimatedCir} : {p.estimatedCir.toLocaleString('fr-FR')} €
                 </div>
               </div>
-              <button className="btn btn-sm btn-primary" onClick={() => callProspect(p.id)} disabled={save.actionPoints < 1}>
-                {STR.activities.prospection} (1)
-              </button>
+              <div className="list-actions">
+                <button className="btn btn-sm btn-primary" onClick={() => callProspect(p.id)} disabled={save.actionPoints < 1}>
+                  <Icon name="phone" size={15} /> {STR.activities.prospection} (1)
+                </button>
+              </div>
             </div>
           ))}
 
           {signedProspects.length > 0 && (
             <>
-              <h3 style={{ marginTop: 8 }}>🤝 Missions conseil signées</h3>
+              <div className="panel-title" style={{ marginTop: 8 }}>
+                <Icon name="briefcase" size={19} />
+                <h3>{STR.day.signedMissions}</h3>
+              </div>
               {signedProspects.map((p) => (
                 <div className="list-item" key={p.id}>
                   <div className="avatar" title={`${p.contactName} — mission conseil`}>
                     <Avatar seed={p.portraitId} />
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="list-main">
                     <strong>{p.company}</strong>
                     <div className="muted" style={{ fontSize: '0.8rem' }}>
                       {p.contactName} · {p.size} sal.
                     </div>
-                    <div style={{ fontSize: '0.78rem' }} className={p.eligibility === 'NOT_ELIGIBLE' ? 'delta-neg' : 'delta-pos'}>
-                      {p.eligibility === 'NOT_ELIGIBLE'
-                        ? '⚠ Mission toxique — rien d’éligible'
-                        : `CA : ${(p.revenue ?? 0).toLocaleString('fr-FR')} €`}
+                    <div className="inline-note">
+                      <Icon name={p.eligibility === 'NOT_ELIGIBLE' ? 'alert' : 'euro'} size={14}
+                        className={p.eligibility === 'NOT_ELIGIBLE' ? 'ink-bad' : 'ink-ok'} />
+                      <span>
+                        {p.eligibility === 'NOT_ELIGIBLE'
+                          ? STR.day.toxicMission
+                          : `${STR.hud.revenue} : ${(p.revenue ?? 0).toLocaleString('fr-FR')} €`}
+                      </span>
                     </div>
                   </div>
-                  <span className="tag tag-accent">{STR.common.signed}</span>
+                  <span className="tag tag-ok">
+                    <Icon name="check" size={13} /> {STR.common.signed}
+                  </span>
                 </div>
               ))}
             </>

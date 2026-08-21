@@ -1,6 +1,16 @@
-/* Design tokens — palette de marque CIR Corp (entreprise fictive), calibrée pour la lisibilité.
-   Contrastes renforcés, encres de
-   texte à fort contraste, ambre pour les états intermédiaires (voir docs/DECISIONS.md). */
+/* Design tokens — Learn CIR.
+ *
+ * Principe de lecture : le texte ne se pose jamais sur une surface colorée.
+ * Le bleu de marque CIR Corp et l'orange d'accent habillent le chrome (barre
+ * haute, accueil, boutons d'action) ; partout où il y a des phrases à lire,
+ * les fonds sont neutres — blanc le jour, ardoise la nuit — et les couleurs
+ * sémantiques ne servent plus qu'aux icônes, aux liserés et aux chiffres
+ * courts. C'est un écart assumé à la charte, décidé pour la lisibilité
+ * (voir docs/DECISIONS.md).
+ *
+ * Chaque encre est calibrée : ≥ 7:1 pour le texte courant, ≥ 4,5:1 pour les
+ * couleurs sémantiques, sur la surface où elle est réellement employée.
+ */
 
 :root {
   /* Marque */
@@ -39,53 +49,71 @@
   --text-scale: 1;
 }
 
-/* ============ Thème JOUR (défaut) ============ */
+/* ============ Phase « Relation client » — surfaces claires ============ */
 :root,
 [data-phase="DAY"] {
-  --bg: #f2f5f8;
+  --bg: #eceff4;
   --bg-elevated: #ffffff;
   --bg-panel: #ffffff;
-  --bg-sunken: #e7ecf1;
-  --surface-accent: #eaf1f7;
-  --text: #14222e;          /* contraste ~14:1 sur blanc */
-  --text-muted: #46596a;    /* ≥ 7:1 sur blanc */
-  --text-faint: #66798a;
+  --bg-sunken: #e2e7ee;
+  --surface-accent: #eaeff6;
+  --text: #101820;          /* 18:1 sur blanc */
+  --text-muted: #4a5763;    /* 7,4:1 sur blanc */
+  --text-faint: #6b7885;
   --text-inverse: #ffffff;
-  --border: #d8e0e8;
-  --border-strong: #b9c6d2;
+  --border: #dce1e8;
+  --border-strong: #b7c1cc;
   --brand: var(--brand-blue-main);
   --brand-contrast: #ffffff;
   --accent: var(--brand-orange-main);
-  --accent-text: #b03a1e;   /* orange assombri : lisible en texte fin */
+  --accent-text: #a8341a;   /* 6,6:1 : orange assombri, lisible en texte fin */
   --header-bg: linear-gradient(120deg, #002c49, #0a3d61);
   --header-text: #ffffff;
-  --pos: #2c7a1e;
-  --neg: #b03a1e;
+  --pos: #1f7a3d;
+  --neg: #a8341a;
+  --warn: #8a5a00;
+  --info: #1b5f8c;
+  /* Fonds teintés des encadrés : très pâles, pour que le texte reste neutre. */
+  --pos-surface: #e9f4ec;
+  --neg-surface: #fcede8;
+  --warn-surface: #fbf3e0;
+  --info-surface: #eaf1f8;
+  --scrim: rgba(16, 24, 32, 0.06);
 }
 
-/* ============ Thème NUIT ============ */
+/* ============ Phase « Technique » — surfaces ardoise ============ */
+/* Les panneaux étaient bleu soutenu : y poser du texte vert ou orange
+   revenait à superposer deux couleurs. Ils sont désormais quasi neutres —
+   le bleu ne subsiste que dans le fond de page, en arrière-plan lointain. */
 [data-phase="NIGHT"] {
-  --bg: radial-gradient(circle at 20% -10%, #0c4166 0%, #032840 55%, #021c2e 100%);
-  --bg-elevated: #0b3a59;
-  --bg-panel: #0a3552;
-  --bg-sunken: #06283e;
-  --surface-accent: #0e4467;
-  --text: #f0f6fb;          /* quasi-blanc : lisible sur tous les fonds nuit */
-  --text-muted: #b4cadb;    /* ≥ 7:1 sur bg-panel */
-  --text-faint: #8aa6ba;
-  --text-inverse: #032840;
-  --border: rgba(180, 202, 219, 0.24);
-  --border-strong: rgba(180, 202, 219, 0.45);
-  --brand: #f0f6fb;
-  --brand-contrast: #032840;
+  --bg: radial-gradient(circle at 20% -10%, #1a2733 0%, #121a24 55%, #0c131b 100%);
+  --bg-elevated: #1c2531;
+  --bg-panel: #18212c;
+  --bg-sunken: #121a23;
+  --surface-accent: #23303f;
+  --text: #eef3f8;          /* 14:1 sur les panneaux */
+  --text-muted: #b3c1cf;    /* 8,7:1 */
+  --text-faint: #8fa0b0;
+  --text-inverse: #0c131b;
+  --border: rgba(206, 220, 233, 0.16);
+  --border-strong: rgba(206, 220, 233, 0.34);
+  --brand: #eef3f8;
+  --brand-contrast: #0c131b;
   --accent: var(--brand-orange-main);
-  --accent-text: #ffa07d;   /* orange éclairci : lisible sur fond sombre */
-  --header-bg: linear-gradient(120deg, #021c2e, #0b3a59);
-  --header-text: #f0f6fb;
-  --pos: #8fd672;
-  --neg: #ff9d7e;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.4);
+  --accent-text: #ffab88;   /* 8:1 : orange éclairci pour fond sombre */
+  --header-bg: linear-gradient(120deg, #0c131b, #1c2531);
+  --header-text: #eef3f8;
+  --pos: #79d18f;
+  --neg: #ff9f8c;
+  --warn: #f5c463;
+  --info: #8fc4ea;
+  --pos-surface: rgba(121, 209, 143, 0.12);
+  --neg-surface: rgba(255, 159, 140, 0.12);
+  --warn-surface: rgba(245, 196, 99, 0.12);
+  --info-surface: rgba(143, 196, 234, 0.11);
+  --scrim: rgba(0, 0, 0, 0.28);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.45);
 }
 
 * {

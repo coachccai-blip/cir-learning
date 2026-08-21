@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { STR } from '../i18n/fr';
+import { Icon } from '../ui/Icon';
 import { useStore } from '../state/store';
 import { clientById } from '../data/clients';
 import { cardsetById } from '../data/cards';
@@ -88,9 +89,10 @@ export function QualificationScreen() {
 
       {feedbackCard && (
         <div className="feedback" style={{ marginTop: 12 }}>
-          <strong className={correct ? 'delta-pos' : 'delta-neg'}>
-            {correct ? '✓ ' : '✗ '} {feedbackCard.title}
-          </strong>
+          <div className="panel-title" style={{ marginBottom: 6 }}>
+            <Icon name={correct ? 'check' : 'cross'} size={19} className={correct ? 'ink-ok' : 'ink-bad'} />
+            <h3>{feedbackCard.title}</h3>
+          </div>
           <div>{feedbackCard.explanation}</div>
           {feedbackCard.codexRef && codexById(feedbackCard.codexRef) && (
             <button
@@ -98,7 +100,7 @@ export function QualificationScreen() {
               style={{ marginTop: 8 }}
               onClick={() => markCodexRead(feedbackCard.codexRef!)}
             >
-              📄 Lire « {codexById(feedbackCard.codexRef)!.title} »
+              <Icon name="doc" size={15} /> {STR.qualification.readSheet(codexById(feedbackCard.codexRef)!.title)}
             </button>
           )}
         </div>

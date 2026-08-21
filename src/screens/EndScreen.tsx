@@ -5,6 +5,7 @@ import { computeFinalScore } from '../engine/economy';
 import { BADGES } from '../engine/badges';
 import { QUIZ, QUIZ_POST } from '../data/quiz';
 import { journeyComplete, nextSeason } from '../engine/journey';
+import { Icon } from '../ui/Icon';
 
 export function EndScreen() {
   const save = useStore((s) => s.save);
@@ -72,7 +73,10 @@ export function EndScreen() {
 
         {(justUnlocked || allDone) && (
           <div className="panel journey-banner" style={{ marginTop: 24, color: 'var(--text)' }}>
-            <h3>{allDone ? `🏁 ${STR.journey.complete}` : `🔓 ${STR.journey.unlocked(STR.modes[upcoming!].label)}`}</h3>
+            <div className="panel-title">
+              <Icon name={allDone ? 'flag' : 'unlock'} size={20} />
+              <h3>{allDone ? STR.journey.complete : STR.journey.unlocked(STR.modes[upcoming!].label)}</h3>
+            </div>
             <p style={{ fontSize: '0.92rem' }}>
               {allDone ? STR.journey.completeSub : STR.modes[upcoming!].desc}
             </p>
@@ -85,14 +89,17 @@ export function EndScreen() {
                   newGame(upcoming);
                 }}
               >
-                {STR.journey.startNext(STR.modes[upcoming].label)}
+                <Icon name="play" size={17} /> {STR.journey.startNext(STR.modes[upcoming].label)}
               </button>
             )}
           </div>
         )}
 
         <div className="panel" style={{ marginTop: 24, color: 'var(--text)' }}>
-          <h3>{STR.end.breakdown}</h3>
+          <div className="panel-title">
+            <Icon name="scale" size={19} />
+            <h3>{STR.end.breakdown}</h3>
+          </div>
           {final.parts.map((p) => (
             <div className="progress-line" key={p.label} style={{ marginTop: 8 }}>
               <span style={{ width: 180, fontSize: '0.85rem' }}>{p.label}</span>
@@ -105,12 +112,18 @@ export function EndScreen() {
             </div>
           ))}
           {final.penalties.length > 0 && (
-            <div style={{ marginTop: 12 }}>
-              <strong>{STR.end.penalties}</strong>
-              <ul>
+            <div style={{ marginTop: 16 }}>
+              <div className="panel-title">
+                <Icon name="alert" size={18} />
+                <h3>{STR.end.penalties}</h3>
+              </div>
+              <ul className="verdict-list">
                 {final.penalties.map((p, i) => (
-                  <li key={i} className="delta-neg">
-                    −{p.value} : {p.label}
+                  <li key={i} className="verdict-bad">
+                    <Icon name="trendDown" size={16} />
+                    <span>
+                      <strong className="delta-neg">−{p.value}</strong> · {p.label}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -120,28 +133,55 @@ export function EndScreen() {
 
         <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', marginTop: 16 }}>
           <div className="panel" style={{ color: 'var(--text)' }}>
-            <h3>{STR.end.strengths}</h3>
-            <ul>
-              {strengths.length ? strengths.map((s) => <li key={s} className="delta-pos">{s}</li>) : <li className="muted">—</li>}
-            </ul>
+            <div className="panel-title">
+              <Icon name="trend" size={19} />
+              <h3>{STR.end.strengths}</h3>
+            </div>
+            {strengths.length ? (
+              <ul className="verdict-list">
+                {strengths.map((s) => (
+                  <li key={s} className="verdict-ok">
+                    <Icon name="check" size={16} />
+                    <span>{s}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="muted">—</p>
+            )}
           </div>
           <div className="panel" style={{ color: 'var(--text)' }}>
-            <h3>{STR.end.improvements}</h3>
-            <ul>
-              {improvements.length ? improvements.map((s) => <li key={s} className="delta-neg">{s}</li>) : <li className="muted">—</li>}
-            </ul>
+            <div className="panel-title">
+              <Icon name="target" size={19} />
+              <h3>{STR.end.improvements}</h3>
+            </div>
+            {improvements.length ? (
+              <ul className="verdict-list">
+                {improvements.map((s) => (
+                  <li key={s} className="verdict-mid">
+                    <Icon name="alert" size={16} />
+                    <span>{s}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="muted">—</p>
+            )}
           </div>
         </div>
 
         <div className="panel" style={{ marginTop: 16, color: 'var(--text)' }}>
-          <h3>
-            {STR.end.badges} ({earnedBadges.length}/{BADGES.length})
-          </h3>
+          <div className="panel-title">
+            <Icon name="medal" size={19} />
+            <h3>
+              {STR.end.badges} ({earnedBadges.length}/{BADGES.length})
+            </h3>
+          </div>
           <div className="row">
             {earnedBadges.length === 0 && <span className="muted">—</span>}
             {earnedBadges.map((b) => (
-              <span className="tag tag-accent" key={b.id} title={b.description}>
-                🏅 {b.label}
+              <span className="tag tag-ok" key={b.id} title={b.description}>
+                <Icon name="medal" size={14} /> {b.label}
               </span>
             ))}
           </div>
@@ -161,8 +201,9 @@ export function EndScreen() {
                       Semaine {h.cycle} ({h.impact})
                     </span>{' '}
                     — « {h.text} »
-                    <div className="muted" style={{ fontSize: '0.8rem', fontStyle: 'italic' }}>
-                      💡 {h.rule}
+                    <div className="inline-note">
+                      <Icon name="bulb" size={14} />
+                      <span style={{ fontStyle: 'italic' }}>{h.rule}</span>
                     </div>
                   </div>
                 ))}
@@ -196,9 +237,7 @@ export function EndScreen() {
                   {preScore}/{QUIZ.length}
                 </strong>
               </div>
-              <div style={{ fontSize: '1.4rem' }} className="muted">
-                →
-              </div>
+              <Icon name="arrowRight" size={22} className="muted" />
               <div>
                 <div className="muted">{STR.quiz.after}</div>
                 <strong style={{ fontSize: '1.4rem' }} className={postScore >= preScore ? 'delta-pos' : ''}>
@@ -211,17 +250,19 @@ export function EndScreen() {
                 </span>
               )}
             </div>
-            <ul style={{ fontSize: '0.85rem' }}>
+            <ul className="verdict-list" style={{ fontSize: '0.88rem' }}>
               {QUIZ_POST.map((q, i) => {
                 // Question jumelle : même notion qu'à l'entrée, cas différent.
                 const wasWrong = save.quizPre[i] !== QUIZ[i].correct;
                 const nowRight = save.quizPost[i] === q.correct;
                 return (
-                  <li key={q.id} className={nowRight ? 'delta-pos' : 'delta-neg'} style={{ marginBottom: 4 }}>
-                    {nowRight ? '✓ ' : '✗ '}
-                    {q.question}
-                    {wasWrong && nowRight && <span className="muted"> — acquis pendant la partie</span>}
-                    {!nowRight && <span className="muted"> — {q.explanation}</span>}
+                  <li key={q.id} className={nowRight ? 'verdict-ok' : 'verdict-bad'}>
+                    <Icon name={nowRight ? 'check' : 'cross'} size={16} />
+                    <span>
+                      {q.question}
+                      {wasWrong && nowRight && <span className="muted"> — {STR.end.learnedInGame}</span>}
+                      {!nowRight && <span className="muted"> — {q.explanation}</span>}
+                    </span>
                   </li>
                 );
               })}
@@ -255,13 +296,16 @@ export function EndScreen() {
               </div>
             </>
           ) : (
-            <p className="delta-pos">Score enregistré au classement local.</p>
+            <div className="note note-ok">
+              <Icon name="check" size={16} />
+              <span>{STR.end.scoreSaved}</span>
+            </div>
           )}
         </div>
 
         <div className="row center" style={{ justifyContent: 'center', marginTop: 20, gap: 12 }}>
           <button className="btn" onClick={() => go('leaderboard')}>
-            {STR.menu.leaderboard}
+            <Icon name="trophy" size={17} /> {STR.menu.leaderboard}
           </button>
           <button
             className="btn"
@@ -270,7 +314,7 @@ export function EndScreen() {
               newGame(save.mode);
             }}
           >
-            {STR.end.replay}
+            <Icon name="history" size={17} /> {STR.end.replay}
           </button>
           <button
             className="btn"
@@ -278,7 +322,7 @@ export function EndScreen() {
               go('home');
             }}
           >
-            {STR.end.home}
+            <Icon name="arrowLeft" size={17} /> {STR.end.home}
           </button>
         </div>
       </div>

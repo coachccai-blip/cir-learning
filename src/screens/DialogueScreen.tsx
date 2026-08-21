@@ -7,6 +7,7 @@ import { codexById } from '../data/codex';
 import { Avatar } from '../avatars/Avatar';
 import { AnonymousAvatar } from '../avatars/AnonymousAvatar';
 import { SpeakButton } from '../components/SpeakButton';
+import { Icon } from '../ui/Icon';
 import { genderForSpeaker } from '../data/voices';
 import {
   advance,
@@ -191,7 +192,10 @@ export function DialogueScreen() {
     <div className="container">
       {ctx.kind === 'prospect' && (
         <div className="phone-banner">
-          <span className="phone-icon">📞</span> Appel en cours — prospection téléphonique
+          <span className="phone-icon">
+            <Icon name="phone" size={18} />
+          </span>{' '}
+          {STR.dialogue.callInProgress}
         </div>
       )}
       <div className="row" style={{ marginBottom: 16 }}>
@@ -199,7 +203,7 @@ export function DialogueScreen() {
         <span className="spacer" />
         {streak >= 3 && !feedback && (
           <span className="tag tag-accent streak-chip" title="Série de bons choix d'affilée">
-            🔥 Série ×{streak}
+            <Icon name="flame" size={14} /> {STR.dialogue.streak(streak)}
           </span>
         )}
       </div>
@@ -251,7 +255,7 @@ export function DialogueScreen() {
             recalls.map((r, i) => (
               <div className="bubble bubble-recall" key={i}>
                 <span className="tag" style={{ marginBottom: 6 }}>
-                  🧠 Il s’en souvient
+                  <Icon name="history" size={14} /> {STR.dialogue.remembers}
                 </span>
                 <div>{r.text}</div>
               </div>
@@ -303,7 +307,10 @@ export function DialogueScreen() {
               <div>
                 <strong>{feedback.feedback.what}</strong> {feedback.feedback.why}
               </div>
-              <div className="rule">💡 {feedback.feedback.rule}</div>
+              <div className="rule">
+                <Icon name="bulb" size={16} />
+                <span>{feedback.feedback.rule}</span>
+              </div>
               {optimalAlt && (
                 <div
                   style={{
@@ -315,12 +322,13 @@ export function DialogueScreen() {
                     borderLeft: '3px solid var(--gauge-security-good)',
                   }}
                 >
-                  <strong className="delta-pos">✓ {STR.dialogue.optimalWas} :</strong> « {optimalAlt} »
+                  <Icon name="check" size={16} className="ink-ok" />{' '}
+                  <strong>{STR.dialogue.optimalWas} :</strong> « {optimalAlt} »
                 </div>
               )}
               {codexUnlock && (
                 <div className="codex-unlock">
-                  📄 {STR.dialogue.codexUnlocked} : « {codexUnlock.title} »
+                  <Icon name="doc" size={15} /> {STR.dialogue.codexUnlocked} : « {codexUnlock.title} »
                 </div>
               )}
               <div style={{ marginTop: 14 }}>

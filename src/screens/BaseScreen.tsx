@@ -5,10 +5,32 @@ import { clientById } from '../data/clients';
 import { caseForClient, stepForDossier } from '../state/dossier';
 import { computeBreakdown } from '../engine/cir/calculator';
 import { scoreAssiette } from '../engine/cir/scoring';
+import { Icon } from '../ui/Icon';
 import ruleset from '../data/rules/ruleset-2026.json';
 import type { AssietteInput, Ruleset } from '../engine/types';
 
 const RULESET = ruleset as Ruleset;
+
+/** Montant en euros, chasse fixe : les colonnes de chiffres s'alignent. */
+function euros(n: number): string {
+  return `${n.toLocaleString('fr-FR')} €`;
+}
+
+/**
+ * Note d'indice. Le texte reste en encre courante et c'est le pictogramme qui
+ * porte le sens : une phrase entière en vert ou en rouge, posée sur un panneau
+ * déjà teinté, se lit mal — surtout en phase Technique.
+ */
+function Hint({ tone, children }: { tone: 'warn' | 'ok' | 'locked' | 'info'; children: React.ReactNode }) {
+  const icon = tone === 'ok' ? 'check' : tone === 'locked' ? 'lock' : tone === 'info' ? 'info' : 'alert';
+  const cls = tone === 'ok' ? 'note-ok' : tone === 'locked' ? 'note-locked' : tone === 'info' ? 'note-info' : 'note-warn';
+  return (
+    <div className={`note ${cls}`}>
+      <Icon name={icon} size={16} />
+      <span>{children}</span>
+    </div>
+  );
+}
 
 export function BaseScreen() {
   const clientId = useStore((s) => s.activeClientId);
@@ -61,33 +83,43 @@ export function BaseScreen() {
     const compareRows = [
       { label: STR.base.personnel, player: playerBd.personnel, truth: trueBd.personnel },
       { label: STR.base.amortization, player: playerBd.amortization, truth: trueBd.amortization },
-      { label: 'Forfait de fonctionnement', player: playerBd.operatingAllowance, truth: trueBd.operatingAllowance },
+      { label: STR.base.rowOperating, player: playerBd.operatingAllowance, truth: trueBd.operatingAllowance },
       { label: STR.base.subcontracting, player: playerBd.subcontractingRetained, truth: trueBd.subcontractingRetained },
-      { label: 'Postes supprimés inclus', player: playerBd.decoysIncluded, truth: 0 },
-      { label: 'Déductions (aides)', player: -playerBd.grantsDeducted, truth: -trueBd.grantsDeducted },
+      { label: STR.base.rowDecoysIncluded, player: playerBd.decoysIncluded, truth: 0 },
+      { label: STR.base.rowDeductions, player: -playerBd.grantsDeducted, truth: -trueBd.grantsDeducted },
     ].filter((r) => r.player !== 0 || r.truth !== 0);
     const maxAbs = Math.max(...compareRows.map((r) => Math.max(Math.abs(r.player), Math.abs(r.truth))), 1);
+    const exact = score.deviations.length === 0;
     return (
       <div className="container">
         <h1>{STR.base.result}</h1>
         <div className="panel" style={{ marginTop: 16 }}>
-          <div className="row">
-            <div>
-              <div className="muted">{STR.base.precision}</div>
-              <div className="assiette-total">{Math.round(score.precision * 100)}%</div>
+          <div className="stat-row">
+            <div className="stat">
+              <span className="stat-label">
+                <Icon name="target" size={15} /> {STR.base.precision}
+              </span>
+              <span className="assiette-total">{Math.round(score.precision * 100)} %</span>
             </div>
-            <span className="spacer" />
-            <div className="center">
-              <div className="muted">CIR retenu</div>
-              <strong>{score.playerCir.toLocaleString('fr-FR')} €</strong>
-              <div className="muted" style={{ fontSize: '0.8rem' }}>
-                juste : {score.trueCir.toLocaleString('fr-FR')} €
-              </div>
+            <div className="stat">
+              <span className="stat-label">
+                <Icon name="euro" size={15} /> {STR.base.cirRetained}
+              </span>
+              <span className="stat-value">{euros(score.playerCir)}</span>
+            </div>
+            <div className="stat">
+              <span className="stat-label">
+                <Icon name="scale" size={15} /> {STR.base.cirTrue}
+              </span>
+              <span className="stat-value">{euros(score.trueCir)}</span>
             </div>
           </div>
 
-          <h3 style={{ marginTop: 16 }}>Votre assiette vs l’assiette juste</h3>
-          <div style={{ marginTop: 10 }}>
+          <div className="panel-title" style={{ marginTop: 24 }}>
+            <Icon name="trend" size={19} />
+            <h3>{STR.base.compareTitle}</h3>
+          </div>
+          <div>
             {compareRows.map((r) => {
               const match = Math.abs(r.player - r.truth) < Math.max(1, r.truth * 0.01);
               const pw = (Math.abs(r.player) / maxAbs) * 100;
@@ -96,11 +128,9 @@ export function BaseScreen() {
                 <div className="compare-row" key={r.label}>
                   <div className="labels">
                     <span>{r.label}</span>
-                    <span>
-                      <strong className={match ? 'delta-pos' : 'delta-neg'}>
-                        {r.player.toLocaleString('fr-FR')} €
-                      </strong>
-                      <span className="muted"> / juste {r.truth.toLocaleString('fr-FR')} €</span>
+                    <span className="num">
+                      <strong className={match ? 'delta-pos' : 'delta-neg'}>{euros(r.player)}</strong>
+                      <span className="muted"> / {euros(r.truth)}</span>
                     </span>
                   </div>
                   <div className="compare-track">
@@ -108,38 +138,47 @@ export function BaseScreen() {
                       className="compare-fill"
                       style={{
                         width: `${pw}%`,
-                        background: match ? 'var(--gauge-security-good)' : 'var(--gauge-security-bad)',
+                        background: match ? 'var(--pos)' : 'var(--neg)',
                         opacity: 0.85,
                       }}
                     />
-                    <div className="compare-marker" style={{ left: `calc(${tw}% - 1px)` }} title="valeur juste" />
+                    <div className="compare-marker" style={{ left: `calc(${tw}% - 1px)` }} />
                   </div>
                 </div>
               );
             })}
-            <p className="muted" style={{ fontSize: '0.72rem', marginTop: 4 }}>
-              Barre = votre montant retenu · trait vertical = le montant juste. Vert = poste exact, rouge = écart.
+            <p className="muted" style={{ fontSize: '0.76rem', marginTop: 8 }}>
+              {STR.base.compareLegend}
             </p>
           </div>
 
-          <h3 style={{ marginTop: 16 }}>{STR.base.deviations}</h3>
-          {score.deviations.length === 0 ? (
-            <p className="delta-pos">{STR.base.noDeviation}</p>
+          <div className="panel-title" style={{ marginTop: 24 }}>
+            <Icon name={exact ? 'check' : 'alert'} size={19} />
+            <h3>{STR.base.deviations}</h3>
+          </div>
+          {exact ? (
+            <div className="note note-ok">
+              <Icon name="check" size={16} />
+              <span>{STR.base.noDeviation}</span>
+            </div>
           ) : (
-            <ul>
+            <ul className="verdict-list">
               {score.deviations.map((d, i) => (
-                <li key={i} style={{ marginBottom: 6 }}>
-                  <strong className={d.delta > 0 ? 'delta-neg' : 'delta-pos'}>
-                    {d.label} ({d.delta > 0 ? '+' : ''}
-                    {d.delta.toLocaleString('fr-FR')} €)
-                  </strong>{' '}
-                  — {d.cause}
+                <li key={i} className={d.delta > 0 ? 'verdict-bad' : 'verdict-mid'}>
+                  <Icon name={d.delta > 0 ? 'trend' : 'trendDown'} size={16} />
+                  <span>
+                    <strong>
+                      {d.label} ({d.delta > 0 ? '+' : ''}
+                      {euros(d.delta)})
+                    </strong>{' '}
+                    — {d.cause}
+                  </span>
                 </li>
               ))}
             </ul>
           )}
-          <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => go('night')}>
-            {STR.common.back}
+          <button className="btn btn-primary" style={{ marginTop: 20 }} onClick={() => go('night')}>
+            <Icon name="arrowLeft" size={17} /> {STR.common.back}
           </button>
         </div>
       </div>
@@ -165,124 +204,153 @@ export function BaseScreen() {
   return (
     <div className="container">
       <div className="row">
-        <div>
+        <div style={{ flex: '1 1 340px' }}>
           <h1>{STR.base.title}</h1>
-          <p className="muted">
-            {c.name} — {theCase.narrative}
+          {/* La narration d'un dossier commence par le nom de l'entreprise ;
+              le répéter en préfixe donnait « Ovalis — Ovalis cherche à… ». */}
+          <p className="muted lede">
+            {theCase.narrative.startsWith(c.name) ? (
+              theCase.narrative
+            ) : (
+              <>
+                <strong>{c.name}</strong> — {theCase.narrative}
+              </>
+            )}
           </p>
         </div>
-        <span className="spacer" />
-        <div className="panel-flat center">
-          <div className="muted">{STR.base.computedCir}</div>
-          <div className="assiette-total">{breakdown?.cir.toLocaleString('fr-FR')} €</div>
-          <div className="muted" style={{ fontSize: '0.8rem' }}>
-            {STR.base.baseTotal} {breakdown?.base.toLocaleString('fr-FR')} €
-          </div>
+        <div className="panel-flat cir-readout">
+          <span className="stat-label">
+            <Icon name="euro" size={15} /> {STR.base.computedCir}
+          </span>
+          <span className="assiette-total">{euros(breakdown?.cir ?? 0)}</span>
+          <span className="muted" style={{ fontSize: '0.8rem' }}>
+            {STR.base.baseTotal} {euros(breakdown?.base ?? 0)}
+          </span>
         </div>
       </div>
 
-      <div className="panel-flat progress-banner" style={{ marginTop: 12 }}>
-        <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-          <span className="tag tag-accent">{STR.base.dossierNo(step.index)}</span>
-          <span className="tag">{STR.base.toleranceTag(step.tolerance)}</span>
-          {step.postes.map((poste) => (
-            <span key={poste} className={`tag${step.introduces.includes(poste) ? ' tag-accent' : ''}`}>
-              {step.introduces.includes(poste) ? '✨ ' : ''}
-              {STR.base.postes[poste]}
-            </span>
-          ))}
+      <div className="panel-flat progress-banner" style={{ marginTop: 16 }}>
+        <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+          <span className="tag tag-accent">
+            <Icon name="ladder" size={14} /> {STR.base.dossierNo(step.index)}
+          </span>
+          <span className="tag">
+            <Icon name="target" size={14} /> {STR.base.toleranceTag(step.tolerance)}
+          </span>
+          {step.postes.map((poste) => {
+            const isNew = step.introduces.includes(poste);
+            return (
+              <span key={poste} className={`tag${isNew ? ' tag-accent' : ''}`}>
+                {isNew && <Icon name="sparkle" size={14} />}
+                {STR.base.postes[poste]}
+              </span>
+            );
+          })}
         </div>
         {step.introduces.length > 0 && (
-          <p style={{ marginTop: 8, fontSize: '0.88rem' }}>
-            <strong>{STR.base.newPoste}</strong> —{' '}
-            {step.introduces.map((poste) => STR.base.posteIntro[poste]).join(' ')}
-          </p>
+          <div className="note note-info" style={{ marginTop: 12 }}>
+            <Icon name="sparkle" size={16} />
+            <span>
+              <strong>{STR.base.newPoste}</strong> —{' '}
+              {step.introduces.map((poste) => STR.base.posteIntro[poste]).join(' ')}
+            </span>
+          </div>
         )}
       </div>
 
-      <div className="panel-flat" style={{ marginTop: 12, borderLeft: '4px solid var(--accent)' }}>
-        <strong>{STR.base.methodTitle(step.postes.length)}</strong>
-        <ol style={{ margin: '6px 0 0', paddingLeft: 20, fontSize: '0.9rem', lineHeight: 1.65 }}>
+      <div className="panel-flat method-card" style={{ marginTop: 16 }}>
+        <div className="panel-title">
+          <Icon name="bulb" size={19} />
+          <h3>{STR.base.methodTitle(step.postes.length)}</h3>
+        </div>
+        <ol className="method-list">
           {step.postes.map((poste) => (
             <li key={poste}>
               <strong>{STR.base.postes[poste]}</strong> — {STR.base.methode[poste]}
             </li>
           ))}
         </ol>
-        <p className="muted" style={{ fontSize: '0.82rem', marginTop: 6 }}>
-          La colonne « Ce que disent les pièces » vous donne l’information nécessaire ligne par ligne.
-          Le CIR se recalcule en direct à chaque modification.
+        <p className="muted" style={{ fontSize: '0.82rem', marginTop: 10 }}>
+          {STR.base.methodHelp}
         </p>
       </div>
 
       {breakdown && breakdown.warnings.length > 0 && (
-        <div className="feedback" style={{ marginTop: 12, borderColor: 'var(--gauge-security-bad)' }}>
+        <div style={{ marginTop: 16 }}>
           {breakdown.warnings.map((w, i) => (
-            <div key={i}>⚠️ {w}</div>
+            <div className="note note-bad" key={i}>
+              <Icon name="alert" size={16} />
+              <span>{w}</span>
+            </div>
           ))}
         </div>
       )}
 
-      <div className="panel" style={{ marginTop: 16 }}>
-        <h3>{STR.base.personnel}</h3>
+      <div className="panel" style={{ marginTop: 20 }}>
+        <div className="panel-title">
+          <Icon name="users" size={19} />
+          <h3>{STR.base.personnel}</h3>
+        </div>
         <table className="assiette-table">
           <thead>
             <tr>
-              <th>Personne</th>
-              <th>Coût chargé</th>
+              <th>{STR.base.colPerson}</th>
+              <th className="num">{STR.base.colPayroll}</th>
               <th>{STR.base.ratio}</th>
-              <th>Ce que disent les pièces</th>
+              <th className="hint-cell">{STR.base.colEvidence}</th>
             </tr>
           </thead>
           <tbody>
             {theCase.personnel.map((p) => (
               <tr key={p.id}>
                 <td>
-                  {p.name}
-                  <div className="muted" style={{ fontSize: '0.75rem' }}>
+                  <div className="who">{p.name}</div>
+                  <div className="muted" style={{ fontSize: '0.78rem' }}>
                     {p.role}
                   </div>
                 </td>
-                <td>{p.grossCost.toLocaleString('fr-FR')} €</td>
+                <td className="num">{euros(p.grossCost)}</td>
                 <td>
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={Math.round((input.personnelRatios[p.id] ?? 0) * 100)}
-                    onChange={(e) => setRatio(p.id, (parseInt(e.target.value, 10) || 0) / 100)}
-                    aria-label={`Taux R&D de ${p.name}`}
-                  />{' '}
-                  %
-                  <div className="muted" style={{ fontSize: '0.72rem' }}>
-                    {STR.base.hintClaimed} {Math.round(p.claimedRdRatio * 100)}%
+                  <span className="ratio-field">
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={Math.round((input.personnelRatios[p.id] ?? 0) * 100)}
+                      onChange={(e) => setRatio(p.id, (parseInt(e.target.value, 10) || 0) / 100)}
+                      aria-label={`${STR.base.ratio} — ${p.name}`}
+                    />
+                    <span>%</span>
+                  </span>
+                  <div className="muted" style={{ fontSize: '0.75rem', marginTop: 4 }}>
+                    {STR.base.hintClaimed} {Math.round(p.claimedRdRatio * 100)} %
                   </div>
                 </td>
-                <td style={{ fontSize: '0.82rem' }}>
+                <td className="hint-cell">
                   {p.trap ? (
                     <>
-                      <span className="delta-neg">⚠ {p.trap}</span>
+                      <Hint tone="warn">{p.trap}</Hint>
                       {/* En Onboarding, le taux justifiable est donné : le joueur doit
                           pouvoir construire l'assiette juste sans deviner. En Expert, il
                           ne s'obtient qu'en rapportant la pièce du terrain — c'est tout
                           l'intérêt d'avoir mené les entretiens. */}
                       {revealsTruth(p.evidence) ? (
-                        <div className="delta-pos" style={{ marginTop: 4, fontWeight: 700 }}>
-                          → {STR.base.hintDefensible} {Math.round(p.trueRdRatio * 100)} %
-                        </div>
+                        <Hint tone="ok">
+                          <strong>
+                            {STR.base.hintDefensible} {Math.round(p.trueRdRatio * 100)} %
+                          </strong>
+                        </Hint>
                       ) : (
-                        <div className="muted" style={{ marginTop: 4, fontWeight: 700 }}>
-                          🔒 {STR.base.hintLocked}
-                        </div>
+                        <Hint tone="locked">{STR.base.hintLocked}</Hint>
                       )}
                       {p.evidence && !collected.includes(p.evidence) && (
-                        <div className="muted" style={{ marginTop: 4 }}>
+                        <p className="muted" style={{ fontSize: '0.78rem', marginTop: 6 }}>
                           {STR.base.hintMissingPiece}
-                        </div>
+                        </p>
                       )}
                     </>
                   ) : (
-                    <span className="delta-pos">✓ Taux cohérent avec les pièces</span>
+                    <Hint tone="ok">{STR.base.hintConsistent}</Hint>
                   )}
                 </td>
               </tr>
@@ -292,22 +360,37 @@ export function BaseScreen() {
       </div>
 
       {theCase.amortization.length > 0 && (
-        <div className="panel" style={{ marginTop: 16 }}>
-          <h3>{STR.base.amortization}</h3>
+        <div className="panel" style={{ marginTop: 20 }}>
+          <div className="panel-title">
+            <Icon name="building" size={19} />
+            <h3>{STR.base.amortization}</h3>
+          </div>
           <table className="assiette-table">
+            <thead>
+              <tr>
+                <th>{STR.base.colAsset}</th>
+                <th className="num">{STR.base.colAmount}</th>
+                <th>{STR.base.colDecision}</th>
+                <th className="hint-cell">{STR.base.colEvidence}</th>
+              </tr>
+            </thead>
             <tbody>
               {theCase.amortization.map((a) => (
                 <tr key={a.id}>
-                  <td>{a.asset}</td>
-                  <td>{a.annualDepreciation.toLocaleString('fr-FR')} €</td>
+                  <td className="who">{a.asset}</td>
+                  <td className="num">{euros(a.annualDepreciation)}</td>
                   <td>
-                    <label className="row" style={{ gap: 6 }}>
-                      <input type="checkbox" checked={input.amortizationIncluded[a.id] ?? false} onChange={() => toggle('amortizationIncluded', a.id)} />
+                    <label className="check">
+                      <input
+                        type="checkbox"
+                        checked={input.amortizationIncluded[a.id] ?? false}
+                        onChange={() => toggle('amortizationIncluded', a.id)}
+                      />
                       {STR.base.include}
                     </label>
                   </td>
-                  <td style={{ fontSize: '0.82rem' }}>
-                    {a.trap ? <span className="delta-neg">⚠ {a.trap}</span> : <span className="delta-pos">✓ Affecté à la R&D</span>}
+                  <td className="hint-cell">
+                    {a.trap ? <Hint tone="warn">{a.trap}</Hint> : <Hint tone="ok">{STR.base.hintAssetOk}</Hint>}
                   </td>
                 </tr>
               ))}
@@ -317,32 +400,43 @@ export function BaseScreen() {
       )}
 
       {theCase.subcontracting.length > 0 && (
-        <div className="panel" style={{ marginTop: 16 }}>
-          <h3>{STR.base.subcontracting}</h3>
+        <div className="panel" style={{ marginTop: 20 }}>
+          <div className="panel-title">
+            <Icon name="link" size={19} />
+            <h3>{STR.base.subcontracting}</h3>
+          </div>
           <table className="assiette-table">
+            <thead>
+              <tr>
+                <th>{STR.base.colProvider}</th>
+                <th className="num">{STR.base.colAmount}</th>
+                <th>{STR.base.colDecision}</th>
+                <th className="hint-cell">{STR.base.colEvidence}</th>
+              </tr>
+            </thead>
             <tbody>
               {theCase.subcontracting.map((s) => (
                 <tr key={s.id}>
                   <td>
-                    {s.provider}
-                    <div className="muted" style={{ fontSize: '0.72rem' }}>
-                      {s.hasMesrAgreement ? 'Agréé MESR' : 'Non agréé'} · rang {s.tier}
-                      {s.related ? ' · entité liée' : ''}
+                    <div className="who">{s.provider}</div>
+                    <div className="muted" style={{ fontSize: '0.75rem' }}>
+                      {s.hasMesrAgreement ? STR.base.subAgreed : STR.base.subNotAgreed} · {STR.base.subTier(s.tier)}
+                      {s.related ? ` · ${STR.base.subRelated}` : ''}
                     </div>
                   </td>
-                  <td>{s.amount.toLocaleString('fr-FR')} €</td>
+                  <td className="num">{euros(s.amount)}</td>
                   <td>
-                    <label className="row" style={{ gap: 6 }}>
-                      <input type="checkbox" checked={input.subcontractingIncluded[s.id] ?? false} onChange={() => toggle('subcontractingIncluded', s.id)} />
+                    <label className="check">
+                      <input
+                        type="checkbox"
+                        checked={input.subcontractingIncluded[s.id] ?? false}
+                        onChange={() => toggle('subcontractingIncluded', s.id)}
+                      />
                       {STR.base.include}
                     </label>
                   </td>
-                  <td style={{ fontSize: '0.82rem' }}>
-                    {s.trap ? (
-                      <span className="delta-neg">⚠ {s.trap}</span>
-                    ) : (
-                      <span className="delta-pos">✓ Agréé MESR, rang {s.tier} — éligible</span>
-                    )}
+                  <td className="hint-cell">
+                    {s.trap ? <Hint tone="warn">{s.trap}</Hint> : <Hint tone="ok">{STR.base.hintSubOk(s.tier)}</Hint>}
                   </td>
                 </tr>
               ))}
@@ -352,29 +446,42 @@ export function BaseScreen() {
       )}
 
       {theCase.grants.length > 0 && (
-        <div className="panel" style={{ marginTop: 16 }}>
-          <h3>{STR.base.grants}</h3>
+        <div className="panel" style={{ marginTop: 20 }}>
+          <div className="panel-title">
+            <Icon name="scale" size={19} />
+            <h3>{STR.base.grants}</h3>
+          </div>
           <table className="assiette-table">
+            <thead>
+              <tr>
+                <th>{STR.base.colSource}</th>
+                <th className="num">{STR.base.colAmount}</th>
+                <th>{STR.base.colDecision}</th>
+                <th className="hint-cell">{STR.base.colEvidence}</th>
+              </tr>
+            </thead>
             <tbody>
               {theCase.grants.map((g) => (
                 <tr key={g.id}>
                   <td>
-                    {g.source}
-                    <div className="muted" style={{ fontSize: '0.72rem' }}>
-                      {g.type === 'grant' ? 'Subvention' : 'Avance remboursable'} · part R&D {Math.round(g.rdAllocationRatio * 100)}%
+                    <div className="who">{g.source}</div>
+                    <div className="muted" style={{ fontSize: '0.75rem' }}>
+                      {STR.base.grantKind[g.type]} · {STR.base.grantShare(Math.round(g.rdAllocationRatio * 100))}
                     </div>
                   </td>
-                  <td>{g.amount.toLocaleString('fr-FR')} €</td>
+                  <td className="num">{euros(g.amount)}</td>
                   <td>
-                    <label className="row" style={{ gap: 6 }}>
-                      <input type="checkbox" checked={input.grantsDeducted[g.id] ?? false} onChange={() => toggle('grantsDeducted', g.id)} />
+                    <label className="check">
+                      <input
+                        type="checkbox"
+                        checked={input.grantsDeducted[g.id] ?? false}
+                        onChange={() => toggle('grantsDeducted', g.id)}
+                      />
                       {STR.base.deduct}
                     </label>
                   </td>
-                  <td style={{ fontSize: '0.82rem' }}>
-                    <span className="delta-neg">
-                      ⚠ {g.trap ?? 'Financement public : à déduire de l’assiette.'}
-                    </span>
+                  <td className="hint-cell">
+                    <Hint tone="warn">{g.trap ?? STR.base.hintGrantDefault}</Hint>
                   </td>
                 </tr>
               ))}
@@ -384,22 +491,37 @@ export function BaseScreen() {
       )}
 
       {theCase.decoys.length > 0 && (
-        <div className="panel" style={{ marginTop: 16 }}>
-          <h3>{STR.base.decoys}</h3>
+        <div className="panel" style={{ marginTop: 20 }}>
+          <div className="panel-title">
+            <Icon name="alert" size={19} />
+            <h3>{STR.base.decoys}</h3>
+          </div>
           <table className="assiette-table">
+            <thead>
+              <tr>
+                <th>{STR.base.colItem}</th>
+                <th className="num">{STR.base.colAmount}</th>
+                <th>{STR.base.colDecision}</th>
+                <th className="hint-cell">{STR.base.colEvidence}</th>
+              </tr>
+            </thead>
             <tbody>
               {theCase.decoys.map((d) => (
                 <tr key={d.id}>
-                  <td>{d.label}</td>
-                  <td>{d.amount.toLocaleString('fr-FR')} €</td>
+                  <td className="who">{d.label}</td>
+                  <td className="num">{euros(d.amount)}</td>
                   <td>
-                    <label className="row" style={{ gap: 6 }}>
-                      <input type="checkbox" checked={input.decoysIncluded[d.id] ?? false} onChange={() => toggle('decoysIncluded', d.id)} />
+                    <label className="check">
+                      <input
+                        type="checkbox"
+                        checked={input.decoysIncluded[d.id] ?? false}
+                        onChange={() => toggle('decoysIncluded', d.id)}
+                      />
                       {STR.base.include}
                     </label>
                   </td>
-                  <td style={{ fontSize: '0.82rem' }}>
-                    <span className="delta-neg">⚠ {d.reason}</span>
+                  <td className="hint-cell">
+                    <Hint tone="warn">{d.reason}</Hint>
                   </td>
                 </tr>
               ))}
@@ -408,12 +530,12 @@ export function BaseScreen() {
         </div>
       )}
 
-      <div className="row" style={{ marginTop: 16, justifyContent: 'flex-end' }}>
+      <div className="row" style={{ marginTop: 24, justifyContent: 'flex-end' }}>
         <button className="btn" onClick={() => go('night')}>
-          {STR.common.back}
+          <Icon name="arrowLeft" size={17} /> {STR.common.back}
         </button>
         <button className="btn btn-primary" onClick={validate}>
-          {STR.base.validate}
+          <Icon name="check" size={17} /> {STR.base.validate}
         </button>
       </div>
     </div>

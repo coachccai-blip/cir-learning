@@ -1,4 +1,5 @@
 import { STR } from '../i18n/fr';
+import { Icon } from '../ui/Icon';
 import { useStore, nextMilestone } from '../state/store';
 import { GaugesBar } from '../components/Gauges';
 import { Sparkline } from '../components/Sparkline';
@@ -27,7 +28,10 @@ export function BilanScreen() {
 
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', marginTop: 16 }}>
         <div className="panel">
-          <h3>{STR.bilan.gaugeChanges}</h3>
+          <div className="panel-title">
+            <Icon name="trend" size={19} />
+            <h3>{STR.bilan.gaugeChanges}</h3>
+          </div>
           <GaugesBar gauges={save.gauges} />
           {save.gaugeHistory.length >= 1 && (
             <div className="stack" style={{ gap: 8, marginTop: 14 }}>
@@ -63,7 +67,10 @@ export function BilanScreen() {
         </div>
 
         <div className="panel">
-          <h3>{STR.bilan.revenue}</h3>
+          <div className="panel-title">
+            <Icon name="euro" size={19} />
+            <h3>{STR.bilan.revenue}</h3>
+          </div>
           <p className="assiette-total">{save.revenue.signed.toLocaleString('fr-FR')} €</p>
           <p className="muted">CA signé cette saison</p>
 
@@ -77,20 +84,25 @@ export function BilanScreen() {
                 <div style={{ width: `${Math.min(100, (save.xp / next.xp) * 100)}%` }} />
               </div>
               <span className="muted" style={{ fontSize: '0.8rem' }}>
-                {next.xp} XP → {next.label}
+                {next.xp} XP <Icon name="arrowRight" size={14} /> {next.label}
               </span>
             </div>
           )}
         </div>
 
         <div className="panel">
-          <h3>{STR.bilan.codex}</h3>
+          <div className="panel-title">
+            <Icon name="book" size={19} />
+            <h3>{STR.bilan.codex}</h3>
+          </div>
           {codexNew.length === 0 ? (
             <p className="muted">—</p>
           ) : (
             <ul style={{ fontSize: '0.85rem' }}>
               {codexNew.slice(-6).map((id) => (
-                <li key={id}>📄 {codexById(id)?.title ?? id}</li>
+                <li key={id}>
+                <Icon name="doc" size={15} /> {codexById(id)?.title ?? id}
+              </li>
               ))}
             </ul>
           )}
@@ -115,7 +127,7 @@ export function BilanScreen() {
 
       <div className="row" style={{ marginTop: 20, justifyContent: 'flex-end' }}>
         <button className="btn btn-primary" onClick={advanceCycle}>
-          {isLast ? STR.audit.title : STR.bilan.next} →
+          {isLast ? STR.audit.title : STR.bilan.next} <Icon name="arrowRight" size={17} />
         </button>
       </div>
     </div>

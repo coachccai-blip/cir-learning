@@ -50,12 +50,15 @@ export function AnonymousAvatar({ gender, className, phone }: AnonymousAvatarPro
         ?
       </text>
       <circle cx="50" cy="50" r="47" fill="none" stroke="var(--border-strong, #b9c6d2)" strokeWidth="2.5" strokeDasharray="5 5" />
+      {/* Pastille « au téléphone » : un combiné tracé, et non un émoji dont le
+          rendu varie d'un système à l'autre au milieu d'un SVG. */}
       {phone && (
         <g>
           <circle cx="80" cy="80" r="13" fill="var(--brand-orange-main, #ff6633)" />
-          <text x="80" y="85" textAnchor="middle" fontSize="13">
-            📞
-          </text>
+          <path
+            d="M75.6 74.8l1.7 3.1-1.4 1.5a8.4 8.4 0 0 0 4.3 4.3l1.5-1.4 3.1 1.7-.4 2.1a1.4 1.4 0 0 1-1.6 1.1c-5.8-.9-10.6-5.7-11.4-11.5a1.4 1.4 0 0 1 1.1-1.5z"
+            fill="#fff"
+          />
         </g>
       )}
     </svg>

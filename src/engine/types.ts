@@ -306,6 +306,12 @@ export interface CalendarMilestone {
   label: string;
   consequence: string;
   id: string;
+  /**
+   * L'échéance mérite-t-elle l'alerte pulsante du bandeau ? Le coup d'envoi de
+   * saison n'a aucune sanction : le signaler en rouge dès le premier écran
+   * apprend au joueur à ignorer l'alerte.
+   */
+  alert?: boolean;
 }
 
 export interface ChapterDef {

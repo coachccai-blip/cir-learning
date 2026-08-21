@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Icon } from '../ui/Icon';
 import { STR } from '../i18n/fr';
 import { onVoicesReady, speak, speechAvailable, stopSpeaking, type Gender } from '../app/speech';
 
@@ -40,7 +41,7 @@ export function SpeakButton({ text, gender }: { text: string; gender: Gender }) 
       aria-label={speaking ? STR.dialogue.stopReading : STR.dialogue.readAloud}
       title={speaking ? STR.dialogue.stopReading : STR.dialogue.readAloud}
     >
-      <span aria-hidden>{speaking ? '⏹' : '🔊'}</span>
+      <Icon name={speaking ? 'stop' : 'speaker'} size={16} />
       <span className="speak-waves" aria-hidden>
         <i /><i /><i />
       </span>

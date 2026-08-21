@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useStore } from '../state/store';
+import { Icon } from '../ui/Icon';
 
 // Transition entre les deux phases (§12.1) : plein écran ~900 ms, la signature
 // visuelle du jeu. Respecte prefers-reduced-motion via la règle CSS globale.
@@ -18,7 +19,7 @@ export function PhaseTransition() {
   return (
     <div className={`phase-transition ${transition.phase === 'NIGHT' ? 'to-night' : 'to-day'}`} aria-hidden>
       <div className="phase-transition-label">
-        <span className="phase-icon">{transition.phase === 'NIGHT' ? '🔬' : '🤝'}</span>
+        <Icon name={transition.phase === 'NIGHT' ? 'technique' : 'relation'} size={44} className="phase-icon" />
         {transition.label}
       </div>
     </div>

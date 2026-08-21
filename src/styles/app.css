@@ -8,6 +8,12 @@
 
 /* ---------- Boutons ---------- */
 .btn {
+  /* Les libellés portent maintenant un pictogramme : le bouton doit centrer
+     les deux ensemble, quelle que soit la longueur du texte. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   border: 1px solid var(--border-strong);
   background: var(--bg-elevated);
   color: var(--text);
@@ -15,7 +21,11 @@
   border-radius: var(--radius-md);
   font-weight: 700;
   font-size: 0.98rem;
+  line-height: 1.3;
   transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+.btn .icon {
+  vertical-align: 0;
 }
 .btn:hover {
   transform: translateY(-1px);
@@ -72,18 +82,20 @@
   padding: var(--sp-4);
 }
 
+/* Les étiquettes étaient en capitales : sur un libellé de secteur un peu long,
+   cela double la largeur et ralentit la lecture. Bas-de-casse, taille tenue. */
 .tag {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 3px 10px;
+  letter-spacing: 0.01em;
+  padding: 4px 11px;
   border-radius: 999px;
   background: var(--surface-accent);
   color: var(--text-muted);
+  white-space: nowrap;
 }
 .tag-accent {
   background: rgba(255, 102, 51, 0.16);
@@ -358,7 +370,7 @@
   display: inline-block;
 }
 .home-sub {
-  opacity: 0.85;
+  color: rgba(255, 255, 255, 0.88);
   margin-top: 8px;
   font-size: 1.05rem;
 }
@@ -367,13 +379,25 @@
   max-width: 46ch;
   font-size: 0.95rem;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.74);
+  color: rgba(255, 255, 255, 0.84);
 }
+/* L'avertissement légal doit rester lisible : il est discret par la taille,
+   pas par un contraste au ras du seuil. */
 .home .disclaimer {
-  margin-top: var(--sp-5);
-  font-size: 0.76rem;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  justify-content: center;
+  text-align: left;
+  max-width: 52ch;
+  margin: var(--sp-5) auto 0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.68);
+}
+.home .disclaimer .icon {
+  margin-top: 3px;
+  opacity: 0.85;
 }
 .home-menu {
   margin-top: var(--sp-6);
@@ -528,10 +552,22 @@
   margin-bottom: 8px;
   flex-wrap: wrap;
 }
+/* La règle métier était écrite en orange sur fond orangé : deux couleurs
+   superposées pour la phrase la plus importante de l'écran. Elle passe en
+   encre courante, l'ampoule porte l'accent. */
 .feedback .rule {
-  margin-top: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
   font-style: italic;
-  color: var(--accent-text);
+  color: var(--text);
+}
+.feedback .rule .icon {
+  color: var(--accent);
+  margin-top: 3px;
 }
 .feedback .codex-unlock {
   margin-top: 8px;
@@ -608,9 +644,31 @@
 }
 .assiette-table th,
 .assiette-table td {
-  padding: 10px 12px;
+  padding: 12px;
   border-bottom: 1px solid var(--border);
   text-align: left;
+  vertical-align: top;
+}
+/* Les montants se comparent d'une ligne à l'autre : chasse fixe, alignés à
+   droite, ils se lisent en colonne au lieu de danser. */
+.assiette-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.assiette-table tbody tr:nth-child(odd) {
+  background: var(--scrim);
+}
+.assiette-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.assiette-table .who {
+  font-weight: 700;
+}
+.assiette-table .hint-cell {
+  width: 42%;
 }
 .assiette-table th {
   font-size: 0.78rem;
@@ -631,19 +689,44 @@
   font-family: var(--font-title);
   font-size: 1.6rem;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
   color: var(--accent-text);
 }
 
 /* ---------- CRM / listes ---------- */
+/* Ligne de portefeuille ou de prospect.
+   Le texte réclame au moins 200 px : en dessous, le bloc d'actions passe à la
+   ligne au lieu d'écraser le nom de l'entreprise en colonne d'un mot. */
 .list-item {
   display: flex;
   gap: var(--sp-3);
   align-items: center;
-  padding: var(--sp-3);
+  flex-wrap: wrap;
+  padding: var(--sp-4);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--bg-elevated);
   transition: border-color 120ms ease, transform 120ms ease;
+}
+.list-main {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+.list-actions {
+  flex: 0 0 auto;
+  margin-left: auto;
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  flex-wrap: wrap;
+}
+.list-actions .btn {
+  white-space: nowrap;
+}
+/* Empilées quand la colonne est étroite. */
+.list-actions.is-stacked {
+  flex-direction: column;
+  align-items: stretch;
 }
 .list-item:hover {
   border-color: var(--accent);
@@ -1248,14 +1331,14 @@
   opacity: 0.55;
 }
 
-/* Bandeau de fin de saison : ce qui vient d'être débloqué. */
+/* Bandeau de fin de saison : ce qui vient d'être débloqué.
+   Le fond était bâti sur une variable qui n'existait pas : le panneau restait
+   transparent et son texte sombre tombait sur le dégradé sombre de l'écran. */
 .journey-banner {
   border-left: 4px solid var(--brand-orange-main);
-  background: linear-gradient(
-    120deg,
-    color-mix(in srgb, var(--brand-orange-main) 10%, var(--surface)),
-    var(--surface) 60%
-  );
+  background:
+    linear-gradient(120deg, rgba(255, 102, 51, 0.12), transparent 58%),
+    var(--bg-panel);
 }
 
 /* Bandeau de progression au-dessus de l'assiette : postes ouverts, tolérance. */
@@ -1275,4 +1358,342 @@
   .progress-banner .tag-accent {
     animation: none;
   }
+}
+
+
+/* ---------- Icônes vectorielles ---------- */
+
+.icon {
+  flex: 0 0 auto;
+  /* Alignées sur l'œil de la police, pas sur la ligne de base. */
+  vertical-align: -0.18em;
+}
+
+/* ---------- Notes : la couleur passe dans l'icône, jamais dans la phrase ----
+   Les indices de l'écran d'assiette, les avertissements et les rappels
+   étaient des paragraphes entiers en vert ou en rouge, posés sur un panneau
+   déjà teinté. Ici le texte reste en encre courante ; c'est le liseré et le
+   pictogramme qui portent le sens, et le fond ne fait que délimiter. ------- */
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--border-strong);
+  background: var(--bg-sunken);
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+.note + .note {
+  margin-top: 6px;
+}
+.note .icon {
+  margin-top: 2px;
+  color: var(--text-muted);
+}
+.note strong {
+  font-weight: 700;
+}
+.note-warn {
+  background: var(--warn-surface);
+  border-left-color: var(--warn);
+}
+.note-warn .icon { color: var(--warn); }
+.note-bad {
+  background: var(--neg-surface);
+  border-left-color: var(--neg);
+}
+.note-bad .icon { color: var(--neg); }
+.note-ok {
+  background: var(--pos-surface);
+  border-left-color: var(--pos);
+}
+.note-ok .icon { color: var(--pos); }
+.note-info {
+  background: var(--info-surface);
+  border-left-color: var(--info);
+}
+.note-info .icon { color: var(--info); }
+.note-locked {
+  background: var(--bg-sunken);
+  border-left-color: var(--border-strong);
+  color: var(--text-muted);
+}
+
+/* Version compacte, sans fond, pour les colonnes de tableau denses. */
+.note-plain {
+  background: none;
+  border-left: none;
+  padding: 0;
+}
+
+/* ---------- Titres de section avec pictogramme ---------- */
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: var(--sp-3);
+}
+.panel-title .icon {
+  color: var(--accent);
+}
+.panel-title h3 {
+  margin: 0;
+}
+
+/* ---------- Étiquettes et pastilles ---------- */
+.tag .icon {
+  color: currentColor;
+  opacity: 0.9;
+}
+/* Étiquettes d'état : liseré coloré, texte lisible. */
+.tag-ok {
+  background: var(--pos-surface);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--pos);
+}
+.tag-bad {
+  background: var(--neg-surface);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--neg);
+}
+.tag-warn {
+  background: var(--warn-surface);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--warn);
+}
+
+/* Les chiffres courts gardent le droit à la couleur : un « +12 » lu d'un
+   coup d'œil n'est pas une phrase. */
+.delta-pos,
+.delta-neg {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Listes de constats ---------- */
+.verdict-list {
+  list-style: none;
+  margin: var(--sp-3) 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.verdict-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-sunken);
+  line-height: 1.5;
+}
+.verdict-list .icon { margin-top: 2px; }
+.verdict-ok { background: var(--pos-surface); }
+.verdict-ok .icon { color: var(--pos); }
+.verdict-bad { background: var(--neg-surface); }
+.verdict-bad .icon { color: var(--neg); }
+.verdict-mid { background: var(--warn-surface); }
+.verdict-mid .icon { color: var(--warn); }
+
+/* ---------- Chiffres du HUD ---------- */
+.hud-chip strong,
+.score-hero,
+.stat-value {
+  font-variant-numeric: tabular-nums;
+}
+.hud-chip .icon {
+  opacity: 0.85;
+}
+.hud-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+
+/* ---------- Bandeaux de chiffres ---------- */
+
+.stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-5);
+  align-items: flex-end;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 140px;
+}
+.stat-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+.stat-label .icon {
+  color: var(--accent);
+}
+.stat-value {
+  font-family: var(--font-title);
+  font-weight: 800;
+  font-size: 1.25rem;
+}
+
+/* Le crédit calculé, en haut de l'écran d'assiette : il change à chaque
+   modification, il doit rester repérable sans crier. */
+.cir-readout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  min-width: 220px;
+  border-left: 3px solid var(--accent);
+}
+
+/* ---------- Rappel de méthode ---------- */
+
+.method-card {
+  border-left: 3px solid var(--accent);
+}
+.method-list {
+  margin: 0;
+  padding-left: 22px;
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+.method-list li + li {
+  margin-top: 4px;
+}
+.method-list strong {
+  color: var(--text);
+}
+
+/* ---------- Champs de saisie du tableau ---------- */
+
+.ratio-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+}
+.ratio-field input {
+  width: 68px;
+  padding: 7px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  text-align: right;
+}
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.check input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+@media (max-width: 860px) {
+  .cir-readout {
+    min-width: 0;
+    width: 100%;
+    align-items: flex-start;
+  }
+  .assiette-table .hint-cell {
+    width: auto;
+  }
+}
+
+/* ---------- Mention en ligne (une icône, une phrase) ---------- */
+
+.inline-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.inline-note .icon {
+  color: var(--accent);
+}
+
+/* Encres sémantiques appliquées à un pictogramme, jamais à un paragraphe. */
+.ink-ok { color: var(--pos); }
+.ink-bad { color: var(--neg); }
+.ink-warn { color: var(--warn); }
+.ink-info { color: var(--info); }
+
+/* ---------- Ajustements liés aux pictogrammes vectoriels ---------- */
+
+/* L'icône de transition de phase était un émoji dimensionné en `em` ; c'est
+   désormais un tracé, dont la taille est fixée à l'appel. */
+.phase-icon {
+  font-size: inherit;
+}
+
+/* Illustration d'un état vide : discrète, elle ne doit pas voler la vedette
+   au conseil qui l'accompagne. */
+.empty-icon {
+  color: var(--text-faint);
+  opacity: 0.7;
+  margin-bottom: var(--sp-3);
+}
+
+.badge-name .icon {
+  vertical-align: -0.22em;
+}
+
+.journey-pill-mark .icon {
+  vertical-align: 0;
+}
+
+/* Une étiquette peut porter plusieurs étoiles de difficulté : elles se collent. */
+.tag .icon + .icon {
+  margin-left: -3px;
+}
+
+/* Chapeau d'écran : une seule phrase, mesure limitée pour rester lisible. */
+.lede {
+  max-width: 78ch;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  margin-top: 6px;
+}
+
+
+/* Un libellé de secteur peut être long : il s'abrège plutôt que de rejeter le
+   reste de la ligne, et le libellé complet reste dans l'infobulle. */
+.list-main .tag {
+  max-width: 26ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  line-height: 1.6;
+}
+.list-main .tag .icon {
+  vertical-align: -0.18em;
+}
+.list-actions {
+  align-self: center;
+  padding-left: var(--sp-3);
 }

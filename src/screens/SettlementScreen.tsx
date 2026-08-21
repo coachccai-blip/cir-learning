@@ -1,4 +1,5 @@
 import { STR } from '../i18n/fr';
+import { Icon } from '../ui/Icon';
 import { useStore } from '../state/store';
 import { clientById } from '../data/clients';
 import { Avatar } from '../avatars/Avatar';
@@ -69,7 +70,12 @@ export function SettlementScreen() {
                   ? 'Un écart expliqué pièces à l’appui limite la casse — mais la promesse initiale reste dans les mémoires.'
                   : 'Une fourchette prudente tenue vaut toutes les surenchères.'}
             </div>
-            {lesson && <div className="rule">💡 {lesson.body}</div>}
+            {lesson && (
+          <div className="rule">
+            <Icon name="bulb" size={16} />
+            <span>{lesson.body}</span>
+          </div>
+        )}
           </div>
 
           <div style={{ marginTop: 16 }}>
