@@ -106,6 +106,8 @@ export const STR = {
     masked: 'vous n’y pensez pas…',
     optimalWas: 'Le meilleur choix aurait été',
     event: 'Imprévu',
+    readAloud: 'Écouter la réplique',
+    stopReading: 'Arrêter la lecture',
   },
   quiz: {
     titlePre: 'Avant de commencer : où en êtes-vous ?',
@@ -225,6 +227,7 @@ export const STR = {
     title: 'Options',
     volume: 'Volume',
     reduceMotion: 'Réduire les animations',
+    volumeHint: 'Retour sonore des boutons, des dialogues et des célébrations. La lecture à haute voix des répliques reste disponible même à zéro.',
     textSize: 'Taille du texte',
     resetSave: 'Réinitialiser la sauvegarde',
     exportSave: 'Exporter la partie',

@@ -86,6 +86,9 @@ export function OptionsScreen() {
           />
           <span className="muted">{options.volume}%</span>
         </div>
+        <p className="muted" style={{ fontSize: '0.85rem', margin: 0 }}>
+          {STR.options.volumeHint}
+        </p>
       </div>
 
       <div className="panel stack" style={{ marginTop: 16 }}>

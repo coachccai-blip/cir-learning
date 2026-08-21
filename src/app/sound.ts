@@ -33,7 +33,22 @@ function tone(
   osc.stop(ac.currentTime + start + duration + 0.05);
 }
 
-export type SoundName = 'badge' | 'validate' | 'ring' | 'alert' | 'success' | 'fail' | 'levelup' | 'click' | 'fanfare';
+export type SoundName =
+  | 'badge'
+  | 'validate'
+  | 'ring'
+  | 'alert'
+  | 'success'
+  | 'fail'
+  | 'levelup'
+  | 'click'
+  | 'fanfare'
+  // Retours d'interface, déclenchés globalement par `useUiSounds`.
+  | 'tap'
+  | 'tapPrimary'
+  | 'toggle'
+  | 'back'
+  | 'deny';
 
 /** Joue un son court. `volume` : 0-100 (0 = rien). */
 export function playSound(name: SoundName, volume: number): void {
@@ -76,6 +91,25 @@ export function playSound(name: SoundName, volume: number): void {
       break;
     case 'click': // retour tactile discret sur un choix
       tone(ac, 880, 0, 0.045, v * 0.35, 'triangle');
+      break;
+    case 'tap': // bouton secondaire : clic mat, très court
+      tone(ac, 520, 0, 0.035, v * 0.3, 'triangle');
+      tone(ac, 780, 0.012, 0.03, v * 0.16, 'sine');
+      break;
+    case 'tapPrimary': // bouton d'action principal : un peu plus de corps
+      tone(ac, 392, 0, 0.05, v * 0.34, 'triangle');
+      tone(ac, 587, 0.025, 0.07, v * 0.26, 'sine');
+      break;
+    case 'toggle': // case à cocher, curseur : deux tics secs
+      tone(ac, 1100, 0, 0.025, v * 0.22, 'square');
+      tone(ac, 1450, 0.03, 0.03, v * 0.14, 'square');
+      break;
+    case 'back': // retour en arrière : la même figure, à l'envers
+      tone(ac, 660, 0, 0.035, v * 0.22, 'triangle');
+      tone(ac, 440, 0.03, 0.05, v * 0.24, 'triangle');
+      break;
+    case 'deny': // action indisponible : sourd, jamais strident
+      tone(ac, 180, 0, 0.07, v * 0.3, 'triangle');
       break;
     case 'fanfare': // fin de saison
       [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) =>

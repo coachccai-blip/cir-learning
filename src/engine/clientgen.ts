@@ -178,6 +178,7 @@ export function buildClientFromProspect(
     leadCycle: 0,
     contact: {
       name: p.contactName,
+      gender: p.gender,
       role: contactRole,
       archetype: pick(rng, ARCHETYPES),
       avatarSeed: p.avatarSeed,

@@ -6,6 +6,8 @@ import { CLIENTS } from '../data/clients';
 import { codexById } from '../data/codex';
 import { Avatar } from '../avatars/Avatar';
 import { AnonymousAvatar } from '../avatars/AnonymousAvatar';
+import { SpeakButton } from '../components/SpeakButton';
+import { genderForSpeaker } from '../data/voices';
 import {
   advance,
   displayOrder,
@@ -179,6 +181,9 @@ export function DialogueScreen() {
   const speaker = shownNode?.speaker ?? '';
   const avatarSeed = client?.contact.avatarSeed ?? speaker;
   const prospect = ctx.prospectId ? save?.prospects.find((p) => p.id === ctx.prospectId) : undefined;
+  // Voix de lecture : celle du client ou du prospect en face, sinon celle que
+  // la table des PNJ attribue au locuteur.
+  const voiceGender = genderForSpeaker(speaker, prospect?.gender ?? client?.contact.gender ?? 'M');
   const codexUnlock = feedback?.feedback.codexUnlock ? codexById(feedback.feedback.codexUnlock) : null;
   const finished = session.currentNodeId === null && feedback === null;
 
@@ -251,7 +256,12 @@ export function DialogueScreen() {
                 <div>{r.text}</div>
               </div>
             ))}
-          {node && <div className="bubble">{node.text}</div>}
+          {node && (
+            <div className="bubble">
+              <span>{node.text}</span>
+              <SpeakButton text={node.text} gender={voiceGender} />
+            </div>
+          )}
 
           {!feedback && !finished && node && (
             <div className="choices" role="group" aria-label="Vos réponses">
