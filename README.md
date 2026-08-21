@@ -53,5 +53,20 @@ Voir `docs/BRIEF.md` (référence fonctionnelle) et `docs/DECISIONS.md` (arbitra
 
 ## Déploiement
 
-Poussé sur la branche de développement, le workflow `.github/workflows/deploy.yml`
-construit et publie sur **GitHub Pages**.
+Le workflow `.github/workflows/deploy.yml` construit le site à chaque push, et
+le publie **de deux façons** sur `main`, parce que GitHub Pages a deux modes qui
+s'ignorent l'un l'autre :
+
+| `Settings → Pages → Source` | Ce qui est servi | Statut |
+| --- | --- | --- |
+| **GitHub Actions** | l'artefact `dist/` du job `deploy` | ✅ recommandé |
+| **Deploy from a branch → `gh-pages` / `(root)`** | la branche poussée par le job `publish-branch` | ✅ équivalent |
+| Deploy from a branch → `main` / `(root)` | la **racine du dépôt** | ❌ page blanche |
+
+Le dernier cas est un piège : la racine contient `index.html`, l'entrée **Vite de
+développement**, dont le script pointe vers `/src/main.tsx` — un fichier qui
+n'existe pas dans le build. La page se charge donc vide, et le workflow reste au
+vert puisque dans ce mode GitHub ne regarde jamais son artefact.
+
+Le build ajoute `.nojekyll` : en mode branche, Pages passe le contenu par
+Jekyll, qui ignorerait sinon tout fichier commençant par un souligné.

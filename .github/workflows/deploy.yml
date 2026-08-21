@@ -26,6 +26,15 @@ jobs:
       - run: npm ci
       - run: npm run test
       - run: npm run build
+      # GitHub Pages en mode « Deploy from a branch » exécute Jekyll, qui ignore
+      # tout fichier ou dossier commençant par un souligné. Ce marqueur le coupe.
+      - run: touch dist/.nojekyll
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: ./dist
+          include-hidden-files: true
+          retention-days: 1
       - uses: actions/configure-pages@v5
         with:
           enablement: true
@@ -33,8 +42,9 @@ jobs:
         with:
           path: ./dist
 
-  # GitHub Pages n'accepte les déploiements que depuis la branche par défaut :
-  # sur une branche de travail, on se contente de vérifier tests et build.
+  # Publication n° 1 — quand Settings → Pages → Source vaut « GitHub Actions ».
+  # Sur une branche de travail, Pages refuse le déploiement : on s'arrête au
+  # build, qui a déjà fait tourner les tests.
   deploy:
     needs: build
     if: github.ref == 'refs/heads/main'
@@ -45,3 +55,35 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # Publication n° 2 — quand Source vaut « Deploy from a branch ». Dans ce mode,
+  # GitHub ignore complètement l'artefact ci-dessus et sert le contenu d'une
+  # branche : sans cette étape, il servirait la racine du dépôt, dont
+  # l'index.html est l'entrée Vite de développement (elle charge
+  # /src/main.tsx, absent du build) — d'où une page blanche.
+  # On pousse donc le site construit sur `gh-pages`, cible à sélectionner.
+  publish-branch:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: site
+      - name: Pousser le site construit sur gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd site
+          git init -q
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -q -m "Site construit depuis ${GITHUB_SHA}"
+          git push -q --force \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            HEAD:gh-pages
