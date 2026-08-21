@@ -5,7 +5,7 @@ import { choice } from './helpers';
 export const TUTORIAL: Scenario = {
   id: 'sc_tutorial',
   type: 'INTERNAL',
-  title: 'Bienvenue chez Leyton',
+  title: 'Bienvenue chez CIR Corp',
   context: 'Votre premier jour. Amélie Roux, votre manager, vous accueille et pose les règles du métier.',
   objectives: ['Comprendre le double jeu jour/nuit', 'Comprendre les trois jauges', 'Comprendre la valeur de la preuve'],
   entryNode: 'n1',
@@ -17,7 +17,7 @@ export const TUTORIAL: Scenario = {
       text: 'Bienvenue ! Ici, le jour on décroche des clients, la nuit on monte leurs dossiers. Le métier, c’est de tenir les deux. Tu vois la tension ?',
       choices: [
         choice('optimal', 'synthese', 'Oui : promettre trop le jour crée une dette qu’il faut payer la nuit — et devant le vérificateur.', { relation: 4, security: 6, trust: 3 }, { what: 'Vous saisissez le cœur du jeu.', why: 'La tension commercial/technique est le cœur du métier.', rule: 'Ce qu’on promet le jour se paie la nuit.', codexUnlock: 'cdx_estimer' }, 'n2'),
-        choice('acceptable', 'empathie', 'Je crois, oui : il faut être bon commercial et bon technicien à la fois.', { relation: 3, security: 2 }, { what: 'Vous comprenez l’idée.', why: 'Correct.', rule: 'Deux costumes, un seul métier.' }, 'n2'),
+        choice('acceptable', 'empathie', 'Je crois, oui : il faut être bon commercial et bon consultant à la fois.', { relation: 3, security: 2 }, { what: 'Vous comprenez l’idée.', why: 'Correct.', rule: 'Deux costumes, un seul métier.' }, 'n2'),
         choice('tempting', 'commercial', 'Facile : je vends fort le jour, je gère la nuit après.', { relation: 2, security: -6 }, { what: 'Vous sous-estimez la dette.', why: 'Vendre fort sans penser au dossier prépare des ennuis.', rule: 'La vente et la preuve ne se séparent pas.' }, 'n2'),
         choice('poor', 'fermete', 'Le commercial ne m’intéresse pas, je ferai que de la technique.', { relation: -4 }, { what: 'Vous refusez la moitié du métier.', why: 'Sans clients, pas de dossiers.', rule: 'Les deux phases sont indissociables.' }, 'n2'),
       ],
