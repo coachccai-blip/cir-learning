@@ -391,6 +391,8 @@ export interface ClientState {
   };
   /** Cartes placées en « à investiguer » → PA dus au cycle suivant. */
   investigateDebt: number;
+  /** Le suivi de mission n'est jouable qu'une fois par client. */
+  followupDone: boolean;
   cardPlacements: Record<string, CardVerdict>;
   assietteInput: AssietteInput | null;
   playerCir: number | null;
@@ -425,6 +427,13 @@ export interface DeltaLogEntry {
   gauge: 'relation' | 'security' | 'profitability' | 'energy' | 'xp' | 'revenue';
   delta: number;
   cause: string;
+}
+
+/** Dossier complet fabriqué pour un prospect signé, persisté dans la sauvegarde. */
+export interface GeneratedClientBundle {
+  client: ClientDef;
+  case: AssietteCase;
+  cardset: Cardset;
 }
 
 export interface SaveGame {
@@ -471,6 +480,12 @@ export interface SaveGame {
   mailsRead: string[];
   /** Valeurs des jauges en fin de chaque cycle (sparklines du bilan). */
   gaugeHistory: { cycle: number; relation: number; security: number; profitability: number }[];
+  /**
+   * Dossiers fabriqués en cours de partie pour les prospects convertis en
+   * clients. Persistés avec la sauvegarde : sans eux, un rechargement ne
+   * saurait plus résoudre `clientId` / `caseId` / `cardsetId`.
+   */
+  generatedClients: GeneratedClientBundle[];
 }
 
 export interface LeaderboardEntry {

@@ -7,19 +7,15 @@ import { AnonymousAvatar } from '../avatars/AnonymousAvatar';
 import { clientById } from '../data/clients';
 import { mailsForCycle } from '../data/mails';
 import { codexById } from '../data/codex';
-import type { ClientState, DossierState } from '../engine/types';
+import type { ClientState } from '../engine/types';
+import { nextClientAction, type ClientActionKind } from '../engine/activities';
 
-function clientAction(cs: ClientState): { label: string; kind: 'discovery' | 'proposal' | 'kickoff' | 'followup' | 'closing'; cost: number } | null {
-  const map: Partial<Record<DossierState, { label: string; kind: 'discovery' | 'proposal' | 'kickoff' | 'followup' | 'closing'; cost: number }>> = {
-    LEAD: { label: STR.activities.discovery, kind: 'discovery', cost: 2 },
-    QUALIFIED: { label: STR.activities.proposal, kind: 'proposal', cost: 1 },
-    SIGNED: { label: STR.activities.kickoff, kind: 'kickoff', cost: 2 },
-    KICKED_OFF: { label: STR.activities.followup, kind: 'followup', cost: 1 },
-    JUSTIFIED: { label: STR.activities.closing, kind: 'closing', cost: 2 },
-    BASE_DONE: { label: STR.activities.followup, kind: 'followup', cost: 1 },
-    CARDS_DONE: { label: STR.activities.followup, kind: 'followup', cost: 1 },
-  };
-  return map[cs.dossierState] ?? null;
+type DayAction = { label: string; kind: ClientActionKind; cost: number };
+
+/** Libellé FR de l'action moteur : le chrome d'UI reste dans l'i18n. */
+function clientAction(cs: ClientState): DayAction | null {
+  const action = nextClientAction(cs);
+  return action && { ...action, label: STR.activities[action.kind] };
 }
 
 export function DayScreen() {
@@ -160,10 +156,16 @@ export function DayScreen() {
                   >
                     {STR.common.client}
                   </button>
-                  {action && (
+                  {action ? (
                     <button className="btn btn-sm btn-primary" onClick={() => doClientAction(cs)} disabled={save.actionPoints < action.cost}>
                       {action.label} ({action.cost})
                     </button>
+                  ) : (
+                    <span className="tag" title="Rien à faire de jour sur ce dossier">
+                      {cs.dossierState === 'CLOSED' || cs.dossierState === 'DEPOSITED'
+                        ? 'Mission terminée'
+                        : STR.day.handledInTech}
+                    </span>
                   )}
                 </div>
               </div>

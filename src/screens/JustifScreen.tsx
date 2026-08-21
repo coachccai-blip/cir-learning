@@ -1,20 +1,30 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { clientById } from '../data/clients';
 import { GENERIC_JUSTIF } from '../data/justif';
 import { ROLE_SCORE } from '../engine/dialogue/runner';
+import { shuffleForDisplay } from '../engine/rng';
 
 export function JustifScreen() {
   const clientId = useStore((s) => s.activeClientId);
+  const seed = useStore((s) => s.save?.seed ?? 'x');
   const commit = useStore((s) => s.commitJustif);
   const go = useStore((s) => s.go);
   const [choices, setChoices] = useState<Record<string, string>>({});
   const [done, setDone] = useState(false);
 
+  const blocks = GENERIC_JUSTIF.blocks;
+  // Ordre d'affichage mélangé par bloc : la formulation optimale n'est jamais
+  // systématiquement en tête.
+  const order = useMemo(() => {
+    const map: Record<string, typeof blocks[number]['options']> = {};
+    for (const b of blocks) map[b.id] = shuffleForDisplay(b.options, `${seed}:justif:${clientId}:${b.id}`);
+    return map;
+  }, [seed, clientId, blocks]);
+
   if (!clientId) return null;
   const c = clientById(clientId);
-  const blocks = GENERIC_JUSTIF.blocks;
   const allChosen = blocks.every((b) => choices[b.id]);
 
   function scoreOf(): number {
@@ -73,7 +83,7 @@ export function JustifScreen() {
               {b.hint}
             </p>
             <div className="choices">
-              {b.options.map((o) => (
+              {order[b.id].map((o) => (
                 <button
                   key={o.id}
                   className="choice"

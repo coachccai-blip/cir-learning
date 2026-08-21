@@ -2,6 +2,7 @@
 // Les corrigés (« expected ») sont recalculés par le moteur, pas figés à la main.
 
 import type { AssietteCase } from '../engine/types';
+import { generatedCase } from './registry';
 
 export const CASES: AssietteCase[] = [
   {
@@ -269,7 +270,7 @@ export const CASES: AssietteCase[] = [
 ];
 
 export function caseById(id: string): AssietteCase {
-  const c = CASES.find((c) => c.id === id);
+  const c = CASES.find((c) => c.id === id) ?? generatedCase(id);
   if (!c) throw new Error(`Cas inconnu : ${id}`);
   return c;
 }

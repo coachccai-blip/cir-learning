@@ -103,7 +103,7 @@ export const CHAPTERS: ChapterDef[] = [
     fromCycle: 1,
     toCycle: 1,
     notion: 'Vocabulaire, rôle du consultant, déroulé d’une mission',
-    objective: 'Suivre le tutoriel : un jour et une nuit guidés.',
+    objective: 'Suivre le tutoriel : une phase Relation client et une phase Technique guidées.',
   },
   {
     num: 2,

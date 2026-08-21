@@ -42,3 +42,13 @@ export function shuffled<T>(rng: () => number, arr: readonly T[]): T[] {
 export function randInt(rng: () => number, min: number, max: number): number {
   return min + Math.floor(rng() * (max - min + 1));
 }
+
+/**
+ * Mélange déterministe d'options à afficher : même seed → même ordre, mais la
+ * bonne réponse ne reste jamais en première position par construction.
+ * Utilisé par le quiz, le justificatif et le contrôle fiscal (le dialogue
+ * passe par displayOrder).
+ */
+export function shuffleForDisplay<T>(items: readonly T[], seed: string): T[] {
+  return shuffled(rngFromSeed(seed), items);
+}

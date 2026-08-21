@@ -176,3 +176,130 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
     feedback quoi/pourquoi/règle) et se termine par un flag d'issue
     (`prospect_sign` / `prospect_maybe` / `prospect_decline` /
     `prospect_decline_rude`) exploité par `resolveProspectCall`.
+
+## Passe « ludique & lisible » (7 corrections demandées)
+
+34. **Points d'action doublés** (`balance.json`) : 10 le jour, 8 la nuit
+    (au lieu de 5 / 4). Un cycle permet désormais de mener une action
+    commerciale *et* d'avancer un dossier la même journée, sans arbitrage
+    frustrant. Les pastilles de PA du bandeau s'adaptent au nouveau maximum.
+35. **Ordre des réponses aléatoire partout**. Le moteur de dialogue mélangeait
+    déjà ses choix, mais trois écrans affichaient leurs options dans l'ordre de
+    déclaration — donc la bonne réponse toujours en premier : le quiz
+    (`QuizScreen`), le justificatif (`JustifScreen`) et les réponses au
+    vérificateur (`AuditScreen`). Un helper commun `shuffleForDisplay(items,
+    seed)` (`engine/rng.ts`) mélange de façon **déterministe par graine**, si
+    bien qu'une partie reste reproductible et qu'un retour arrière ne rebat pas
+    les cartes.
+36. **Célébrations, sons et animations**. Un composant `Celebration` (confettis
+    + bandeau, `tone: good | bad`) marque les moments qui comptent : badge
+    obtenu, montée en grade, signature, assiette exacte ou ratée, contrôle
+    fiscal validé ou redressé, qualification parfaite. La palette sonore passe
+    de 4 à 9 bruitages synthétisés (WebAudio, aucun fichier). `AnimatedNumber`
+    fait défiler les montants. Tout respecte `prefers-reduced-motion` et le son
+    reste coupé par défaut.
+37. **Assiette : tous les indices sont donnés**. Le mode « indices » optionnel
+    disparaît au profit d'une colonne permanente « Ce que disent les pièces »,
+    plus un encadré « La méthode, en 4 réflexes ». Chaque ligne piégée affiche
+    désormais **le taux justifiable**, que la pièce ait été collectée ou non ;
+    la pièce manquante reste signalée, car c'est elle qui rendra le taux
+    opposable au contrôle. L'écran est vérifiable : un script qui ne lit que ce
+    qui est affiché construit une assiette exacte à 100 %.
+38. **Un seul suivi de mission par client**. Le suivi était la seule activité de
+    jour qui ne faisait pas avancer `dossierState` : il se rejouait donc en
+    boucle pour 1 PA. Le nouveau drapeau `ClientState.followupDone` le rend
+    unique. La machine à états sort du composant React pour vivre dans
+    `engine/activities.ts` (`nextClientAction`), conformément à la règle
+    « toute la logique dans le moteur », et est verrouillée par
+    `tests/engine/activities.test.ts`.
+39. **Longueur des réponses équilibrée**. Mesure avant correction : sur les
+    91 nœuds de dialogue, **100 %** avaient la bonne réponse comme réponse la
+    plus longue (155 caractères en moyenne, contre 60 pour les mauvaises) — le
+    jeu était gagnable sans lire. Les 4 formulations de chaque nœud ont été
+    réécrites dans une bande resserrée. `tests/engine/balance-length.test.ts`
+    verrouille durablement deux garde-fous : **écart max de 45 caractères** au
+    sein d'un nœud, et **au plus 40 %** des nœuds où la bonne réponse est aussi
+    la plus longue (le hasard donnerait 25 %). Même contrainte sur les blocs du
+    justificatif et les propositions du quiz.
+
+## Le portefeuille ne se tarit plus (demande utilisateur)
+
+40. **Les leads du catalogue arrivent enfin.** `ClientDef.leadCycle` n'était lu
+    nulle part : hors mode expert, le portefeuille était figé aux 4 premiers
+    clients et **Solterra (S10) et Data-O (S16) n'étaient jamais joués** — six
+    scénarios écrits, jamais servis. `advanceCycle` fait désormais entrer au
+    CRM tout client dont le `leadCycle` est atteint.
+41. **Un prospect signé peut devenir un vrai client.** Jusqu'ici, signer en
+    prospection n'ajoutait qu'une ligne de chiffre d'affaires : une fois les
+    quatre dossiers déposés, il ne restait plus rien à instruire la nuit.
+    Une partie des signatures ouvre maintenant une **mission de fond** qui entre
+    au portefeuille à l'état `SIGNED` et se joue entièrement (kick-off →
+    qualification → assiette → justificatif → bilan).
+42. **Certaines, pas toutes** (`prospectBecomesClient`) : jamais un prospect non
+    éligible (il n'y a rien à instruire), jamais un dossier sous
+    `minEstimatedCir` (l'enjeu ne justifie pas une mission), et au-delà un tirage
+    déterministe à `conversionRatio`. Un plafond `maxActiveClients` évite que le
+    portefeuille ne dépasse le budget d'actions. Toutes ces valeurs vivent dans
+    `balance.json`.
+43. **Dossier fabriqué, pas improvisé** (`engine/clientgen.ts`) : fiche client,
+    cas d'assiette et jeu de cartes sont assemblés à partir des briques de
+    `data/dossier-kit.ts` (par secteur), puis **recalés sur le CIR annoncé au
+    téléphone** — les montants sont mis à l'échelle pour que le CIR légal réel
+    tombe à ±15 % de l'estimation, sinon la promesse faite en prospection
+    n'aurait aucun sens. Chaque dossier mêle toujours des postes sains et des
+    postes piégés, et le tri de cartes n'est jamais gagnable en cochant une
+    seule colonne. Tout est déterministe : même graine, même dossier.
+44. **Deux scénarios génériques** (`sc_generic_discovery`, `sc_generic_kickoff`)
+    complètent le suivi et le bilan déjà génériques, pour que ces dossiers se
+    jouent avec le même moteur que les clients écrits à la main.
+45. **Persistance** : les dossiers générés sont stockés dans
+    `SaveGame.generatedClients` et réinjectés dans un registre runtime
+    (`data/registry.ts`) au `boot`, avant qu'un écran ne tente de résoudre un
+    `clientId`. Sans cela, un rechargement de page perdrait le client.
+46. **Accord grammatical** : le prénom d'un membre d'équipe généré est tiré en
+    accord avec le genre de l'intitulé de poste — pas de « Zoé Oliveira,
+    Ingénieur matériaux ». Verrouillé par un test.
+
+## Jeu « one-shot » : suppression du défi quotidien (demande utilisateur)
+
+47. **Plus de défi quotidien.** Le brief prévoyait un défi seedé par la date.
+    Learn CIR est un **parcours d'onboarding qui se joue d'une traite** : une
+    saison complète, du premier appel au contrôle fiscal. Un rendez-vous
+    quotidien suppose un joueur qui revient chaque jour — ce n'est pas la
+    situation d'un consultant en cours d'intégration. Le §10.3 du brief est
+    mis à jour en conséquence.
+48. Le mode libre devient **« Rejouer une saison »** : une seule carte, qui
+    relance les 24 semaines avec un portefeuille tiré différemment. L'accueil
+    annonce désormais explicitement la promesse du parcours.
+
+## Portraits, phases et accueil (demande utilisateur)
+
+49. **Les 23 portraits 3D sont intégrés.** Livrés à la racine du dépôt avec une
+    extension doublée (`dupuis-01.png.png`) et en 1254 × 1254, soit **41 Mo au
+    total** — impubliable tel quel sur un site statique où chaque portrait
+    s'affiche au plus grand en 150 px. Ils sont désormais dans
+    `public/portraits/`, **recadrés tête-épaules** (détection du haut de tête et
+    de la ligne de cou par le canal alpha, centrage sur le centroïde du visage —
+    un cadrage centré sur l'image entière n'aurait montré que le buste dans le
+    masque circulaire), réduits en 320 px et quantifiés : **41 Mo → 663 ko**.
+    Les sources pleine résolution restent dans l'historique git.
+50. Le mapping `src/avatars/portraits.ts` gagne `aubert-08` et expose
+    `ALL_PORTRAITS` pour la scène d'accueil. L'avatar SVG paramétrique reste le
+    repli si un fichier manque.
+
+51. **« Jour / Nuit » devient « Relation client / Technique ».** La métaphore
+    jour/nuit laissait entendre que le métier se fait la nuit — mauvais message
+    pour un outil d'onboarding. L'alternance, les thèmes visuels et les budgets
+    d'actions ne changent pas ; seuls les libellés, les pictogrammes (☀/☾ →
+    🤝/🔬) et le texte du tutoriel (« deux casquettes ») sont réécrits. Les
+    états moteur `DAY` / `NIGHT` restent tels quels : ce sont des identifiants,
+    jamais affichés. Le §10.3 du brief porte l'arbitrage.
+
+52. **Accueil refondu.** Un dégradé vivant (deux nappes teal et orange qui
+    dérivent en 26 s, vignette, halo) et **seize bulles de tailles différentes**
+    portant les portraits, qui flottent à des rythmes distincts — les grosses
+    lentement, les petites plus vite et légèrement floutées, ce qui donne la
+    profondeur de champ. La composition est **écrite à la main plutôt que tirée
+    au hasard** : les bulles restent hors de la colonne centrale où vit le
+    texte, et le placement ne bouge pas d'un chargement à l'autre. Sous 900 px,
+    seules les grosses subsistent ; `prefers-reduced-motion` fige tout.

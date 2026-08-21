@@ -42,12 +42,14 @@ export function migrateSave(data: unknown): SaveGame | null {
     quizPost: s.quizPost ?? [],
     mailsRead: s.mailsRead ?? [],
     gaugeHistory: s.gaugeHistory ?? [],
+    generatedClients: s.generatedClients ?? [],
     history: (s.history ?? []).map((h) => ({
       ...h,
       text: h.text ?? '',
       impact: h.impact ?? 0,
       rule: h.rule ?? '',
     })),
+    portfolio: (s.portfolio ?? []).map((c) => ({ ...c, followupDone: c.followupDone ?? false })),
     prospects: (s.prospects ?? []).map((p) => {
       const gender = p.gender ?? genderForName(p.contactName ?? '');
       return {

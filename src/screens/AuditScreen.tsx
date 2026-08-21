@@ -6,6 +6,7 @@ import { caseById } from '../data/cases';
 import { cardsetById } from '../data/cards';
 import { Avatar } from '../avatars/Avatar';
 import { buildAuditFindings, resolveAudit } from '../engine/audit';
+import { shuffleForDisplay } from '../engine/rng';
 import ruleset from '../data/rules/ruleset-2026.json';
 import balance from '../data/balance.json';
 import type { Ruleset } from '../engine/types';
@@ -122,6 +123,16 @@ export function AuditScreen() {
 
   const finding = findings[idx];
 
+  // La bonne réponse est mélangée aux réponses faibles : le joueur doit la
+  // reconnaître, pas la repérer à sa position.
+  const answerOptions = shuffleForDisplay(
+    [
+      ...(finding.defensible ? [{ text: finding.goodAnswer, good: true }] : []),
+      ...finding.weakAnswers.map((w) => ({ text: w, good: false })),
+    ],
+    `${save.seed}:audit:${finding.id}`,
+  );
+
   function answer(defend: boolean) {
     if (defend) setDefended((d) => [...d, finding.id]);
     if (idx + 1 >= findings.length) setFinished(true);
@@ -174,16 +185,10 @@ export function AuditScreen() {
         <div>
           <div className="bubble">{finding.question}</div>
           <div className="choices">
-            {finding.defensible && (
-              <button className="choice" onClick={() => answer(true)}>
-                <span className="choice-key">✓</span>
-                <span>{finding.goodAnswer}</span>
-              </button>
-            )}
-            {finding.weakAnswers.map((w, i) => (
-              <button key={i} className="choice" onClick={() => answer(false)}>
+            {answerOptions.map((opt, i) => (
+              <button key={opt.text} className="choice" onClick={() => answer(opt.good)}>
                 <span className="choice-key">{i + 1}</span>
-                <span>{w}</span>
+                <span>{opt.text}</span>
               </button>
             ))}
           </div>

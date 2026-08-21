@@ -144,7 +144,10 @@ export function BaseScreen() {
     );
   }
 
-  const showHints = save.mode === 'discovery';
+  // Tous les indices sont visibles quel que soit le mode : le joueur doit
+  // pouvoir construire l'assiette juste avec les informations à l'écran.
+  // La difficulté vient de la tolérance et des pièges, pas de l'information cachée.
+  const collected = cs.piecesCollected;
 
   return (
     <div className="container">
@@ -165,6 +168,28 @@ export function BaseScreen() {
         </div>
       </div>
 
+      <div className="panel-flat" style={{ marginTop: 12, borderLeft: '4px solid var(--accent)' }}>
+        <strong>La méthode, en 4 réflexes</strong>
+        <ol style={{ margin: '6px 0 0', paddingLeft: 20, fontSize: '0.9rem', lineHeight: 1.65 }}>
+          <li>
+            <strong>Personnel</strong> — retenez le taux <em>justifiable par les pièces</em>, pas celui déclaré par le client.
+          </li>
+          <li>
+            <strong>Sous-traitance</strong> — décochez tout prestataire non agréé MESR ou au-delà du 2ᵉ rang.
+          </li>
+          <li>
+            <strong>Aides publiques</strong> — cochez « Déduire » : subventions et avances minorent toujours l’assiette.
+          </li>
+          <li>
+            <strong>Autres postes</strong> — brevets et veille sont supprimés depuis 2025 : laissez-les décochés.
+          </li>
+        </ol>
+        <p className="muted" style={{ fontSize: '0.82rem', marginTop: 6 }}>
+          La colonne « Ce que disent les pièces » vous donne l’information nécessaire ligne par ligne.
+          Le CIR se recalcule en direct à chaque modification.
+        </p>
+      </div>
+
       {breakdown && breakdown.warnings.length > 0 && (
         <div className="feedback" style={{ marginTop: 12, borderColor: 'var(--gauge-security-bad)' }}>
           {breakdown.warnings.map((w, i) => (
@@ -181,7 +206,7 @@ export function BaseScreen() {
               <th>Personne</th>
               <th>Coût chargé</th>
               <th>{STR.base.ratio}</th>
-              {showHints && <th>Indice</th>}
+              <th>Ce que disent les pièces</th>
             </tr>
           </thead>
           <tbody>
@@ -208,7 +233,26 @@ export function BaseScreen() {
                     {STR.base.hintClaimed} {Math.round(p.claimedRdRatio * 100)}%
                   </div>
                 </td>
-                {showHints && <td className="muted" style={{ fontSize: '0.78rem' }}>{p.trap ?? '—'}</td>}
+                <td style={{ fontSize: '0.82rem' }}>
+                  {p.trap ? (
+                    <>
+                      <span className="delta-neg">⚠ {p.trap}</span>
+                      {/* Le taux justifiable est toujours affiché : le joueur doit pouvoir
+                          construire l'assiette juste sans deviner. La pièce, elle, reste
+                          ce qui rendra ce taux opposable au contrôle. */}
+                      <div className="delta-pos" style={{ marginTop: 4, fontWeight: 700 }}>
+                        → {STR.base.hintDefensible} {Math.round(p.trueRdRatio * 100)} %
+                      </div>
+                      {p.evidence && !collected.includes(p.evidence) && (
+                        <div className="muted" style={{ marginTop: 4 }}>
+                          {STR.base.hintMissingPiece}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <span className="delta-pos">✓ Taux cohérent avec les pièces</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -230,7 +274,9 @@ export function BaseScreen() {
                       {STR.base.include}
                     </label>
                   </td>
-                  {showHints && <td className="muted" style={{ fontSize: '0.78rem' }}>{a.trap ?? '—'}</td>}
+                  <td style={{ fontSize: '0.82rem' }}>
+                    {a.trap ? <span className="delta-neg">⚠ {a.trap}</span> : <span className="delta-pos">✓ Affecté à la R&D</span>}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -259,7 +305,13 @@ export function BaseScreen() {
                       {STR.base.include}
                     </label>
                   </td>
-                  {showHints && <td className="muted" style={{ fontSize: '0.78rem' }}>{s.trap ?? '—'}</td>}
+                  <td style={{ fontSize: '0.82rem' }}>
+                    {s.trap ? (
+                      <span className="delta-neg">⚠ {s.trap}</span>
+                    ) : (
+                      <span className="delta-pos">✓ Agréé MESR, rang {s.tier} — éligible</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -287,7 +339,11 @@ export function BaseScreen() {
                       {STR.base.deduct}
                     </label>
                   </td>
-                  {showHints && <td className="muted" style={{ fontSize: '0.78rem' }}>{g.trap ?? '—'}</td>}
+                  <td style={{ fontSize: '0.82rem' }}>
+                    <span className="delta-neg">
+                      ⚠ {g.trap ?? 'Financement public : à déduire de l’assiette.'}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -310,7 +366,9 @@ export function BaseScreen() {
                       {STR.base.include}
                     </label>
                   </td>
-                  {showHints && <td className="muted" style={{ fontSize: '0.78rem' }}>{d.reason}</td>}
+                  <td style={{ fontSize: '0.82rem' }}>
+                    <span className="delta-neg">⚠ {d.reason}</span>
+                  </td>
                 </tr>
               ))}
             </tbody>

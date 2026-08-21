@@ -33,8 +33,11 @@ jobs:
         with:
           path: ./dist
 
+  # GitHub Pages n'accepte les déploiements que depuis la branche par défaut :
+  # sur une branche de travail, on se contente de vérifier tests et build.
   deploy:
     needs: build
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

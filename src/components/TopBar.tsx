@@ -15,8 +15,10 @@ export function TopBar() {
   // Alerte « J-2 » : l'échéance tombe cette semaine ou la suivante.
   const deadlineSoon = ms !== null && ms.cycle - save.cycle <= 1 && ms.consequence !== '';
 
+  // Autant de pastilles que de PA possibles dans la phase (jour + bonus forme).
+  const maxDots = Math.max(save.actionPoints, save.phase === 'DAY' ? 11 : 8);
   const dots = [];
-  for (let i = 0; i < 6; i++) dots.push(<span key={i} className={`pa-dot${i < save.actionPoints ? ' on' : ''}`} />);
+  for (let i = 0; i < maxDots; i++) dots.push(<span key={i} className={`pa-dot${i < save.actionPoints ? ' on' : ''}`} />);
 
   return (
     <header className="topbar">
@@ -27,7 +29,7 @@ export function TopBar() {
       <div className="hud-group hud-time">
         <div className="hud-chip hud-primary">
           <span>
-            {save.phase === 'DAY' ? '☀ ' + STR.hud.day : '☾ ' + STR.hud.night} · {STR.hud.cycle} {save.cycle}
+            {save.phase === 'DAY' ? '🤝 ' + STR.hud.day : '🔬 ' + STR.hud.night} · {STR.hud.cycle} {save.cycle}
           </span>
           <strong>{CYCLE_DATES[save.cycle - 1]}</strong>
         </div>

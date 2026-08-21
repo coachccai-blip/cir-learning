@@ -1,4 +1,4 @@
-// Boîte mail du bureau de jour (§6.1) : texture de vraie semaine de travail
+// Boîte mail de la phase Relation client (§6.1) : texture de vraie semaine de travail
 // et canal narratif léger. Certains mails débloquent une fiche codex.
 
 export interface GameMail {

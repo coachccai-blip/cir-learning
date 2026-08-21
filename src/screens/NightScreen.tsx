@@ -74,7 +74,7 @@ export function NightScreen() {
       <h3>{STR.night.dossiers}</h3>
       {dossiers.length === 0 && (
         <div className="panel" style={{ textAlign: 'center', padding: 'var(--sp-6)' }}>
-          <div style={{ fontSize: '2rem' }}>🌙</div>
+          <div style={{ fontSize: '2rem' }}>🔬</div>
           <p className="muted">{STR.night.noDossiers}</p>
           {(() => {
             const lead = save.portfolio.find((cs) => cs.dossierState === 'LEAD' || cs.dossierState === 'QUALIFIED');

@@ -1,6 +1,7 @@
 // Les 6 clients de la campagne (§3.3, §3.4, §10.2). Données fictives.
 
 import type { ClientDef } from '../engine/types';
+import { generatedClient, generatedClients } from './registry';
 
 export const CLIENTS: ClientDef[] = [
   {
@@ -186,7 +187,12 @@ export const CLIENTS: ClientDef[] = [
 ];
 
 export function clientById(id: string): ClientDef {
-  const c = CLIENTS.find((c) => c.id === id);
+  const c = CLIENTS.find((c) => c.id === id) ?? generatedClient(id);
   if (!c) throw new Error(`Client inconnu : ${id}`);
   return c;
+}
+
+/** Catalogue écrit à la main + dossiers générés en cours de partie. */
+export function allClients(): ClientDef[] {
+  return [...CLIENTS, ...generatedClients()];
 }
