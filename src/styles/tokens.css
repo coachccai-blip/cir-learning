@@ -1,4 +1,6 @@
-/* Charte Leyton V01.2026 — tokens de couleur et thème jour/nuit (§12). */
+/* Design tokens — inspirés de la charte Leyton, ajustés pour la lisibilité.
+   Écarts assumés (voir docs/DECISIONS.md) : contrastes renforcés, encres de
+   texte plus sombres/claires que la charte, ambre pour les états intermédiaires. */
 
 :root {
   /* Marque */
@@ -8,23 +10,24 @@
   --leyton-orange-main: #ff6633;
   --leyton-orange-dark: #c34024;
 
-  /* Jauges métier (usage fonctionnel neutre) */
-  --gauge-relation: #29b8c9;
-  --gauge-security-good: #7ebd4b;
+  /* Jauges métier (usage fonctionnel) */
+  --gauge-relation: #1fa9ba;
+  --gauge-security-good: #5da83c;
+  --gauge-security-warn: #c98a1b;
   --gauge-security-bad: #c34024;
-  --gauge-profitability: #ff6633;
+  --gauge-profitability: #e85c2b;
 
   /* Typo */
-  --font-title: "Avenir Next", "Avenir", "Nunito Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-title: "Nunito Sans", "Avenir Next", "Avenir", "Segoe UI", Helvetica, Arial, sans-serif;
   --font-body: Montserrat, "Helvetica Neue", "Segoe UI", Arial, sans-serif;
 
   /* Rayons, ombres, espacements */
   --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 22px;
-  --shadow-sm: 0 1px 3px rgba(0, 34, 53, 0.12);
-  --shadow-md: 0 6px 20px rgba(0, 34, 53, 0.14);
-  --shadow-lg: 0 18px 50px rgba(0, 34, 53, 0.22);
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --shadow-sm: 0 1px 3px rgba(0, 20, 35, 0.1);
+  --shadow-md: 0 6px 20px rgba(0, 20, 35, 0.13);
+  --shadow-lg: 0 18px 50px rgba(0, 20, 35, 0.22);
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
@@ -36,45 +39,53 @@
   --text-scale: 1;
 }
 
-/* Thème JOUR (défaut) */
+/* ============ Thème JOUR (défaut) ============ */
 :root,
 [data-phase="DAY"] {
-  --bg: #f4f6f9;
+  --bg: #f2f5f8;
   --bg-elevated: #ffffff;
   --bg-panel: #ffffff;
-  --bg-sunken: #eef1f5;
-  --surface-accent: #e8eef4;
-  --text: #10202e;
-  --text-muted: #57697a;
+  --bg-sunken: #e7ecf1;
+  --surface-accent: #eaf1f7;
+  --text: #14222e;          /* contraste ~14:1 sur blanc */
+  --text-muted: #46596a;    /* ≥ 7:1 sur blanc */
+  --text-faint: #66798a;
   --text-inverse: #ffffff;
-  --border: #dde4ec;
-  --border-strong: #c6d1dd;
+  --border: #d8e0e8;
+  --border-strong: #b9c6d2;
   --brand: var(--leyton-blue-main);
   --brand-contrast: #ffffff;
   --accent: var(--leyton-orange-main);
-  --accent-text: var(--leyton-orange-dark);
+  --accent-text: #b03a1e;   /* orange assombri : lisible en texte fin */
   --header-bg: linear-gradient(120deg, #002c49, #0a3d61);
   --header-text: #ffffff;
+  --pos: #2c7a1e;
+  --neg: #b03a1e;
 }
 
-/* Thème NUIT */
+/* ============ Thème NUIT ============ */
 [data-phase="NIGHT"] {
-  --bg: radial-gradient(circle at 20% -10%, #0a3d61 0%, #002235 55%, #001824 100%);
-  --bg-elevated: #06304c;
-  --bg-panel: rgba(9, 52, 80, 0.72);
-  --bg-sunken: #041f30;
-  --surface-accent: #0a3d61;
-  --text: #eaf2f8;
-  --text-muted: #9db6c9;
-  --text-inverse: #002235;
-  --border: rgba(157, 182, 201, 0.22);
-  --border-strong: rgba(157, 182, 201, 0.4);
-  --brand: #ffffff;
-  --brand-contrast: #002235;
+  --bg: radial-gradient(circle at 20% -10%, #0c4166 0%, #032840 55%, #021c2e 100%);
+  --bg-elevated: #0b3a59;
+  --bg-panel: #0a3552;
+  --bg-sunken: #06283e;
+  --surface-accent: #0e4467;
+  --text: #f0f6fb;          /* quasi-blanc : lisible sur tous les fonds nuit */
+  --text-muted: #b4cadb;    /* ≥ 7:1 sur bg-panel */
+  --text-faint: #8aa6ba;
+  --text-inverse: #032840;
+  --border: rgba(180, 202, 219, 0.24);
+  --border-strong: rgba(180, 202, 219, 0.45);
+  --brand: #f0f6fb;
+  --brand-contrast: #032840;
   --accent: var(--leyton-orange-main);
-  --accent-text: #ff8a5f;
-  --header-bg: linear-gradient(120deg, #002235, #06304c);
-  --header-text: #eaf2f8;
+  --accent-text: #ffa07d;   /* orange éclairci : lisible sur fond sombre */
+  --header-bg: linear-gradient(120deg, #021c2e, #0b3a59);
+  --header-text: #f0f6fb;
+  --pos: #8fd672;
+  --neg: #ff9d7e;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -92,9 +103,10 @@ body {
   font-family: var(--font-body);
   background: var(--bg);
   color: var(--text);
-  font-size: calc(16px * var(--text-scale));
-  line-height: 1.55;
+  font-size: calc(16.5px * var(--text-scale));
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   transition: background 600ms ease, color 600ms ease;
 }
 
@@ -107,11 +119,17 @@ h2,
 h3,
 h4 {
   font-family: var(--font-title);
-  font-weight: 700;
-  line-height: 1.15;
+  font-weight: 800;
+  line-height: 1.2;
   margin: 0;
   letter-spacing: -0.01em;
 }
+
+h1 { font-size: clamp(1.6rem, 3.4vw, 2.1rem); }
+h2 { font-size: clamp(1.3rem, 2.6vw, 1.6rem); }
+h3 { font-size: 1.12rem; }
+
+p { margin: 0.4em 0; }
 
 button {
   font-family: var(--font-body);
@@ -120,6 +138,11 @@ button {
 
 a {
   color: var(--accent-text);
+  text-underline-offset: 2px;
+}
+
+::selection {
+  background: rgba(255, 102, 51, 0.3);
 }
 
 :focus-visible {

@@ -1,7 +1,9 @@
 // Avatars SVG paramétriques déterministes (§12.3). < 8 ko, aucun binaire.
 // Style flat professionnel, monochrome bleu Leyton + accent orange.
 
+import { useState } from 'react';
 import { hashString } from '../engine/rng';
+import { portraitUrl } from './portraits';
 import type { Expression } from '../engine/types';
 
 const SKIN = ['#f2c9a0', '#e0a878', '#c68642', '#8d5524', '#5c3a21', '#f7d7c4'];
@@ -29,6 +31,48 @@ export function moodColor(mood: number): string {
 }
 
 export function Avatar({ seed, expression = 'neutre', className, mood }: AvatarProps) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const photo = portraitUrl(seed);
+
+  // Portrait 3D si le fichier existe dans public/portraits/ ; sinon avatar SVG.
+  if (photo && !imgFailed) {
+    return (
+      <div className={className} style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <img
+          src={photo}
+          alt=""
+          onError={() => setImgFailed(true)}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle at 50% 30%, #0a3d61, #032840)',
+            display: 'block',
+          }}
+        />
+        {mood !== undefined && (
+          <svg viewBox="0 0 100 100" style={{ position: 'absolute', inset: 0 }} aria-hidden>
+            <g transform="rotate(-90 50 50)">
+              <circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" strokeWidth="4.5" opacity="0.15" />
+              <circle
+                cx="50"
+                cy="50"
+                r="47"
+                fill="none"
+                stroke={moodColor(mood)}
+                strokeWidth="4.5"
+                strokeLinecap="round"
+                strokeDasharray={`${(Math.max(2, Math.min(100, mood)) / 100) * 295.3} 295.3`}
+                style={{ transition: 'stroke-dasharray 400ms ease, stroke 400ms ease' }}
+              />
+            </g>
+          </svg>
+        )}
+      </div>
+    );
+  }
+
   const h = hashString(seed);
   const skin = SKIN[pickIndex(h, 0, SKIN.length)];
   const hair = HAIR[pickIndex(h, 3, HAIR.length)];
