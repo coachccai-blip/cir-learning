@@ -27,7 +27,10 @@ export function DialogueScreen() {
   const endDialogue = useStore((s) => s.endDialogue);
   const toast = useStore((s) => s.toast);
 
-  const scenario = useMemo(() => (ctx ? scenarioById(ctx.scenarioId) : null), [ctx]);
+  const scenario = useMemo(
+    () => (ctx ? (ctx.inlineScenario ?? scenarioById(ctx.scenarioId)) : null),
+    [ctx],
+  );
   const client = ctx?.clientId ? CLIENTS.find((c) => c.id === ctx.clientId) : undefined;
   const clientState = save?.portfolio.find((p) => p.clientId === ctx?.clientId);
 
@@ -38,6 +41,7 @@ export function DialogueScreen() {
   const [declined, setDeclined] = useState(false);
   const [feedback, setFeedback] = useState<DialogueChoice | null>(null);
   const [feedbackDeltas, setFeedbackDeltas] = useState<{ relation: number; security: number; profitability: number } | null>(null);
+  const [optimalAlt, setOptimalAlt] = useState<string | null>(null);
 
   useEffect(() => {
     if (scenario) {
@@ -100,6 +104,13 @@ export function DialogueScreen() {
     if (choice.promise) setPromise({ min: choice.promise.min, max: choice.promise.max, kind: choice.promise.kind });
     if (choice.feedback.codexUnlock) {
       unlockCodex(choice.feedback.codexUnlock);
+    }
+    // Pédagogie : si le joueur n'a pas pris le meilleur choix, on le lui montre.
+    if (choice.role !== 'optimal' && node) {
+      const best = node.choices.find((c) => c.role === 'optimal');
+      setOptimalAlt(best ? best.text : null);
+    } else {
+      setOptimalAlt(null);
     }
     setFeedback(choice);
     setFeedbackDeltas(res.gauges);
@@ -220,6 +231,20 @@ export function DialogueScreen() {
                 <strong>{feedback.feedback.what}</strong> {feedback.feedback.why}
               </div>
               <div className="rule">💡 {feedback.feedback.rule}</div>
+              {optimalAlt && (
+                <div
+                  style={{
+                    marginTop: 10,
+                    fontSize: '0.85rem',
+                    padding: '8px 12px',
+                    borderRadius: 'var(--radius-sm)',
+                    background: 'var(--bg-sunken)',
+                    borderLeft: '3px solid var(--gauge-security-good)',
+                  }}
+                >
+                  <strong className="delta-pos">✓ {STR.dialogue.optimalWas} :</strong> « {optimalAlt} »
+                </div>
+              )}
               {codexUnlock && (
                 <div className="codex-unlock">
                   📄 {STR.dialogue.codexUnlocked} : « {codexUnlock.title} »

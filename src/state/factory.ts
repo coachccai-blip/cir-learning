@@ -74,5 +74,8 @@ export function createNewGame(mode: GameMode, createdAt: string): SaveGame {
     restUsedThisDay: false,
     tutorialDone: false,
     finished: false,
+    firedEvents: [],
+    quizPre: [],
+    quizPost: [],
   };
 }

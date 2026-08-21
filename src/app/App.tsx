@@ -18,6 +18,7 @@ import { LeaderboardScreen } from '../screens/LeaderboardScreen';
 import { OptionsScreen } from '../screens/OptionsScreen';
 import { FreeModeScreen } from '../screens/FreeModeScreen';
 import { ClientScreen } from '../screens/ClientScreen';
+import { QuizScreen } from '../screens/QuizScreen';
 
 const TEXT_SCALE = { normal: '1', large: '1.25', xlarge: '1.5' };
 
@@ -39,7 +40,7 @@ export function App() {
     root.style.setProperty('--text-scale', TEXT_SCALE[options.textSize]);
   }, [save, view, options.textSize]);
 
-  const chromeless = view === 'home' || view === 'mode' || view === 'end';
+  const chromeless = view === 'home' || view === 'mode' || view === 'end' || view === 'quiz';
 
   return (
     <div className="app-shell">
@@ -62,6 +63,7 @@ export function App() {
         {view === 'options' && <OptionsScreen />}
         {view === 'freemode' && <FreeModeScreen />}
         {view === 'client' && <ClientScreen />}
+        {view === 'quiz' && <QuizScreen />}
       </main>
     </div>
   );

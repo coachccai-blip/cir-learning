@@ -448,6 +448,11 @@ export interface SaveGame {
   restUsedThisDay: boolean;
   tutorialDone: boolean;
   finished: boolean;
+  /** Événements aléatoires déjà déclenchés (pas de répétition). */
+  firedEvents: string[];
+  /** Réponses au quiz d'entrée et de sortie (index d'option par question). */
+  quizPre: number[];
+  quizPost: number[];
 }
 
 export interface LeaderboardEntry {

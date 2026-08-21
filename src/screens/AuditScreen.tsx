@@ -35,6 +35,12 @@ export function AuditScreen() {
   const [defended, setDefended] = useState<string[]>([]);
   const [finished, setFinished] = useState(false);
 
+  // Fin de saison → quiz de sortie (mesure de l'apprentissage) puis écran de fin.
+  const toEnd = () => {
+    useStore.setState({ quizPhase: 'post' });
+    go('quiz');
+  };
+
   if (!save) return null;
 
   if (!target) {
@@ -47,7 +53,7 @@ export function AuditScreen() {
               ? 'Mode découverte : pas de contrôle fiscal. Direction le bilan de saison.'
               : 'Vos dossiers sont suffisamment solides : pas de rappel cette saison.'}
           </p>
-          <button className="btn btn-primary" onClick={() => go('end')}>
+          <button className="btn btn-primary" onClick={toEnd}>
             {STR.end.title} →
           </button>
         </div>
@@ -98,7 +104,7 @@ export function AuditScreen() {
             style={{ marginTop: 12 }}
             onClick={() => {
               runAudit(target.clientId, result.outcome, result.reassessedAmount);
-              go('end');
+              toEnd();
             }}
           >
             {STR.end.title} →
