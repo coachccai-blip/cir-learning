@@ -303,3 +303,21 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
     au hasard** : les bulles restent hors de la colonne centrale où vit le
     texte, et le placement ne bouge pas d'un chargement à l'autre. Sous 900 px,
     seules les grosses subsistent ; `prefers-reduced-motion` fige tout.
+
+## Déploiement : les deux modes de GitHub Pages (incident)
+
+53. **Le site servait une page blanche alors que tous les déploiements étaient
+    verts.** `Settings → Pages → Source` valait « Deploy from a branch →
+    `main` / `(root)` ». Dans ce mode, GitHub **ignore complètement** l'artefact
+    produit par Actions et sert la **racine du dépôt** — dont `index.html` est
+    l'entrée Vite de développement, qui charge `/src/main.tsx`, absent du build.
+    D'où la page vide. Le workflow, lui, ne pouvait rien signaler : il publiait
+    bien un artefact, que personne ne lisait.
+54. **Le workflow publie désormais des deux façons** : l'artefact Pages (job
+    `deploy`, pour le mode « GitHub Actions ») **et** une branche `gh-pages`
+    (job `publish-branch`, pour le mode « Deploy from a branch »). Quel que soit
+    le mode choisi, le site servi est le build — jamais la racine du dépôt.
+    Le seul réglage restant est le choix de la source ; les deux options
+    valides sont documentées dans le README.
+55. `dist/.nojekyll` est ajouté au build : en mode branche, Pages fait passer le
+    contenu par Jekyll, qui écarterait tout chemin commençant par un souligné.
