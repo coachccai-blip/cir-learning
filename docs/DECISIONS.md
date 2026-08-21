@@ -344,7 +344,6 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
     tombait donc à la chaîne vide et `avatarSeed` avec lui, d'où l'avatar SVG
     générique à la place de la photo. L'écran mémorise désormais le dernier
     nœud affiché et s'y rabat tant que le feedback est à l'écran.
-<<<<<<< HEAD
 
 ## Une partie en une heure, et sept axes de jouabilité (demande utilisateur)
 
@@ -402,5 +401,3 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
     registre **technique**, absent de quatre kick-offs, est désormais proposé
     dans chaque scénario client — un test l'exige, et interdit qu'un registre
     monopolise plus de la moitié des choix.
-=======
->>>>>>> origin/main

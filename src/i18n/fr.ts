@@ -183,12 +183,9 @@ export const STR = {
     total: 'Rappel important + intérêts',
     reassessed: 'Montant redressé',
     noAudit: 'Vos dossiers sont suffisamment solides : pas de rappel cette saison.',
-<<<<<<< HEAD
     interimResult: 'Réponse à la demande d’information',
     noInterim: 'Aucun dossier chiffré à ce stade : l’administration attendra le dépôt.',
     backToWork: 'Retourner au bureau',
-=======
->>>>>>> origin/main
   },
   end: {
     title: 'Fin de saison',
