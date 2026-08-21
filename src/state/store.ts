@@ -41,6 +41,7 @@ import {
   type Options,
 } from './persistence';
 import { createNewGame, initClientState } from './factory';
+import { playSound } from '../app/sound';
 
 const RULESET = ruleset as Ruleset;
 
@@ -61,7 +62,8 @@ export type View =
   | 'options'
   | 'freemode'
   | 'client'
-  | 'quiz';
+  | 'quiz'
+  | 'settlement';
 
 export interface Toast {
   id: number;
@@ -102,13 +104,41 @@ interface UIState {
   activeClientId: string | null;
   lastDeltas: Partial<Gauges> | null;
   quizPhase: 'pre' | 'post';
+  /** Scène de règlement de promesse au bilan de mission. */
+  settlement: {
+    clientId: string;
+    label: string;
+    relation: number;
+    profitability: number;
+    reproach: string;
+    realCir: number;
+    promiseMin: number;
+    promiseMax: number;
+    churn: boolean;
+  } | null;
+  /** Overlay de transition jour/nuit (label affiché plein écran). */
+  transition: { label: string; phase: 'DAY' | 'NIGHT' } | null;
 }
 
 interface Actions {
   boot: () => void;
   go: (view: View) => void;
-  newGame: (mode: GameMode) => void;
+  newGame: (mode: GameMode, seedOverride?: string) => void;
   startFirstDay: () => void;
+  recordChoice: (entry: {
+    scenarioId: string;
+    nodeId: string;
+    choiceId: string;
+    role: 'optimal' | 'acceptable' | 'tempting' | 'poor';
+    clientId?: string;
+    text: string;
+    impact: number;
+    rule: string;
+  }) => void;
+  readMail: (id: string) => void;
+  clearTransition: () => void;
+  closeSettlement: () => void;
+  playSfx: (name: 'badge' | 'validate' | 'ring' | 'alert') => void;
   setOptions: (patch: Partial<Options>) => void;
   resetSave: () => void;
   toast: (text: string, badge?: boolean) => void;
@@ -169,6 +199,8 @@ export const useStore = create<Store>((set, get) => ({
   activeClientId: null,
   lastDeltas: null,
   quizPhase: 'pre',
+  settlement: null,
+  transition: null,
 
   boot: () => {
     const save = loadSave();
@@ -182,14 +214,46 @@ export const useStore = create<Store>((set, get) => ({
 
   go: (view) => set({ view }),
 
-  newGame: (mode) => {
-    const save = createNewGame(mode, new Date(0).toISOString());
+  newGame: (mode, seedOverride) => {
+    const save = createNewGame(mode, new Date(0).toISOString(), seedOverride);
     // Générer les leads du portefeuille selon le mode.
     const count = mode === 'expert' ? CLIENTS.length : Math.min(4, CLIENTS.length);
     save.portfolio = CLIENTS.slice(0, count).map((c) => initClientState(c.id));
     persist(save);
     // Quiz d'entrée avant de commencer (mesure de l'apprentissage §18.1).
-    set({ save, view: 'quiz', quizPhase: 'pre' });
+    set({ save, view: 'quiz', quizPhase: 'pre', settlement: null, transition: null });
+  },
+
+  recordChoice: (entry) => {
+    const save = get().save;
+    if (!save) return;
+    // Streak « le mot juste » : les choix optimal/acceptable font monter la
+    // série ; un choix tentant ou mauvais la casse.
+    const streak =
+      entry.role === 'optimal' || entry.role === 'acceptable' ? save.stats.noJargonStreak + 1 : 0;
+    const next: SaveGame = {
+      ...save,
+      history: [...save.history, { cycle: save.cycle, ...entry }],
+      stats: { ...save.stats, noJargonStreak: streak },
+    };
+    persist(next);
+    set({ save: next });
+  },
+
+  readMail: (id) => {
+    const save = get().save;
+    if (!save || save.mailsRead.includes(id)) return;
+    const next = { ...save, mailsRead: [...save.mailsRead, id] };
+    persist(next);
+    set({ save: next });
+  },
+
+  clearTransition: () => set({ transition: null }),
+
+  closeSettlement: () => set({ settlement: null, view: 'day' }),
+
+  playSfx: (name) => {
+    playSound(name, get().options.volume);
   },
 
   // Démarre réellement la première journée (appelé après le quiz d'entrée).
@@ -353,26 +417,31 @@ export const useStore = create<Store>((set, get) => ({
     }
 
     // Bilan de mission : la promesse initiale est confrontée au CIR réel (§6.3).
-    let promiseSettlement: { label: string; relation: number; profitability: number; reproach: string } | null = null;
+    // Le règlement est présenté en vraie scène (view 'settlement'), pas en toast.
+    let settlement: UIState['settlement'] = null;
     if (result.kind === 'closing' && result.clientId) {
       const cs = next.portfolio.find((p) => p.clientId === result.clientId);
       const client = CLIENTS.find((c) => c.id === result.clientId);
       if (cs?.promise && client) {
         const realCir = cs.playerCir ?? cs.trueCir ?? Math.round((client.cirEstimate[0] + client.cirEstimate[1]) / 2);
         const outcome = evaluatePromise({ min: cs.promise.min, max: cs.promise.max }, realCir);
-        const reproach =
-          outcome.churnRisk
-            ? `${client.contact.name} : « Vous m'aviez promis ${cs.promise.min.toLocaleString('fr-FR')} €. On est très loin du compte. »`
-            : outcome.relation < 0
-              ? `${client.contact.name} : « C'est un peu moins que ce que vous aviez annoncé… »`
-              : outcome.relation > 0 && cs.promise.kind === 'range'
-                ? `${client.contact.name} : « Vous aviez vu juste, c'est dans la fourchette annoncée. »`
-                : `${client.contact.name} prend note du montant final.`;
-        promiseSettlement = {
+        const reproach = outcome.churnRisk
+          ? `Vous m'aviez promis ${cs.promise.min.toLocaleString('fr-FR')} €. On est très loin du compte. J'ai répété ce chiffre à mon banquier, à mes associés… Vous me mettez dans une situation impossible.`
+          : outcome.relation < 0
+            ? `C'est un peu moins que ce que vous aviez annoncé. Je ne vais pas vous mentir, je suis déçu — mais montrez-moi d'où vient l'écart.`
+            : outcome.relation > 0 && cs.promise.kind === 'range'
+              ? `Vous aviez vu juste : on est dans la fourchette annoncée. C'est exactement ce que j'attends d'un conseil.`
+              : `Bien. Le montant dépasse même votre estimation — la prochaine fois, j'attendrai le chiffre haut.`;
+        settlement = {
+          clientId: client.id,
           label: outcome.label,
           relation: outcome.relation,
           profitability: outcome.profitability,
           reproach,
+          realCir,
+          promiseMin: cs.promise.min,
+          promiseMax: cs.promise.max,
+          churn: outcome.churnRisk,
         };
         // Le churn ferme durablement la relation client.
         if (outcome.churnRisk) {
@@ -387,15 +456,20 @@ export const useStore = create<Store>((set, get) => ({
     }
 
     persist(next);
-    set({ save: next, dialogue: null, view: dialogue?.returnTo ?? 'day' });
+    set({
+      save: next,
+      dialogue: null,
+      settlement,
+      view: settlement ? 'settlement' : (dialogue?.returnTo ?? 'day'),
+    });
     get().addXp(xpBucket, 'Entretien mené');
 
-    if (promiseSettlement) {
+    if (settlement) {
       get().applyGauges(
-        { relation: promiseSettlement.relation, profitability: promiseSettlement.profitability },
-        `Promesse : ${promiseSettlement.label}`,
+        { relation: settlement.relation, profitability: settlement.profitability },
+        `Promesse : ${settlement.label}`,
       );
-      get().toast(promiseSettlement.reproach);
+      if (settlement.churn) get().playSfx('alert');
     }
 
     // Prospect : signature ou refus
@@ -416,6 +490,7 @@ export const useStore = create<Store>((set, get) => ({
       persist(next);
       set({ save: next });
       gained.forEach((b) => get().toast(b.label, true));
+      get().playSfx('badge');
     }
   },
 
@@ -538,6 +613,7 @@ export const useStore = create<Store>((set, get) => ({
     const secDelta = score.withinTolerance ? 8 : -10;
     get().applyGauges({ security: secDelta }, score.withinTolerance ? 'Assiette dans la tolérance' : 'Assiette hors tolérance');
     get().addXp(xpForBaseAccuracy(score.precision, c.profileDifficulty), 'Assiette construite');
+    get().playSfx('validate');
     get().checkBadges();
   },
 
@@ -567,7 +643,11 @@ export const useStore = create<Store>((set, get) => ({
       if (st === 'exhausted') pa -= 1;
       const next = { ...save, phase: 'NIGHT' as const, actionPoints: Math.max(1, pa), overtimeUsedThisNight: false };
       persist(next);
-      set({ save: next, view: 'night' });
+      set({
+        save: next,
+        view: 'night',
+        transition: { label: `Semaine ${save.cycle} — Nuit`, phase: 'NIGHT' },
+      });
     } else {
       get().advanceCycle();
     }
@@ -617,9 +697,23 @@ export const useStore = create<Store>((set, get) => ({
       missedDeadlines: missed,
       restUsedThisDay: false,
       stats: { ...save.stats, minEnergy: Math.min(save.stats.minEnergy, energy) },
+      gaugeHistory: [
+        ...save.gaugeHistory,
+        {
+          cycle: save.cycle,
+          relation: save.gauges.relation,
+          security: save.gauges.security,
+          profitability: save.gauges.profitability,
+        },
+      ],
     };
     persist(next);
-    set({ save: next, view: 'day', lastDeltas: null });
+    set({
+      save: next,
+      view: 'day',
+      lastDeltas: null,
+      transition: { label: `Semaine ${nextCycle} — Jour`, phase: 'DAY' },
+    });
     // Nouveaux prospects
     get().generateProspects(2);
     // Événement aléatoire (33 %/cycle) — écrase la vue par un dialogue si tiré.

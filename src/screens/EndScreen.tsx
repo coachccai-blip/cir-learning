@@ -28,6 +28,16 @@ export function EndScreen() {
   const postScore = QUIZ.reduce((n, q, i) => n + (save.quizPost[i] === q.correct ? 1 : 0), 0);
   const hasQuiz = save.quizPre.length === QUIZ.length && save.quizPost.length === QUIZ.length;
 
+  // Débrief nominatif : les décisions qui ont le plus coûté (impact négatif cumulé).
+  const costly = save.history
+    .filter((h) => h.impact < 0 && h.text)
+    .sort((a, b) => a.impact - b.impact)
+    .slice(0, 3);
+  const bestMoves = save.history
+    .filter((h) => h.role === 'optimal' && h.impact >= 12 && h.text)
+    .sort((a, b) => b.impact - a.impact)
+    .slice(0, 2);
+
   return (
     <div className="home" style={{ alignItems: 'flex-start', overflowY: 'auto' }}>
       <div className="container" style={{ width: 'min(900px,100%)', color: '#fff' }}>
@@ -94,6 +104,45 @@ export function EndScreen() {
             ))}
           </div>
         </div>
+
+        {(costly.length > 0 || bestMoves.length > 0) && (
+          <div className="panel" style={{ marginTop: 16, color: 'var(--text)' }}>
+            <h3>Votre saison, décision par décision</h3>
+            {costly.length > 0 && (
+              <>
+                <p className="muted" style={{ fontSize: '0.85rem', marginBottom: 6 }}>
+                  Les décisions qui vous ont le plus coûté :
+                </p>
+                {costly.map((h) => (
+                  <div key={`${h.scenarioId}-${h.nodeId}-${h.choiceId}`} style={{ marginBottom: 10, fontSize: '0.9rem' }}>
+                    <span className="delta-neg" style={{ fontWeight: 700 }}>
+                      Semaine {h.cycle} ({h.impact})
+                    </span>{' '}
+                    — « {h.text} »
+                    <div className="muted" style={{ fontSize: '0.8rem', fontStyle: 'italic' }}>
+                      💡 {h.rule}
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+            {bestMoves.length > 0 && (
+              <>
+                <p className="muted" style={{ fontSize: '0.85rem', margin: '10px 0 6px' }}>
+                  Vos meilleurs réflexes :
+                </p>
+                {bestMoves.map((h) => (
+                  <div key={`${h.scenarioId}-${h.nodeId}-${h.choiceId}`} style={{ marginBottom: 8, fontSize: '0.9rem' }}>
+                    <span className="delta-pos" style={{ fontWeight: 700 }}>
+                      Semaine {h.cycle} (+{h.impact})
+                    </span>{' '}
+                    — « {h.text} »
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        )}
 
         {hasQuiz && (
           <div className="panel" style={{ marginTop: 16, color: 'var(--text)' }}>

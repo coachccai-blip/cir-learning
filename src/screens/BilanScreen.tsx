@@ -1,6 +1,7 @@
 import { STR } from '../i18n/fr';
 import { useStore, nextMilestone } from '../state/store';
 import { GaugesBar } from '../components/Gauges';
+import { Sparkline } from '../components/Sparkline';
 import { codexById } from '../data/codex';
 import { gradeForXp, nextGrade } from '../engine/economy';
 import { SEASON_LENGTH } from '../data/calendar';
@@ -28,6 +29,25 @@ export function BilanScreen() {
         <div className="panel">
           <h3>{STR.bilan.gaugeChanges}</h3>
           <GaugesBar gauges={save.gauges} />
+          {save.gaugeHistory.length >= 1 && (
+            <div className="stack" style={{ gap: 8, marginTop: 14 }}>
+              <Sparkline
+                label={STR.gauges.relation}
+                color="var(--gauge-relation)"
+                values={[...save.gaugeHistory.map((g) => g.relation), save.gauges.relation]}
+              />
+              <Sparkline
+                label={STR.gauges.security}
+                color="var(--gauge-security-good)"
+                values={[...save.gaugeHistory.map((g) => g.security), save.gauges.security]}
+              />
+              <Sparkline
+                label={STR.gauges.profitability}
+                color="var(--gauge-profitability)"
+                values={[...save.gaugeHistory.map((g) => g.profitability), save.gauges.profitability]}
+              />
+            </div>
+          )}
           <ul style={{ marginTop: 12, fontSize: '0.85rem' }}>
             {gaugeChanges.length === 0 && <li className="muted">{STR.bilan.noChange}</li>}
             {gaugeChanges.slice(-6).map((l, i) => (

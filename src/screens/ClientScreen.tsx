@@ -27,7 +27,7 @@ export function ClientScreen() {
       <div className="grid" style={{ gridTemplateColumns: '260px 1fr', marginTop: 16 }}>
         <div className="panel center">
           <div className="avatar" style={{ width: 150, height: 150, margin: '0 auto 12px' }}>
-            <Avatar seed={c.contact.avatarSeed} expression={expressionForMood(cs.mood)} />
+            <Avatar seed={c.contact.avatarSeed} expression={expressionForMood(cs.mood)} mood={cs.mood} />
           </div>
           <strong>{c.contact.name}</strong>
           <div className="muted">{c.contact.role}</div>

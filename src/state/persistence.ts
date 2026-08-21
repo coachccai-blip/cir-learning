@@ -38,6 +38,14 @@ export function migrateSave(data: unknown): SaveGame | null {
     firedEvents: s.firedEvents ?? [],
     quizPre: s.quizPre ?? [],
     quizPost: s.quizPost ?? [],
+    mailsRead: s.mailsRead ?? [],
+    gaugeHistory: s.gaugeHistory ?? [],
+    history: (s.history ?? []).map((h) => ({
+      ...h,
+      text: h.text ?? '',
+      impact: h.impact ?? 0,
+      rule: h.rule ?? '',
+    })),
   };
   return filled;
 }

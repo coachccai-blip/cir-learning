@@ -19,6 +19,8 @@ import { OptionsScreen } from '../screens/OptionsScreen';
 import { FreeModeScreen } from '../screens/FreeModeScreen';
 import { ClientScreen } from '../screens/ClientScreen';
 import { QuizScreen } from '../screens/QuizScreen';
+import { SettlementScreen } from '../screens/SettlementScreen';
+import { PhaseTransition } from '../components/PhaseTransition';
 
 const TEXT_SCALE = { normal: '1', large: '1.25', xlarge: '1.5' };
 
@@ -46,6 +48,7 @@ export function App() {
     <div className="app-shell">
       {!chromeless && save && <TopBar />}
       <Toasts />
+      <PhaseTransition />
       <main style={{ flex: 1 }}>
         {view === 'home' && <HomeScreen />}
         {view === 'mode' && <ModeScreen />}
@@ -64,6 +67,7 @@ export function App() {
         {view === 'freemode' && <FreeModeScreen />}
         {view === 'client' && <ClientScreen />}
         {view === 'quiz' && <QuizScreen />}
+        {view === 'settlement' && <SettlementScreen />}
       </main>
     </div>
   );

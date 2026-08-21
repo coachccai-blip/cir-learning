@@ -34,8 +34,8 @@ export function initClientState(clientId: string): ClientState {
   };
 }
 
-export function createNewGame(mode: GameMode, createdAt: string): SaveGame {
-  const seed = makeSeed();
+export function createNewGame(mode: GameMode, createdAt: string, seedOverride?: string): SaveGame {
+  const seed = seedOverride ?? makeSeed();
   const rng = rngFromSeed(seed);
   // Le mode expert démarre avec un portefeuille plus large.
   void rng;
@@ -77,5 +77,7 @@ export function createNewGame(mode: GameMode, createdAt: string): SaveGame {
     firedEvents: [],
     quizPre: [],
     quizPost: [],
+    mailsRead: [],
+    gaugeHistory: [],
   };
 }

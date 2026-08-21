@@ -1,8 +1,11 @@
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
+import { useState } from 'react';
 import { GaugesBar } from '../components/Gauges';
 import { Avatar } from '../avatars/Avatar';
 import { clientById } from '../data/clients';
+import { mailsForCycle } from '../data/mails';
+import { codexById } from '../data/codex';
 import type { ClientState, DossierState } from '../engine/types';
 
 function clientAction(cs: ClientState): { label: string; kind: 'discovery' | 'proposal' | 'kickoff' | 'followup' | 'closing'; cost: number } | null {
@@ -31,7 +34,14 @@ export function DayScreen() {
   const go = useStore((s) => s.go);
   const lastDeltas = useStore((s) => s.lastDeltas);
   const toast = useStore((s) => s.toast);
+  const readMail = useStore((s) => s.readMail);
+  const unlockCodex = useStore((s) => s.unlockCodex);
+  const playSfx = useStore((s) => s.playSfx);
+  const [openMail, setOpenMail] = useState<string | null>(null);
   if (!save) return null;
+
+  const mails = mailsForCycle(save.cycle);
+  const unreadMails = mails.filter((m) => !save.mailsRead.includes(m.id)).length;
 
   function doClientAction(cs: ClientState) {
     const a = clientAction(cs);
@@ -65,7 +75,15 @@ export function DayScreen() {
       toast('Pas assez de PA.');
       return;
     }
+    playSfx('ring');
     startDialogue({ scenarioId: 'sc_prospect_call', kind: 'prospect', prospectId, returnTo: 'day' });
+  }
+
+  function toggleMail(id: string) {
+    setOpenMail((cur) => (cur === id ? null : id));
+    readMail(id);
+    const mail = mails.find((m) => m.id === id);
+    if (mail?.codexUnlock) unlockCodex(mail.codexUnlock);
   }
 
   const newProspects = save.prospects.filter((p) => p.status === 'NEW');
@@ -98,8 +116,16 @@ export function DayScreen() {
             const action = clientAction(cs);
             return (
               <div className="list-item" key={cs.clientId}>
-                <div className="avatar">
-                  <Avatar seed={c.contact.avatarSeed} />
+                <div
+                  className="avatar"
+                  title={`${STR.common.mood} ${Math.round(cs.mood)}/100`}
+                  role="meter"
+                  aria-valuenow={Math.round(cs.mood)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={`Humeur de ${c.contact.name} : ${Math.round(cs.mood)} sur 100`}
+                >
+                  <Avatar seed={c.contact.avatarSeed} mood={cs.mood} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="row" style={{ gap: 8 }}>
@@ -108,8 +134,7 @@ export function DayScreen() {
                     <span className="tag">{'★'.repeat(c.profileDifficulty)}</span>
                   </div>
                   <div className="muted" style={{ fontSize: '0.82rem' }}>
-                    {c.contact.name} · {c.contact.role} — {STR.common.mood} {Math.round(cs.mood)} · {STR.common.trust}{' '}
-                    {Math.round(cs.trust)}
+                    {c.contact.name} · {c.contact.role} — {STR.common.trust} {Math.round(cs.trust)}
                   </div>
                   {cs.promise && (
                     <div style={{ fontSize: '0.78rem', color: 'var(--accent-text)' }}>
@@ -139,7 +164,46 @@ export function DayScreen() {
         </section>
 
         <section className="stack">
-          <h3>{STR.day.prospects}</h3>
+          <h3>
+            📬 Boîte de réception{' '}
+            {unreadMails > 0 && <span className="tag tag-accent">{unreadMails} non lu{unreadMails > 1 ? 's' : ''}</span>}
+          </h3>
+          {mails.length === 0 && (
+            <p className="muted" style={{ fontSize: '0.85rem' }}>
+              Rien de nouveau cette semaine.
+            </p>
+          )}
+          {mails.map((m) => {
+            const unread = !save.mailsRead.includes(m.id);
+            const open = openMail === m.id;
+            return (
+              <div
+                className={`mail-item${unread ? ' unread' : ''}`}
+                key={m.id}
+                onClick={() => toggleMail(m.id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && toggleMail(m.id)}
+              >
+                <div className="mail-head">
+                  <strong style={{ fontSize: '0.85rem' }}>{m.sender}</strong>
+                </div>
+                <div style={{ fontWeight: unread ? 700 : 500, fontSize: '0.9rem' }}>{m.subject}</div>
+                {open && (
+                  <div className="mail-body">
+                    {m.body}
+                    {m.codexUnlock && codexById(m.codexUnlock) && (
+                      <div style={{ marginTop: 6, fontSize: '0.8rem', color: 'var(--accent-text)' }}>
+                        📄 Fiche liée : « {codexById(m.codexUnlock)!.title} »
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          <h3 style={{ marginTop: 8 }}>{STR.day.prospects}</h3>
           <div className="row">
             <button className="btn btn-sm" onClick={networking} disabled={save.actionPoints < 2}>
               {STR.activities.networking} (2)

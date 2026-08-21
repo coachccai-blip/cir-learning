@@ -72,7 +72,23 @@ export function NightScreen() {
       </div>
 
       <h3>{STR.night.dossiers}</h3>
-      {dossiers.length === 0 && <p className="muted">{STR.night.noDossiers}</p>}
+      {dossiers.length === 0 && (
+        <div className="panel" style={{ textAlign: 'center', padding: 'var(--sp-6)' }}>
+          <div style={{ fontSize: '2rem' }}>🌙</div>
+          <p className="muted">{STR.night.noDossiers}</p>
+          {(() => {
+            const lead = save.portfolio.find((cs) => cs.dossierState === 'LEAD' || cs.dossierState === 'QUALIFIED');
+            return lead ? (
+              <p style={{ fontSize: '0.9rem' }}>
+                💡 Conseil : demain, {lead.dossierState === 'LEAD' ? 'faites le rendez-vous découverte avec' : 'envoyez la proposition à'}{' '}
+                <strong>{clientById(lead.clientId).name}</strong> pour ouvrir votre premier dossier.
+              </p>
+            ) : (
+              <p style={{ fontSize: '0.9rem' }}>💡 Profitez-en pour lire quelques fiches codex — ça rapporte de l’XP.</p>
+            );
+          })()}
+        </div>
+      )}
       <div className="stack">
         {dossiers.map((cs) => {
           const c = clientById(cs.clientId);

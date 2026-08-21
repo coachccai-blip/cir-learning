@@ -12,13 +12,23 @@ interface AvatarProps {
   seed: string;
   expression?: Expression;
   className?: string;
+  /** 0-100 : affiche un anneau d'humeur autour du portrait (arc proportionnel + couleur). */
+  mood?: number;
 }
 
 function pickIndex(h: number, shift: number, mod: number): number {
   return Math.abs((h >> shift) % mod);
 }
 
-export function Avatar({ seed, expression = 'neutre', className }: AvatarProps) {
+/** Couleur de l'anneau d'humeur : rouge (fermé) → ambre → cyan → vert (ouvert). */
+export function moodColor(mood: number): string {
+  if (mood < 20) return '#c34024';
+  if (mood < 40) return '#d9a441';
+  if (mood < 65) return '#29b8c9';
+  return '#7ebd4b';
+}
+
+export function Avatar({ seed, expression = 'neutre', className, mood }: AvatarProps) {
   const h = hashString(seed);
   const skin = SKIN[pickIndex(h, 0, SKIN.length)];
   const hair = HAIR[pickIndex(h, 3, HAIR.length)];
@@ -84,6 +94,24 @@ export function Avatar({ seed, expression = 'neutre', className }: AvatarProps) 
         )}
       </g>
       <circle cx="50" cy="50" r="47" fill="none" stroke="#ffffff" strokeWidth="2" opacity="0.6" />
+      {mood !== undefined && (
+        <g transform="rotate(-90 50 50)">
+          {/* piste de l'anneau */}
+          <circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" strokeWidth="4.5" opacity="0.15" />
+          {/* arc proportionnel à l'humeur (circonférence ≈ 295.3) */}
+          <circle
+            cx="50"
+            cy="50"
+            r="47"
+            fill="none"
+            stroke={moodColor(mood)}
+            strokeWidth="4.5"
+            strokeLinecap="round"
+            strokeDasharray={`${(Math.max(2, Math.min(100, mood)) / 100) * 295.3} 295.3`}
+            style={{ transition: 'stroke-dasharray 400ms ease, stroke 400ms ease' }}
+          />
+        </g>
+      )}
     </svg>
   );
 }

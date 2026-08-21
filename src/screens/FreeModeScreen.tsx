@@ -25,9 +25,21 @@ export function FreeModeScreen() {
         <div className="panel">
           <h3>{STR.freeMode.daily}</h3>
           <p className="muted">{STR.freeMode.dailyDesc}</p>
-          <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => newGame('expert')}>
-            {STR.common.play}
-          </button>
+          {(() => {
+            // Seed dérivée de la date : même portefeuille et mêmes tirages pour
+            // tous les joueurs du jour (§10.3).
+            const today = new Date().toISOString().slice(0, 10);
+            return (
+              <>
+                <p style={{ marginTop: 8 }}>
+                  <span className="tag tag-accent">Défi du {today.split('-').reverse().join('/')}</span>
+                </p>
+                <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => newGame('onboarding', `daily-${today}`)}>
+                  {STR.common.play}
+                </button>
+              </>
+            );
+          })()}
         </div>
       </div>
     </div>

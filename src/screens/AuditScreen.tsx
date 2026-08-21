@@ -66,6 +66,12 @@ export function AuditScreen() {
   const cardset = cardsetById(c.cardsetId);
   const findings = buildAuditFindings(target, theCase, cardset, RULESET);
 
+  // Flashbacks : le vérificateur a « relu vos échanges » — il cite vos propres
+  // décisions risquées, mot pour mot, avec leur date.
+  const flashbacks = save.history
+    .filter((h) => h.clientId === target.clientId && (h.role === 'tempting' || h.role === 'poor') && h.text)
+    .slice(0, 2);
+
   if (findings.length === 0 || finished) {
     const result = resolveAudit(
       findings,
@@ -126,6 +132,18 @@ export function AuditScreen() {
     <div className="container">
       <h1>{STR.audit.title}</h1>
       <p className="muted">{STR.audit.intro}</p>
+
+      {idx === 0 && flashbacks.length > 0 && (
+        <div className="feedback" style={{ marginTop: 12, borderLeftColor: 'var(--gauge-security-bad)' }}>
+          <strong>Le vérificateur a relu vos échanges.</strong>
+          {flashbacks.map((f) => (
+            <div key={`${f.scenarioId}-${f.choiceId}`} style={{ marginTop: 8, fontSize: '0.9rem' }}>
+              <span className="muted">Semaine {f.cycle}, vous aviez déclaré :</span>
+              <div style={{ fontStyle: 'italic', marginTop: 2 }}>« {f.text} »</div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="panel" style={{ marginTop: 12 }}>
         <strong>{STR.audit.pieces} :</strong>{' '}

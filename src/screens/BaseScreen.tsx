@@ -54,6 +54,17 @@ export function BaseScreen() {
 
   if (done) {
     const score = scoreAssiette(theCase, input, RULESET, toleranceForMode(save.mode));
+    const playerBd = computeBreakdown(theCase, input, RULESET, { legal: false });
+    const trueBd = computeBreakdown(theCase, null, RULESET, { legal: true });
+    const compareRows = [
+      { label: STR.base.personnel, player: playerBd.personnel, truth: trueBd.personnel },
+      { label: STR.base.amortization, player: playerBd.amortization, truth: trueBd.amortization },
+      { label: 'Forfait de fonctionnement', player: playerBd.operatingAllowance, truth: trueBd.operatingAllowance },
+      { label: STR.base.subcontracting, player: playerBd.subcontractingRetained, truth: trueBd.subcontractingRetained },
+      { label: 'Postes supprimés inclus', player: playerBd.decoysIncluded, truth: 0 },
+      { label: 'Déductions (aides)', player: -playerBd.grantsDeducted, truth: -trueBd.grantsDeducted },
+    ].filter((r) => r.player !== 0 || r.truth !== 0);
+    const maxAbs = Math.max(...compareRows.map((r) => Math.max(Math.abs(r.player), Math.abs(r.truth))), 1);
     return (
       <div className="container">
         <h1>{STR.base.result}</h1>
@@ -72,6 +83,43 @@ export function BaseScreen() {
               </div>
             </div>
           </div>
+
+          <h3 style={{ marginTop: 16 }}>Votre assiette vs l’assiette juste</h3>
+          <div style={{ marginTop: 10 }}>
+            {compareRows.map((r) => {
+              const match = Math.abs(r.player - r.truth) < Math.max(1, r.truth * 0.01);
+              const pw = (Math.abs(r.player) / maxAbs) * 100;
+              const tw = (Math.abs(r.truth) / maxAbs) * 100;
+              return (
+                <div className="compare-row" key={r.label}>
+                  <div className="labels">
+                    <span>{r.label}</span>
+                    <span>
+                      <strong className={match ? 'delta-pos' : 'delta-neg'}>
+                        {r.player.toLocaleString('fr-FR')} €
+                      </strong>
+                      <span className="muted"> / juste {r.truth.toLocaleString('fr-FR')} €</span>
+                    </span>
+                  </div>
+                  <div className="compare-track">
+                    <div
+                      className="compare-fill"
+                      style={{
+                        width: `${pw}%`,
+                        background: match ? 'var(--gauge-security-good)' : 'var(--gauge-security-bad)',
+                        opacity: 0.85,
+                      }}
+                    />
+                    <div className="compare-marker" style={{ left: `calc(${tw}% - 1px)` }} title="valeur juste" />
+                  </div>
+                </div>
+              );
+            })}
+            <p className="muted" style={{ fontSize: '0.72rem', marginTop: 4 }}>
+              Barre = votre montant retenu · trait vertical = le montant juste. Vert = poste exact, rouge = écart.
+            </p>
+          </div>
+
           <h3 style={{ marginTop: 16 }}>{STR.base.deviations}</h3>
           {score.deviations.length === 0 ? (
             <p className="delta-pos">{STR.base.noDeviation}</p>

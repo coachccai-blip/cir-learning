@@ -16,6 +16,7 @@ import {
   type DialogueSession,
 } from '../engine/dialogue/runner';
 import { expressionForMood } from '../engine/dialogue/mood';
+import { buildRecalls, clientContext } from '../data/recalls';
 import type { DialogueChoice, Expression } from '../engine/types';
 
 export function DialogueScreen() {
@@ -26,6 +27,8 @@ export function DialogueScreen() {
   const unlockCodex = useStore((s) => s.unlockCodex);
   const endDialogue = useStore((s) => s.endDialogue);
   const toast = useStore((s) => s.toast);
+  const recordChoice = useStore((s) => s.recordChoice);
+  const streak = useStore((s) => s.save?.stats.noJargonStreak ?? 0);
 
   const scenario = useMemo(
     () => (ctx ? (ctx.inlineScenario ?? scenarioById(ctx.scenarioId)) : null),
@@ -43,6 +46,8 @@ export function DialogueScreen() {
   const [feedbackDeltas, setFeedbackDeltas] = useState<{ relation: number; security: number; profitability: number } | null>(null);
   const [optimalAlt, setOptimalAlt] = useState<string | null>(null);
 
+  const playSfx = useStore((s) => s.playSfx);
+
   useEffect(() => {
     if (scenario) {
       setSession(startSession(scenario));
@@ -51,9 +56,20 @@ export function DialogueScreen() {
       setPromise(null);
       setDeclined(false);
       setFeedback(null);
+      if (ctx?.kind === 'prospect') playSfx('ring');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ctx?.scenarioId]);
+
+  // Mémoire relationnelle : le PNJ cite promesses et flags en ouverture (§8.3).
+  const recalls = useMemo(
+    () => (clientState && scenario ? buildRecalls(clientState, scenario.type) : []),
+    [clientState, scenario],
+  );
+  const ambiance = useMemo(
+    () => (ctx?.clientId && scenario ? clientContext(ctx.clientId, scenario.type) : null),
+    [ctx?.clientId, scenario],
+  );
 
   const node = scenario && session?.currentNodeId ? getNode(scenario, session.currentNodeId) : null;
 
@@ -105,6 +121,18 @@ export function DialogueScreen() {
     if (choice.feedback.codexUnlock) {
       unlockCodex(choice.feedback.codexUnlock);
     }
+    // Historique des décisions : chaque choix joué est enregistré (débrief, flashbacks).
+    const e = choice.effects;
+    recordChoice({
+      scenarioId: scenario.id,
+      nodeId: node!.id,
+      choiceId: choice.id,
+      role: choice.role,
+      clientId: ctx?.clientId,
+      text: choice.text,
+      impact: (e.relation ?? 0) + (e.security ?? 0) + (e.profitability ?? 0),
+      rule: choice.feedback.rule,
+    });
     // Pédagogie : si le joueur n'a pas pris le meilleur choix, on le lui montre.
     if (choice.role !== 'optimal' && node) {
       const best = node.choices.find((c) => c.role === 'optimal');
@@ -147,12 +175,17 @@ export function DialogueScreen() {
 
   return (
     <div className="container">
+      {ctx.kind === 'prospect' && (
+        <div className="phone-banner">
+          <span className="phone-icon">📞</span> Appel en cours — prospection téléphonique
+        </div>
+      )}
       <div className="row" style={{ marginBottom: 16 }}>
         <h2>{scenario.title}</h2>
         <span className="spacer" />
-        {client && (
-          <span className="tag">
-            {STR.common.mood} {Math.round(mood)}
+        {streak >= 3 && !feedback && (
+          <span className="tag tag-accent streak-chip" title="Série de bons choix d'affilée">
+            🔥 Série ×{streak}
           </span>
         )}
       </div>
@@ -160,18 +193,21 @@ export function DialogueScreen() {
       <div className="dialogue-wrap">
         <div className="panel speaker-card">
           <div className="avatar">
-            <Avatar seed={avatarSeed} expression={expression} />
+            <Avatar seed={avatarSeed} expression={expression} mood={client ? mood : undefined} />
           </div>
           <strong>{speaker}</strong>
           {client && (
-            <>
-              <div className="muted" style={{ fontSize: '0.8rem' }}>
-                {client.contact.role}
-              </div>
-              <div className="mood-bar" aria-hidden>
-                <div className="mood-fill" style={{ width: `${mood}%` }} />
-              </div>
-            </>
+            <div
+              className="muted"
+              style={{ fontSize: '0.8rem' }}
+              role="meter"
+              aria-valuenow={Math.round(mood)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`Humeur de ${client.contact.name} : ${Math.round(mood)} sur 100`}
+            >
+              {client.contact.role} · {STR.common.mood} {Math.round(mood)}
+            </div>
           )}
           {scenario.objectives && (
             <div style={{ marginTop: 16, textAlign: 'left', fontSize: '0.8rem' }}>
@@ -188,6 +224,20 @@ export function DialogueScreen() {
         </div>
 
         <div>
+          {session.choicesMade === 0 && ambiance && (
+            <p className="muted" style={{ fontStyle: 'italic', marginTop: 0 }}>
+              {ambiance}
+            </p>
+          )}
+          {session.choicesMade === 0 &&
+            recalls.map((r, i) => (
+              <div className="bubble bubble-recall" key={i}>
+                <span className="tag" style={{ marginBottom: 6 }}>
+                  🧠 Il s’en souvient
+                </span>
+                <div>{r.text}</div>
+              </div>
+            ))}
           {node && <div className="bubble">{node.text}</div>}
 
           {!feedback && !finished && node && (
