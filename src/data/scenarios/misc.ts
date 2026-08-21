@@ -1,24 +1,24 @@
 import type { Scenario } from '../../engine/types';
 import { choice } from './helpers';
 
-// Tutoriel (chapitre 1) — Amélie Roux explique le double jeu jour/nuit.
+// Tutoriel (chapitre 1) — Amélie Roux explique les deux casquettes du métier.
 export const TUTORIAL: Scenario = {
   id: 'sc_tutorial',
   type: 'INTERNAL',
   title: 'Bienvenue chez CIR Corp',
   context: 'Votre premier jour. Amélie Roux, votre manager, vous accueille et pose les règles du métier.',
-  objectives: ['Comprendre le double jeu jour/nuit', 'Comprendre les trois jauges', 'Comprendre la valeur de la preuve'],
+  objectives: ['Comprendre les deux casquettes du métier', 'Comprendre les trois jauges', 'Comprendre la valeur de la preuve'],
   entryNode: 'n1',
   nodes: [
     {
       id: 'n1',
       speaker: 'Amélie Roux (manager)',
       expression: 'satisfait',
-      text: 'Bienvenue ! Ici, le jour on décroche des clients, la nuit on monte leurs dossiers. Le métier, c’est de tenir les deux. Tu vois la tension ?',
+      text: 'Bienvenue ! Ici on porte deux casquettes : côté relation on décroche des clients, côté technique on monte leurs dossiers. Le métier, c’est de tenir les deux. Tu vois la tension ?',
       choices: [
-        choice('optimal', 'synthese', 'Oui : promettre trop le jour crée une dette qu’on paie la nuit.', { relation: 4, security: 6, trust: 3 }, { what: 'Vous saisissez le cœur du jeu.', why: 'La tension commercial/technique est le cœur du métier.', rule: 'Ce qu’on promet le jour se paie la nuit.', codexUnlock: 'cdx_estimer' }, 'n2'),
+        choice('optimal', 'synthese', 'Oui : trop promettre côté relation crée une dette payée côté technique.', { relation: 4, security: 6, trust: 3 }, { what: 'Vous saisissez le cœur du jeu.', why: 'La tension commercial/technique est le cœur du métier.', rule: 'Ce qu’on promet côté relation se paie côté technique.', codexUnlock: 'cdx_estimer' }, 'n2'),
         choice('acceptable', 'empathie', 'Je crois : il faut être bon commercial et bon consultant.', { relation: 3, security: 2 }, { what: 'Vous comprenez l’idée.', why: 'Correct.', rule: 'Deux costumes, un seul métier.' }, 'n2'),
-        choice('tempting', 'commercial', 'Facile : je vends fort le jour et je gère la nuit ensuite.', { relation: 2, security: -6 }, { what: 'Vous sous-estimez la dette.', why: 'Vendre fort sans penser au dossier prépare des ennuis.', rule: 'La vente et la preuve ne se séparent pas.' }, 'n2'),
+        choice('tempting', 'commercial', 'Facile : je vends fort d’abord et je gère la technique ensuite.', { relation: 2, security: -6 }, { what: 'Vous sous-estimez la dette.', why: 'Vendre fort sans penser au dossier prépare des ennuis.', rule: 'La vente et la preuve ne se séparent pas.' }, 'n2'),
         choice('poor', 'fermete', 'Le commercial ne m’intéresse pas, je ferai de la technique.', { relation: -4 }, { what: 'Vous refusez la moitié du métier.', why: 'Sans clients, pas de dossiers.', rule: 'Les deux phases sont indissociables.' }, 'n2'),
       ],
     },

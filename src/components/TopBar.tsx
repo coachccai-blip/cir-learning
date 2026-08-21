@@ -29,7 +29,7 @@ export function TopBar() {
       <div className="hud-group hud-time">
         <div className="hud-chip hud-primary">
           <span>
-            {save.phase === 'DAY' ? '☀ ' + STR.hud.day : '☾ ' + STR.hud.night} · {STR.hud.cycle} {save.cycle}
+            {save.phase === 'DAY' ? '🤝 ' + STR.hud.day : '🔬 ' + STR.hud.night} · {STR.hud.cycle} {save.cycle}
           </span>
           <strong>{CYCLE_DATES[save.cycle - 1]}</strong>
         </div>

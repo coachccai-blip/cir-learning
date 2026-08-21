@@ -1,6 +1,7 @@
-// Portraits 3D optionnels : si un fichier existe dans public/portraits/, il
-// remplace l'avatar SVG (qui reste le repli). Le mapping suit le fichier Excel
-// « CIR-Quest-Personnages-Prompts.xlsx ».
+// Portraits 3D : les 23 fichiers de public/portraits/ remplacent l'avatar SVG,
+// qui reste le repli si une image manque. Le mapping suit le fichier Excel
+// « CIR-Quest-Personnages-Prompts.xlsx ». Les images sont recadrées tête-épaules
+// et servies en 320 px : elles s'affichent au plus grand en 150 px de diamètre.
 
 const PORTRAITS: Record<string, string> = {
   // Clients (avatarSeed → fichier)
@@ -29,7 +30,13 @@ const PORTRAITS: Record<string, string> = {
   'Kevin (développeur front)': 'roy-09.png',
   'Dr. Amina Sy (directrice scientifique)': 'sy-dr-10.png',
   'Bruno (chef d’atelier)': 'meyer-atelier-11.png',
+  'Tom Aubert (technicien de labo)': 'aubert-08.png',
 };
+
+/** Tous les portraits disponibles — utilisé par la scène d'accueil. */
+export const ALL_PORTRAITS: string[] = [...new Set(Object.values(PORTRAITS))].map(
+  (f) => `${import.meta.env.BASE_URL}portraits/${f}`,
+);
 
 export function portraitUrl(seed: string): string | null {
   const file = PORTRAITS[seed];

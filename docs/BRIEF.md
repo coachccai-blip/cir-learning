@@ -568,6 +568,15 @@ Accessible dès le chapitre 3 terminé. Le joueur choisit :
 - **Un cas isolé** : rejouer n'importe quel RDV, n'importe quelle assiette, n'importe quel contrôle, sans conséquence sur la campagne.
 - **Une saison libre** : portefeuille tiré aléatoirement (3 à 6 clients, archétypes et profils mélangés), 24 cycles, pas de scénarisation. C'est le mode de rejouabilité et le mode leaderboard principal.
 
+> **Arbitrage du 21/08/2026 — « Jour / Nuit » devient « Relation client /
+> Technique ».** Le brief nomme les deux phases *jour* et *nuit*. La métaphore
+> laisse entendre que le métier se fait la nuit, ce qui envoie le mauvais
+> message à des consultants en intégration. Les deux phases gardent leur
+> alternance, leur thème visuel et leur budget d'actions, mais s'appellent
+> désormais **Relation client** (🤝) et **Technique** (🔬). Les états internes
+> du moteur (`DAY` / `NIGHT`) sont inchangés : ce sont des identifiants, pas du
+> texte affiché.
+
 > **Arbitrage du 21/08/2026 — pas de défi quotidien.** Le brief prévoyait
 > initialement un défi quotidien seedé par la date. Learn CIR est un **parcours
 > d'onboarding qui se joue d'une traite** : une saison complète, du premier

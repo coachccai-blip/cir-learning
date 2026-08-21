@@ -805,7 +805,7 @@ export const useStore = create<Store>((set, get) => ({
       set({
         save: next,
         view: 'night',
-        transition: { label: `Semaine ${save.cycle} — Nuit`, phase: 'NIGHT' },
+        transition: { label: `Semaine ${save.cycle} — ${STR.hud.night}`, phase: 'NIGHT' },
       });
     } else {
       get().advanceCycle();
@@ -880,7 +880,7 @@ export const useStore = create<Store>((set, get) => ({
       save: next,
       view: 'day',
       lastDeltas: null,
-      transition: { label: `Semaine ${nextCycle} — Jour`, phase: 'DAY' },
+      transition: { label: `Semaine ${nextCycle} — ${STR.hud.day}`, phase: 'DAY' },
     });
     for (const c of arriving) get().toast(STR.prospects.newLead(c.name, c.sectorLabel));
     // Nouveaux prospects

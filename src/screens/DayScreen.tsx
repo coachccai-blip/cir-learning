@@ -164,7 +164,7 @@ export function DayScreen() {
                     <span className="tag" title="Rien à faire de jour sur ce dossier">
                       {cs.dossierState === 'CLOSED' || cs.dossierState === 'DEPOSITED'
                         ? 'Mission terminée'
-                        : 'À traiter la nuit'}
+                        : STR.day.handledInTech}
                     </span>
                   )}
                 </div>

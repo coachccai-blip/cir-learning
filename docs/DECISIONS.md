@@ -271,3 +271,35 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
 48. Le mode libre devient **« Rejouer une saison »** : une seule carte, qui
     relance les 24 semaines avec un portefeuille tiré différemment. L'accueil
     annonce désormais explicitement la promesse du parcours.
+
+## Portraits, phases et accueil (demande utilisateur)
+
+49. **Les 23 portraits 3D sont intégrés.** Livrés à la racine du dépôt avec une
+    extension doublée (`dupuis-01.png.png`) et en 1254 × 1254, soit **41 Mo au
+    total** — impubliable tel quel sur un site statique où chaque portrait
+    s'affiche au plus grand en 150 px. Ils sont désormais dans
+    `public/portraits/`, **recadrés tête-épaules** (détection du haut de tête et
+    de la ligne de cou par le canal alpha, centrage sur le centroïde du visage —
+    un cadrage centré sur l'image entière n'aurait montré que le buste dans le
+    masque circulaire), réduits en 320 px et quantifiés : **41 Mo → 663 ko**.
+    Les sources pleine résolution restent dans l'historique git.
+50. Le mapping `src/avatars/portraits.ts` gagne `aubert-08` et expose
+    `ALL_PORTRAITS` pour la scène d'accueil. L'avatar SVG paramétrique reste le
+    repli si un fichier manque.
+
+51. **« Jour / Nuit » devient « Relation client / Technique ».** La métaphore
+    jour/nuit laissait entendre que le métier se fait la nuit — mauvais message
+    pour un outil d'onboarding. L'alternance, les thèmes visuels et les budgets
+    d'actions ne changent pas ; seuls les libellés, les pictogrammes (☀/☾ →
+    🤝/🔬) et le texte du tutoriel (« deux casquettes ») sont réécrits. Les
+    états moteur `DAY` / `NIGHT` restent tels quels : ce sont des identifiants,
+    jamais affichés. Le §10.3 du brief porte l'arbitrage.
+
+52. **Accueil refondu.** Un dégradé vivant (deux nappes teal et orange qui
+    dérivent en 26 s, vignette, halo) et **seize bulles de tailles différentes**
+    portant les portraits, qui flottent à des rythmes distincts — les grosses
+    lentement, les petites plus vite et légèrement floutées, ce qui donne la
+    profondeur de champ. La composition est **écrite à la main plutôt que tirée
+    au hasard** : les bulles restent hors de la colonne centrale où vit le
+    texte, et le placement ne bouge pas d'un chargement à l'autre. Sous 900 px,
+    seules les grosses subsistent ; `prefers-reduced-motion` fige tout.

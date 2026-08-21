@@ -5,7 +5,7 @@ export const STR = {
   appTitle: 'Learn CIR',
   appTagline: 'Une saison fiscale chez CIR Corp',
   appPitch:
-    'Parcours d’onboarding complet : une saison entière pour apprendre les deux métiers du CIR — décrocher des clients le jour, monter des dossiers qui tiennent au contrôle la nuit.',
+    'Parcours d’onboarding complet : une saison entière pour apprendre les deux métiers du CIR — décrocher des clients côté relation, monter des dossiers qui tiennent au contrôle côté technique.',
   disclaimer:
     'Les cas, entreprises et montants sont fictifs. Ce jeu est un outil pédagogique et ne constitue en aucun cas un conseil fiscal. Les barèmes reflètent l’état du droit au 20 août 2026 (LF 2026 promulguée le 19 février 2026).',
   menu: {
@@ -39,16 +39,16 @@ export const STR = {
     },
   },
   hud: {
-    day: 'Jour',
-    night: 'Nuit',
+    day: 'Relation client',
+    night: 'Technique',
     cycle: 'Semaine',
     energy: 'Énergie',
     pa: 'PA',
     xp: 'XP',
     revenue: 'CA signé',
     nextDeadline: 'Prochaine échéance',
-    toNight: 'Passer à la nuit',
-    toDay: 'Terminer la nuit',
+    toNight: 'Passer en phase Technique',
+    toDay: 'Terminer la phase Technique',
     toBilan: 'Bilan de cycle',
   },
   gauges: {
@@ -57,13 +57,14 @@ export const STR = {
     profitability: 'Rentabilité',
   },
   day: {
-    title: 'Bureau — Jour',
+    title: 'Phase Relation client',
     subtitle: 'Alimentez le portefeuille et entretenez la relation.',
     agenda: 'Agenda de la semaine',
     crm: 'Portefeuille & prospects',
     prospects: 'Prospects',
     clients: 'Clients signés',
     noProspects: 'Aucun prospect. Faites de la prospection téléphonique ou du réseautage.',
+    handledInTech: 'À traiter en phase Technique',
   },
   prospects: {
     becameClient: (company: string, contact: string) =>
@@ -74,10 +75,10 @@ export const STR = {
       `Nouveau lead au CRM : ${company} (${sector}). À qualifier en rendez-vous découverte.`,
   },
   night: {
-    title: 'Bureau — Nuit',
+    title: 'Phase Technique',
     subtitle: 'Transformez la matière collectée en dossier défendable.',
     dossiers: 'Dossiers ouverts',
-    noDossiers: 'Aucun dossier à monter pour l’instant. Signez des clients le jour.',
+    noDossiers: 'Aucun dossier à monter pour l’instant. Signez des clients en phase Relation client.',
   },
   activities: {
     prospection: 'Prospection téléphonique',
