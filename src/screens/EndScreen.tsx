@@ -3,7 +3,7 @@ import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { computeFinalScore } from '../engine/economy';
 import { BADGES } from '../engine/badges';
-import { QUIZ } from '../data/quiz';
+import { QUIZ, QUIZ_POST } from '../data/quiz';
 
 export function EndScreen() {
   const save = useStore((s) => s.save);
@@ -25,8 +25,8 @@ export function EndScreen() {
   const earnedBadges = BADGES.filter((b) => save.badges.includes(b.id));
 
   const preScore = QUIZ.reduce((n, q, i) => n + (save.quizPre[i] === q.correct ? 1 : 0), 0);
-  const postScore = QUIZ.reduce((n, q, i) => n + (save.quizPost[i] === q.correct ? 1 : 0), 0);
-  const hasQuiz = save.quizPre.length === QUIZ.length && save.quizPost.length === QUIZ.length;
+  const postScore = QUIZ_POST.reduce((n, q, i) => n + (save.quizPost[i] === q.correct ? 1 : 0), 0);
+  const hasQuiz = save.quizPre.length === QUIZ.length && save.quizPost.length === QUIZ_POST.length;
 
   // Débrief nominatif : les décisions qui ont le plus coûté (impact négatif cumulé).
   const costly = save.history
@@ -160,7 +160,7 @@ export function EndScreen() {
               <div>
                 <div className="muted">{STR.quiz.after}</div>
                 <strong style={{ fontSize: '1.4rem' }} className={postScore >= preScore ? 'delta-pos' : ''}>
-                  {postScore}/{QUIZ.length}
+                  {postScore}/{QUIZ_POST.length}
                 </strong>
               </div>
               {postScore > preScore && (
@@ -170,8 +170,9 @@ export function EndScreen() {
               )}
             </div>
             <ul style={{ fontSize: '0.85rem' }}>
-              {QUIZ.map((q, i) => {
-                const wasWrong = save.quizPre[i] !== q.correct;
+              {QUIZ_POST.map((q, i) => {
+                // Question jumelle : même notion qu'à l'entrée, cas différent.
+                const wasWrong = save.quizPre[i] !== QUIZ[i].correct;
                 const nowRight = save.quizPost[i] === q.correct;
                 return (
                   <li key={q.id} className={nowRight ? 'delta-pos' : 'delta-neg'} style={{ marginBottom: 4 }}>

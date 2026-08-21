@@ -88,7 +88,7 @@ export function DialogueScreen() {
 
   const maskedIdx = useMemo(() => {
     if (!scenario || !node || !save) return -1;
-    return maskedChoiceIndex(save.seed, scenario.id, node.id, save.energy);
+    return maskedChoiceIndex(save.seed, scenario.id, node.id, save.energy, node.choices.length);
   }, [scenario, node, save]);
 
   useEffect(() => {

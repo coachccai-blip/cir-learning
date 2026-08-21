@@ -393,6 +393,12 @@ export interface ClientState {
   investigateDebt: number;
   /** Le suivi de mission n'est jouable qu'une fois par client. */
   followupDone: boolean;
+  /**
+   * Dernier cycle où le joueur a travaillé ce dossier. Un client laissé sans
+   * nouvelles trop longtemps finit par partir : c'est ce qui oblige à choisir
+   * qui l'on sert quand le portefeuille dépasse le budget d'actions.
+   */
+  lastTouchedCycle: number;
   cardPlacements: Record<string, CardVerdict>;
   assietteInput: AssietteInput | null;
   playerCir: number | null;

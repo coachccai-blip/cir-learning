@@ -61,6 +61,10 @@ export const STR = {
     noProspects: 'Aucun prospect. Faites de la prospection téléphonique ou du réseautage.',
     handledInTech: 'À traiter en phase Technique',
   },
+  milestones: {
+    lostClient: (company: string) =>
+      `${company} part à la concurrence : trop longtemps sans nouvelles de votre part.`,
+  },
   prospects: {
     becameClient: (company: string, contact: string) =>
       `${company} entre au portefeuille — ${contact} attend son kick-off de mission.`,
@@ -179,6 +183,9 @@ export const STR = {
     total: 'Rappel important + intérêts',
     reassessed: 'Montant redressé',
     noAudit: 'Vos dossiers sont suffisamment solides : pas de rappel cette saison.',
+    interimResult: 'Réponse à la demande d’information',
+    noInterim: 'Aucun dossier chiffré à ce stade : l’administration attendra le dépôt.',
+    backToWork: 'Retourner au bureau',
   },
   end: {
     title: 'Fin de saison',

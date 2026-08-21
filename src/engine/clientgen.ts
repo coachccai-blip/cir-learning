@@ -151,10 +151,20 @@ export function buildClientFromProspect(
   const scaled = nominalCir > 0 ? rescale(nominal, p.estimatedCir / nominalCir) : nominal;
   const trueCir = computeBreakdown(scaled, null, ruleset, { legal: true }).cir;
 
-  // --- Cartes de qualification : mélange RD / CII / NONE, jamais deux fois la même.
-  const cards: WorkCard[] = shuffled(rng, kit.cards)
-    .slice(0, settings.cardCount)
-    .map((c, i) => ({ id: `gc${i + 1}`, ...c }));
+  // --- Cartes de qualification : tirage équilibré entre les trois verdicts.
+  // Un tirage au hasard dans le pool donnerait une majorité de « non éligible »,
+  // et cocher cette colonne partout suffirait à passer le mini-jeu.
+  const buckets = (['RD', 'CII', 'NONE'] as const).map((v) => shuffled(rng, kit.cards.filter((c) => c.verdict === v)));
+  const picked: typeof kit.cards = [];
+  for (let round = 0; picked.length < settings.cardCount; round++) {
+    const before = picked.length;
+    for (const b of buckets) {
+      if (picked.length >= settings.cardCount) break;
+      if (b[round]) picked.push(b[round]);
+    }
+    if (picked.length === before) break; // pool épuisé
+  }
+  const cards: WorkCard[] = shuffled(rng, picked).map((c, i) => ({ id: `gc${i + 1}`, ...c }));
 
   const contactRole = pick(rng, ROLES);
   const client: ClientDef = {

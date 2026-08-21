@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { clientById } from '../data/clients';
-import { GENERIC_JUSTIF } from '../data/justif';
+import { justifForSector } from '../data/justif';
 import { ROLE_SCORE } from '../engine/dialogue/runner';
 import { shuffleForDisplay } from '../engine/rng';
 
@@ -14,7 +14,10 @@ export function JustifScreen() {
   const [choices, setChoices] = useState<Record<string, string>>({});
   const [done, setDone] = useState(false);
 
-  const blocks = GENERIC_JUSTIF.blocks;
+  // Le justificatif parle du métier du client : un jeu de formulations par
+  // secteur, y compris pour les dossiers issus de prospection.
+  const sector = clientId ? clientById(clientId).sector : 'SAAS';
+  const blocks = useMemo(() => justifForSector(sector).blocks, [sector]);
   // Ordre d'affichage mélangé par bloc : la formulation optimale n'est jamais
   // systématiquement en tête.
   const order = useMemo(() => {

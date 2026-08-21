@@ -344,3 +344,60 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
     tombait donc à la chaîne vide et `avatarSeed` avec lui, d'où l'avatar SVG
     générique à la place de la photo. L'écran mémorise désormais le dernier
     nœud affiché et s'y rabat tant que le feedback est à l'écran.
+
+## Une partie en une heure, et sept axes de jouabilité (demande utilisateur)
+
+59. **La saison passe de 24 à 6 cycles, et le budget d'actions de 432 à 66 PA.**
+    Le dimensionnement vient d'une mesure, pas d'une intuition : une action coûte
+    au joueur ~1,5 minute, donc une heure de jeu borne la saison à une
+    soixantaine d'actions. À 24 cycles, le contenu écrit à la main n'occupait que
+    **19 %** du budget d'actions ; les 81 % restants se remplissaient de
+    prospection en rotation et de réseautage — c'était la vraie source du
+    sentiment de redondance. Vérifié en jouant la saison de bout en bout au
+    navigateur : **33 actions, 73 nœuds de dialogue, six cycles**, soit ~50 min.
+60. **Le portefeuille dépasse volontairement la capacité.** Les six clients
+    arrivent entre les cycles 1 et 3, pour un budget qui permet d'en mener trois
+    ou quatre. Un dossier laissé **deux cycles sans nouvelles part à la
+    concurrence** (`neglectedClients`, `ClientState.lastTouchedCycle`). Il n'y
+    avait jusqu'ici aucune décision qui engage : seulement des décisions qui
+    notent.
+61. **Chaque échéance du calendrier a une conséquence** (`engine/milestones.ts`).
+    Sur onze jalons, un seul mordait — le bandeau annonçait « Prochaine
+    échéance » toute la partie pour des dates où il ne se passait rien. Six
+    jalons désormais, tous sanctionnés : pipeline non qualifié, kick-off en
+    retard, feuilles de temps non collectées (les pièces deviennent
+    inopposables), dépôt manqué. Le joueur à jour est récompensé, pas seulement
+    épargné.
+62. **Le contrôle fiscal arrive avant la fin.** Une demande d'information tombe
+    au cycle 5 sur le dossier chiffré le plus faible : deux points, puis retour
+    au bureau avec un cycle pour corriger les autres. Le contrôle final garde
+    tout son poids. Auparavant, la seule tension du jeu tombait quand plus rien
+    ne pouvait être corrigé — la mauvaise moitié du cycle apprentissage-erreur.
+63. **Un justificatif par secteur** (six jeux, `JUSTIF_SETS`). Le même set
+    générique était rejoué à l'identique pour les six clients : cinq blocs, vingt
+    formulations, une fois par dossier. Les blocs restent les mêmes — c'est la
+    structure qu'attend l'administration — mais les formulations parlent du
+    métier du client. Les dossiers issus de prospection héritent du jeu de leur
+    secteur. Un test interdit qu'une formulation se retrouve dans deux secteurs.
+64. **Trois formes de nœud au lieu d'une.** Les 83 nœuds avaient tous exactement
+    quatre choix et la même combinaison de rôles : la grille s'apprenait en deux
+    minutes, après quoi le joueur cherchait le registre au lieu de lire. S'y
+    ajoutent le **couperet** (2 choix sous pression, aucune sortie confortable)
+    et l'**arbitrage** (deux réponses optimales qui s'excluent — sécuriser ou
+    fidéliser). `maskedChoiceIndex` tirait un index sur 4 en dur : il prend
+    maintenant la taille réelle du nœud, et ne masque rien en dessous de trois
+    choix.
+65. **Tri des travaux rééquilibré.** « Non éligible » représentait jusqu'à 8
+    cartes sur 10 : tout classer là suffisait à passer le mini-jeu. Les cartes de
+    remplissage (formation, veille, documentation) deviennent des cas
+    d'innovation, qui font travailler la frontière CIR / CII. Aucun verdict ne
+    dépasse désormais la moitié d'un paquet, et les trois sont représentés au
+    moins deux fois — y compris dans les paquets générés, dont le tirage est
+    devenu équilibré par verdict. Verrouillé par test.
+66. **Finitions** : le quiz de sortie devient un jeu **jumeau** (mêmes notions,
+    cas différents) — reposer les mêmes questions mesurait la mémoire d'un écran
+    vu une heure plus tôt ; les trois fiches de codex inatteignables sont
+    offertes au départ (`CODEX_STARTER`) puisqu'elles sont les fondamentaux ; le
+    registre **technique**, absent de quatre kick-offs, est désormais proposé
+    dans chaque scénario client — un test l'exige, et interdit qu'un registre
+    monopolise plus de la moitié des choix.

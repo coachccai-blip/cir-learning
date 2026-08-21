@@ -54,10 +54,19 @@ export function displayOrder(seed: string, scenarioId: string, node: DialogueNod
  * Index (dans l'ordre d'affichage) du choix masqué par la fatigue, ou -1.
  * Seuil « Fatigué » : une option sur quatre disparaît (§4.3).
  */
-export function maskedChoiceIndex(seed: string, scenarioId: string, nodeId: string, energy: number): number {
+export function maskedChoiceIndex(
+  seed: string,
+  scenarioId: string,
+  nodeId: string,
+  energy: number,
+  choiceCount: number,
+): number {
   if (energy > 49) return -1;
+  // Un nœud à deux choix ne peut pas en masquer un : il ne resterait plus de
+  // décision. Le masquage ne s'applique qu'à partir de trois options.
+  if (choiceCount < 3) return -1;
   const rng = rngFromSeed(`${seed}:mask:${scenarioId}:${nodeId}`);
-  return Math.floor(rng() * 4);
+  return Math.floor(rng() * choiceCount);
 }
 
 export interface ChoiceResolution {

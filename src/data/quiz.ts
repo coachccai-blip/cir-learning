@@ -1,5 +1,8 @@
 // Quiz avant/après (§18.1, lot 10) : mesurer l'apprentissage.
-// Les mêmes 5 questions sont posées au début et à la fin de la saison.
+//
+// Deux jeux jumeaux, pas un seul posé deux fois : mêmes notions, cas
+// différents. Reposer les mêmes questions mesurerait la mémoire d'un écran vu
+// une heure plus tôt, pas la compétence acquise.
 
 export interface QuizQuestion {
   id: string;
@@ -74,5 +77,78 @@ export const QUIZ: QuizQuestion[] = [
     correct: 1,
     explanation:
       'Une estimation engage autant qu’un chiffre écrit. Une fourchette prudente coûte peu ; un chiffre précis trop tôt crée une dette de promesse.',
+  },
+];
+
+/**
+ * Quiz de sortie : question par question, la même notion que `QUIZ`, sur un cas
+ * différent. L'ordre est aligné pour que la comparaison avant/après reste
+ * lisible à l'écran de fin.
+ */
+export const QUIZ_POST: QuizQuestion[] = [
+  {
+    id: 'q_verrou_post',
+    question: 'Un client a passé huit mois sur un logiciel de facturation. Qu’est-ce qui déciderait de son éligibilité ?',
+    options: [
+      'Le nombre de jours-hommes réellement consommés sur le projet',
+      'Le fait que ce logiciel n’existait pas encore dans l’entreprise',
+      'L’existence d’un problème que l’état de l’art ne savait pas résoudre',
+      'Le budget de développement engagé par la direction générale',
+    ],
+    correct: 2,
+    explanation:
+      'Ni la durée, ni la nouveauté interne, ni le budget ne fondent l’éligibilité : c’est l’incertitude que l’état de l’art ne lève pas.',
+  },
+  {
+    id: 'q_soustraitance_post',
+    question: 'Votre client a sous-traité des essais à un laboratoire privé réputé, sans agrément MESR. Que retenez-vous ?',
+    options: [
+      'Rien : sans agrément, la dépense n’entre pas dans l’assiette',
+      'La totalité, la réputation du laboratoire valant garantie',
+      'La moitié, au titre d’un partage de risque raisonnable',
+      'Tout, à condition que la facture soit détaillée poste par poste',
+    ],
+    correct: 0,
+    explanation:
+      'L’agrément MESR est une condition, pas un confort : sans lui, la sous-traitance est intégralement exclue depuis 2022.',
+  },
+  {
+    id: 'q_supprimes_post',
+    question: 'Votre client veut inscrire ses frais de dépôt de brevet 2025 dans l’assiette. Vous répondez…',
+    options: [
+      'Oui, les frais de brevet restent un poste classique de l’assiette',
+      'Oui, mais seulement pour la part déposée à l’étranger',
+      'Non, ces frais sont sortis de l’assiette depuis le 15 février 2025',
+      'Oui, à hauteur du forfait de fonctionnement de 40 %',
+    ],
+    correct: 2,
+    explanation:
+      'Frais de brevet, veille technologique et majoration jeune docteur ont quitté l’assiette au 15/02/2025.',
+  },
+  {
+    id: 'q_subvention_post',
+    question: 'Une avance remboursable de l’ADEME a été octroyée en octobre, remboursable en 2029. Quand la déduisez-vous ?',
+    options: [
+      'En 2029, l’année du remboursement effectif',
+      'Dès l’octroi, sur l’exercice où l’aide est accordée',
+      'Jamais : une avance se rembourse, elle ne minore pas l’assiette',
+      'À parts égales sur toute la durée de l’avance',
+    ],
+    correct: 1,
+    explanation:
+      'Une avance remboursable se déduit dès son octroi. Attendre le remboursement gonfle l’assiette de l’année.',
+  },
+  {
+    id: 'q_promesse_post',
+    question: 'Un dirigeant vous demande un montant pour son conseil d’administration de demain. Que faites-vous ?',
+    options: [
+      'Vous donnez le montant brut, quitte à préciser les déductions plus tard',
+      'Vous refusez tout chiffre tant que les pièces ne sont pas toutes vues',
+      'Vous donnez une fourchette nette, écrite comme estimation non définitive',
+      'Vous donnez le chiffre qu’il espère, pour ne pas fragiliser la relation',
+    ],
+    correct: 2,
+    explanation:
+      'Une fourchette nette et qualifiée rend service sans créer de dette de promesse — ni le brut, ni le silence, ni la complaisance.',
   },
 ];

@@ -45,7 +45,7 @@ export const BADGES: BadgeDef[] = [
   },
   {
     id: 'nuit_blanche',
-    label: 'Nuit blanche… une seule',
+    label: 'Tenir la distance',
     description: 'Terminer la saison sans jamais descendre sous 25 d’énergie.',
     earned: (s) => s.finished && s.stats.minEnergy >= 25,
   },

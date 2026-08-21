@@ -17,19 +17,27 @@ export function AuditScreen() {
   const save = useStore((s) => s.save);
   const go = useStore((s) => s.go);
   const runAudit = useStore((s) => s.runAudit);
+  const auditMode = useStore((s) => s.auditMode);
+  const closeInterimAudit = useStore((s) => s.closeInterimAudit);
+  // Le contrôle de mi-saison est une simple demande d'information : deux points,
+  // et le joueur repart avec un cycle pour corriger les autres dossiers.
+  const interim = auditMode === 'interim';
 
   // Sélection du dossier contrôlé selon le mode.
   const target = useMemo(() => {
     if (!save) return null;
     const dossiers = save.portfolio.filter((c) => c.assietteInput !== null);
     if (dossiers.length === 0) return null;
+    if (interim) {
+      return dossiers.slice().sort((a, b) => (a.scores.base ?? 1) - (b.scores.base ?? 1))[0];
+    }
     if (save.mode === 'onboarding' && save.gauges.security >= balance.auditSecurityThreshold) {
       // pas de contrôle si sécurité suffisante
       return null;
     }
     // le plus faible (précision d'assiette la plus basse)
     return dossiers.slice().sort((a, b) => (a.scores.base ?? 1) - (b.scores.base ?? 1))[0];
-  }, [save]);
+  }, [save, interim]);
 
   const [idx, setIdx] = useState(0);
   const [defended, setDefended] = useState<string[]>([]);
@@ -37,6 +45,10 @@ export function AuditScreen() {
 
   // Fin de saison → quiz de sortie (mesure de l'apprentissage) puis écran de fin.
   const toEnd = () => {
+    if (interim) {
+      closeInterimAudit();
+      return;
+    }
     useStore.setState({ quizPhase: 'post' });
     go('quiz');
   };
@@ -49,7 +61,7 @@ export function AuditScreen() {
         <div className="panel center" style={{ marginTop: 40 }}>
           <h1>{STR.audit.title}</h1>
           <p className="muted">
-            {STR.audit.noAudit}
+            {interim ? STR.audit.noInterim : STR.audit.noAudit}
           </p>
           <button className="btn btn-primary" onClick={toEnd}>
             {STR.end.title} →
@@ -62,7 +74,8 @@ export function AuditScreen() {
   const c = clientById(target.clientId);
   const theCase = caseById(c.caseId);
   const cardset = cardsetById(c.cardsetId);
-  const findings = buildAuditFindings(target, theCase, cardset, RULESET);
+  const allFindings = buildAuditFindings(target, theCase, cardset, RULESET);
+  const findings = interim ? allFindings.slice(0, 2) : allFindings;
 
   // Flashbacks : le vérificateur a « relu vos échanges » — il cite vos propres
   // décisions risquées, mot pour mot, avec leur date.
@@ -80,7 +93,7 @@ export function AuditScreen() {
     );
     return (
       <div className="container">
-        <h1>{STR.audit.result}</h1>
+        <h1>{interim ? STR.audit.interimResult : STR.audit.result}</h1>
         <div className="panel" style={{ marginTop: 16 }}>
           <h2
             className={
@@ -111,7 +124,7 @@ export function AuditScreen() {
               toEnd();
             }}
           >
-            {STR.end.title} →
+            {interim ? STR.audit.backToWork : STR.end.title} →
           </button>
         </div>
       </div>

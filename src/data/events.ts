@@ -201,9 +201,9 @@ export const EVENTS: GameEvent[] = [
       id: 'ev11',
       speaker: 'Amélie Roux (manager)',
       expression: 'neutre',
-      text: 'Tu enchaînes les nuits. Je te vois fatigué. Comment tu veux gérer la fin de saison ?',
+      text: 'Tu enchaînes les dossiers sans lever le nez. Je te vois fatigué. Comment tu veux gérer la fin de saison ?',
       choices: [
-        { id: 'ev11a', role: 'optimal', register: 'empathie', text: 'Je prends une soirée pour souffler : un dossier monté épuisé fait des erreurs.', effects: { relation: 2, energy: 15 }, feedback: { what: 'Vous récupérez.', why: 'La fatigue dégrade la précision d’assiette et masque des options.', rule: 'Se reposer est une décision professionnelle.' }, next: null },
+        { id: 'ev11a', role: 'optimal', register: 'empathie', text: 'Je lève le pied une journée : un dossier monté épuisé finit par coûter cher.', effects: { relation: 2, energy: 15 }, feedback: { what: 'Vous récupérez.', why: 'La fatigue dégrade la précision d’assiette et masque des options.', rule: 'Se reposer est une décision professionnelle.' }, next: null },
         { id: 'ev11b', role: 'acceptable', register: 'synthese', text: 'Je réorganise mes priorités pour ne garder que l’essentiel.', effects: { profitability: 3, energy: 5 }, feedback: { what: 'Vous priorisez.', why: 'Réduire la charge aide, un peu moins que récupérer.', rule: 'Prioriser soulage la pression.' }, next: null },
         { id: 'ev11c', role: 'tempting', register: 'fermete', text: 'Je fais des heures sup pour tout boucler d’un coup.', effects: { profitability: 4, energy: -20 }, feedback: { what: 'Vous forcez.', why: 'Les heures sup rapportent des PA mais brûlent votre énergie.', rule: 'Le burn-out de saison fiscale est un vrai risque du métier.' }, next: null },
         { id: 'ev11d', role: 'poor', register: 'commercial', text: 'Je serre les dents, on verra bien.', effects: { energy: -8 }, feedback: { what: 'Vous encaissez.', why: 'Ignorer la fatigue finit par coûter en qualité.', rule: 'Le déni de fatigue se paie sur les dossiers.' }, next: null },

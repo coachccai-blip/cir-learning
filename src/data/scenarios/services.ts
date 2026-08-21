@@ -81,7 +81,7 @@ export const SERVICES_KICKOFF: Scenario = {
       text: 'Mon projet d’anonymisation robuste, j’y ai vraiment passé du temps. Mais je fais aussi plein de missions client à côté.',
       choices: [
         choice('optimal', 'preuve', 'On ne retient que l’anonymisation : environ 15 % de votre année.', { security: 12, relation: 2, mood: 3, trust: 4 }, { what: 'Vous cadrez le vrai périmètre.', why: 'Seule la R&D interne compte, au prorata réel.', rule: 'La prestation client ne rentre jamais.', codexUnlock: 'cdx_personnel' }, 'n2'),
-        choice('acceptable', 'synthese', 'On isole votre temps passé sur l’anonymisation, feuilles de temps à l’appui.', { security: 8, trust: 2 }, { what: 'Vous demandez la trace.', why: 'Juste.', rule: 'Le prorata se prouve.' }, 'n2'),
+        choice('acceptable', 'technique', 'On isole votre temps passé sur l’anonymisation, feuilles de temps à l’appui.', { security: 8, trust: 2 }, { what: 'Vous demandez la trace.', why: 'Juste.', rule: 'Le prorata se prouve.' }, 'n2'),
         choice('tempting', 'commercial', 'On vous met à 80 %, votre projet est de loin le plus important de l’année.', { relation: 4, security: -16 }, { what: 'Vous gonflez.', why: 'Un data scientist majoritairement en prestation ne peut être à 80 % R&D.', rule: 'On ne valorise pas la prestation en R&D.' }, 'n2'),
         choice('poor', 'fermete', 'Tant qu’à faire, on met toutes vos missions techniques dans l’assiette.', { security: -18 }, { what: 'Vous ré-intégrez la prestation.', why: 'Vous détruisez le dossier honnête que vous veniez de bâtir.', rule: 'Ne pas rouvrir la porte à la prestation.' }, 'n2'),
       ],

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { SCENARIOS } from '../../src/data/scenarios/index';
 import { EVENTS } from '../../src/data/events';
-import { GENERIC_JUSTIF } from '../../src/data/justif';
+import { JUSTIF_SETS } from '../../src/data/justif';
 import { QUIZ } from '../../src/data/quiz';
 
 // Un joueur ne doit jamais pouvoir répondre juste sans lire, en repérant
@@ -36,7 +36,7 @@ describe('Équilibrage de la longueur des réponses', () => {
   });
 
   it('les blocs du justificatif ont des formulations de longueur comparable', () => {
-    for (const b of GENERIC_JUSTIF.blocks) {
+    for (const b of Object.values(JUSTIF_SETS).flatMap((set) => set.blocks)) {
       const lens = b.options.map((o) => o.text.length);
       expect(Math.max(...lens) - Math.min(...lens)).toBeLessThanOrEqual(MAX_SPREAD);
     }

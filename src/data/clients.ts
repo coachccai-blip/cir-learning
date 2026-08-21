@@ -12,7 +12,7 @@ export const CLIENTS: ClientDef[] = [
     profileDifficulty: 1,
     headcount: 48,
     isSme: true,
-    leadCycle: 2,
+    leadCycle: 1,
     contact: {
       name: 'Marc Dupuis',
       role: 'Directeur général',
@@ -42,7 +42,7 @@ export const CLIENTS: ClientDef[] = [
     profileDifficulty: 2,
     headcount: 120,
     isSme: true,
-    leadCycle: 4,
+    leadCycle: 1,
     contact: {
       name: 'Elsa Brunet',
       role: 'CTO co-fondatrice',
@@ -72,7 +72,7 @@ export const CLIENTS: ClientDef[] = [
     profileDifficulty: 2,
     headcount: 85,
     isSme: true,
-    leadCycle: 6,
+    leadCycle: 1,
     contact: {
       name: 'Hervé Verdier',
       role: 'Directeur général',
@@ -102,7 +102,7 @@ export const CLIENTS: ClientDef[] = [
     profileDifficulty: 3,
     headcount: 60,
     isSme: true,
-    leadCycle: 8,
+    leadCycle: 2,
     contact: {
       name: 'Laurent Kaplan',
       role: 'Directeur administratif et financier',
@@ -132,7 +132,7 @@ export const CLIENTS: ClientDef[] = [
     profileDifficulty: 3,
     headcount: 110,
     isSme: false,
-    leadCycle: 10,
+    leadCycle: 2,
     contact: {
       name: 'Marion Vasseur',
       role: 'CEO',
@@ -162,7 +162,7 @@ export const CLIENTS: ClientDef[] = [
     profileDifficulty: 2,
     headcount: 230,
     isSme: true,
-    leadCycle: 16,
+    leadCycle: 3,
     contact: {
       name: 'Paul Lenoir',
       role: 'Directeur des opérations',
