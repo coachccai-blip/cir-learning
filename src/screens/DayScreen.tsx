@@ -77,7 +77,13 @@ export function DayScreen() {
       return;
     }
     playSfx('ring');
-    startDialogue({ scenarioId: 'sc_prospect_call', kind: 'prospect', prospectId, returnTo: 'day' });
+    const p = save?.prospects.find((x) => x.id === prospectId);
+    startDialogue({
+      scenarioId: p?.callScenarioId ?? 'sc_call_curieux',
+      kind: 'prospect',
+      prospectId,
+      returnTo: 'day',
+    });
   }
 
   function toggleMail(id: string) {

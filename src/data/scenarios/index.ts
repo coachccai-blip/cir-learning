@@ -6,11 +6,11 @@ import { BIOTECH_DISCOVERY, BIOTECH_KICKOFF } from './biotech';
 import { GREEN_DISCOVERY, GREEN_KICKOFF } from './green';
 import { SERVICES_DISCOVERY, SERVICES_KICKOFF } from './services';
 import { GENERIC_FOLLOWUP, GENERIC_CLOSING } from './generic';
-import { TUTORIAL, PROSPECT_CALL } from './misc';
+import { TUTORIAL } from './misc';
+import { CALL_SCENARIOS } from './calls';
 
 export const SCENARIOS: Scenario[] = [
   TUTORIAL,
-  PROSPECT_CALL,
   AGRI_DISCOVERY,
   AGRI_KICKOFF,
   SAAS_DISCOVERY,
@@ -25,6 +25,7 @@ export const SCENARIOS: Scenario[] = [
   SERVICES_KICKOFF,
   GENERIC_FOLLOWUP,
   GENERIC_CLOSING,
+  ...CALL_SCENARIOS,
 ];
 
 export function scenarioById(id: string): Scenario {

@@ -55,6 +55,7 @@ export function migrateSave(data: unknown): SaveGame | null {
         gender,
         portraitId:
           p.portraitId ?? `prospect-${gender === 'F' ? 'f' : 'm'}-0${1 + (hashString(p.id ?? '') % 4)}`,
+        callScenarioId: p.callScenarioId ?? 'sc_call_curieux',
       };
     }),
   };
