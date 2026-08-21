@@ -110,6 +110,17 @@ défensif dans `migrateSave` : une sauvegarde v1 reste lisible.
 Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
 `history`) avec backfill défensif dans `migrateSave`.
 
+## Passe lisibilité (écarts assumés à la charte, demandés par l'utilisateur)
+
+25. **Contrastes renforcés au-delà de la charte** : encres de texte dédiées par
+    thème (`--text-muted` ≥ 7:1), orange assombri `#B03A1E` (jour) / éclairci
+    `#FFA07D` (nuit) pour le texte fin, encres `--pos`/`--neg` pour les deltas.
+    Corps 16,5 px, interlignage 1,6, mesure limitée (62-72ch) sur les textes longs.
+26. **Portraits 3D optionnels** : `src/avatars/portraits.ts` mappe les seeds vers
+    `public/portraits/*.png` (nommage défini dans l'Excel
+    « CIR-Quest-Personnages-Prompts.xlsx »). Si l'image existe, elle remplace
+    l'avatar SVG (repli automatique) ; l'anneau d'humeur est superposé aux deux.
+
 ## Points à valider (rappel des risques §21)
 
 - **R1/R3** : relecture métier des règles fiscales et des cas d'or par un
