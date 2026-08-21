@@ -1,4 +1,6 @@
 import type { LeaderboardEntry, SaveGame } from '../engine/types';
+import { genderForName } from '../engine/prospects';
+import { hashString } from '../engine/rng';
 
 const SAVE_KEY = 'cirquest.save.v1';
 const LB_KEY = 'cirquest.leaderboard.v1';
@@ -46,6 +48,15 @@ export function migrateSave(data: unknown): SaveGame | null {
       impact: h.impact ?? 0,
       rule: h.rule ?? '',
     })),
+    prospects: (s.prospects ?? []).map((p) => {
+      const gender = p.gender ?? genderForName(p.contactName ?? '');
+      return {
+        ...p,
+        gender,
+        portraitId:
+          p.portraitId ?? `prospect-${gender === 'F' ? 'f' : 'm'}-0${1 + (hashString(p.id ?? '') % 4)}`,
+      };
+    }),
   };
   return filled;
 }

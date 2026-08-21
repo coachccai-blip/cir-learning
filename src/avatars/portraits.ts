@@ -15,6 +15,15 @@ const PORTRAITS: Record<string, string> = {
   'Karim Bensaïd (senior)': 'bensaid-sr.png',
   'Sophie Meyer (directrice de BU)': 'meyer-bu.png',
   'verificateur-dgfip': 'verificateur.png',
+  // Clients issus de prospection (portrait révélé à la signature)
+  'prospect-f-01': 'prospect-f-01.png',
+  'prospect-f-02': 'prospect-f-02.png',
+  'prospect-f-03': 'prospect-f-03.png',
+  'prospect-f-04': 'prospect-f-04.png',
+  'prospect-m-01': 'prospect-m-01.png',
+  'prospect-m-02': 'prospect-m-02.png',
+  'prospect-m-03': 'prospect-m-03.png',
+  'prospect-m-04': 'prospect-m-04.png',
   // PNJ secondaires (usage futur — priorité 2 de l'Excel)
   'Nadia Cherif (responsable qualité)': 'cherif-07.png',
   'Kevin (développeur front)': 'roy-09.png',

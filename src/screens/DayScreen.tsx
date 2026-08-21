@@ -3,6 +3,7 @@ import { useStore } from '../state/store';
 import { useState } from 'react';
 import { GaugesBar } from '../components/Gauges';
 import { Avatar } from '../avatars/Avatar';
+import { AnonymousAvatar } from '../avatars/AnonymousAvatar';
 import { clientById } from '../data/clients';
 import { mailsForCycle } from '../data/mails';
 import { codexById } from '../data/codex';
@@ -87,6 +88,7 @@ export function DayScreen() {
   }
 
   const newProspects = save.prospects.filter((p) => p.status === 'NEW');
+  const signedProspects = save.prospects.filter((p) => p.status === 'SIGNED');
 
   return (
     <div className="container">
@@ -215,8 +217,8 @@ export function DayScreen() {
           {newProspects.length === 0 && <p className="muted">{STR.day.noProspects}</p>}
           {newProspects.slice(0, 6).map((p) => (
             <div className="list-item" key={p.id}>
-              <div className="avatar">
-                <Avatar seed={p.avatarSeed} />
+              <div className="avatar" title="Interlocuteur au téléphone — visage inconnu avant signature">
+                <AnonymousAvatar gender={p.gender} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <strong>{p.company}</strong>
@@ -232,6 +234,31 @@ export function DayScreen() {
               </button>
             </div>
           ))}
+
+          {signedProspects.length > 0 && (
+            <>
+              <h3 style={{ marginTop: 8 }}>🤝 Missions conseil signées</h3>
+              {signedProspects.map((p) => (
+                <div className="list-item" key={p.id}>
+                  <div className="avatar" title={`${p.contactName} — mission conseil`}>
+                    <Avatar seed={p.portraitId} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <strong>{p.company}</strong>
+                    <div className="muted" style={{ fontSize: '0.8rem' }}>
+                      {p.contactName} · {p.size} sal.
+                    </div>
+                    <div style={{ fontSize: '0.78rem' }} className={p.eligibility === 'NOT_ELIGIBLE' ? 'delta-neg' : 'delta-pos'}>
+                      {p.eligibility === 'NOT_ELIGIBLE'
+                        ? '⚠ Mission toxique — rien d’éligible'
+                        : `CA : ${(p.revenue ?? 0).toLocaleString('fr-FR')} €`}
+                    </div>
+                  </div>
+                  <span className="tag tag-accent">{STR.common.signed}</span>
+                </div>
+              ))}
+            </>
+          )}
         </section>
       </div>
     </div>
