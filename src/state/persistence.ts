@@ -31,7 +31,15 @@ export function migrateSave(data: unknown): SaveGame | null {
   if (typeof s.schemaVersion !== 'number') return null;
   // Ici, une seule version : on renverrait des migrations successives si besoin.
   if (s.schemaVersion > CURRENT_SCHEMA) return null;
-  return s as SaveGame;
+  // Backfill défensif des champs ajoutés après la v1 : une sauvegarde plus
+  // ancienne ne doit jamais crasher le jeu.
+  const filled: SaveGame = {
+    ...(s as SaveGame),
+    firedEvents: s.firedEvents ?? [],
+    quizPre: s.quizPre ?? [],
+    quizPost: s.quizPost ?? [],
+  };
+  return filled;
 }
 
 export function loadSave(): SaveGame | null {

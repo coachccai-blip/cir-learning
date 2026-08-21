@@ -51,6 +51,28 @@ du contenu (lot 8) reste à mener pour atteindre les volumes cibles.
 8. **Logo** : branding textuel « CIR QUEST » ; le logo Leyton officiel n'est pas
    reproduit (R4 du §21). Le « O » du favicon reprend le cercle ouvert orange.
 
+## Itération « fun & pédagogie » (post-v1)
+
+Quatre améliorations à fort levier, ajoutées après la première mise en ligne :
+
+9. **Événements aléatoires déclenchés** (§10.4) : un tirage à 33 %/cycle, à
+   l'entrée de la journée, présente un des 12 événements (filtré par cycle et par
+   présence d'un client signé, sans répétition — `firedEvents`). Aucun moteur
+   séparé : l'événement est un scénario à nœud unique (`eventToScenario`).
+10. **Promesse sanctionnée au bilan** (§6.3) : au bilan de mission, l'écart entre
+    le CIR réel et la fourchette promise applique un delta Relation/Rentabilité et
+    déclenche un reproche nommé du PNJ ; un écart majeur provoque une chute de
+    confiance (churn).
+11. **Quiz avant/après** (§18.1) : 5 questions au démarrage et en fin de saison,
+    avec une décomposition « ce que vous avez appris » sur l'écran de fin — la
+    preuve mesurable de l'apprentissage attendue par un formateur.
+12. **Alternative optimale** : après un choix de dialogue sous-optimal, le
+    feedback montre la meilleure formulation possible — on apprend autant de
+    l'erreur commentée que du succès.
+
+Champs de sauvegarde ajoutés (`firedEvents`, `quizPre`, `quizPost`) avec backfill
+défensif dans `migrateSave` : une sauvegarde v1 reste lisible.
+
 ## Points à valider (rappel des risques §21)
 
 - **R1/R3** : relecture métier des règles fiscales et des cas d'or par un

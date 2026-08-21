@@ -5,25 +5,29 @@ import { CLIENTS, clientById } from '../data/clients';
 import { caseById } from '../data/cases';
 import { cardsetById } from '../data/cards';
 import { scenarioById } from '../data/scenarios/index';
+import { EVENTS } from '../data/events';
 import { PROSPECT_TEMPLATES } from '../data/prospects';
 import { chapterForCycle, nextMilestone, MILESTONES, SEASON_LENGTH } from '../data/calendar';
 import type {
   AssietteInput,
   CardVerdict,
   DeltaLogEntry,
+  GameEvent,
   GameMode,
   Gauges,
   GeneratedProspect,
   LeaderboardEntry,
   Ruleset,
   SaveGame,
+  Scenario,
 } from '../engine/types';
 import { clamp } from '../engine/dialogue/mood';
 import { energyState, gradeForXp, maxClients, xpForBaseAccuracy, toleranceForMode } from '../engine/economy';
 import { scoreAssiette } from '../engine/cir/scoring';
 import { computeBreakdown } from '../engine/cir/calculator';
 import { newBadges } from '../engine/badges';
-import { generateProspect } from '../engine/prospects';
+import { evaluatePromise, generateProspect } from '../engine/prospects';
+import { rngFromSeed } from '../engine/rng';
 import {
   DEFAULT_OPTIONS,
   loadCodexRead,
@@ -56,7 +60,8 @@ export type View =
   | 'leaderboard'
   | 'options'
   | 'freemode'
-  | 'client';
+  | 'client'
+  | 'quiz';
 
 export interface Toast {
   id: number;
@@ -70,6 +75,20 @@ export interface DialogueContext {
   kind: 'discovery' | 'kickoff' | 'followup' | 'closing' | 'tutorial' | 'prospect' | 'event';
   prospectId?: string;
   returnTo: View;
+  /** Scénario fourni inline (événements aléatoires, non présents dans SCENARIOS). */
+  inlineScenario?: Scenario;
+}
+
+/** Transforme un événement (nœud unique à 4 choix) en scénario jouable. */
+export function eventToScenario(ev: GameEvent): Scenario {
+  return {
+    id: ev.id,
+    type: 'EVENT',
+    title: ev.title,
+    context: '',
+    entryNode: ev.node.id,
+    nodes: [ev.node],
+  };
 }
 
 interface UIState {
@@ -82,12 +101,14 @@ interface UIState {
   dialogue: DialogueContext | null;
   activeClientId: string | null;
   lastDeltas: Partial<Gauges> | null;
+  quizPhase: 'pre' | 'post';
 }
 
 interface Actions {
   boot: () => void;
   go: (view: View) => void;
   newGame: (mode: GameMode) => void;
+  startFirstDay: () => void;
   setOptions: (patch: Partial<Options>) => void;
   resetSave: () => void;
   toast: (text: string, badge?: boolean) => void;
@@ -122,8 +143,10 @@ interface Actions {
 
   switchPhase: () => void;
   advanceCycle: () => void;
+  maybeTriggerEvent: () => boolean;
   runAudit: (clientId: string, outcome: 'validated' | 'partial' | 'total', reassessed: number) => void;
   finishSeason: () => void;
+  commitQuiz: (phase: 'pre' | 'post', answers: number[]) => void;
   saveLeaderboard: (pseudo: string, score: number, grade: string) => void;
 }
 
@@ -145,6 +168,7 @@ export const useStore = create<Store>((set, get) => ({
   dialogue: null,
   activeClientId: null,
   lastDeltas: null,
+  quizPhase: 'pre',
 
   boot: () => {
     const save = loadSave();
@@ -164,9 +188,16 @@ export const useStore = create<Store>((set, get) => ({
     const count = mode === 'expert' ? CLIENTS.length : Math.min(4, CLIENTS.length);
     save.portfolio = CLIENTS.slice(0, count).map((c) => initClientState(c.id));
     persist(save);
-    set({ save, view: 'day' });
+    // Quiz d'entrée avant de commencer (mesure de l'apprentissage §18.1).
+    set({ save, view: 'quiz', quizPhase: 'pre' });
+  },
+
+  // Démarre réellement la première journée (appelé après le quiz d'entrée).
+  startFirstDay: () => {
+    const save = get().save;
+    if (!save) return;
+    set({ view: 'day' });
     get().generateProspects(3);
-    // Tutoriel au tout premier cycle
     if (!save.tutorialDone) {
       get().startDialogue({ scenarioId: 'sc_tutorial', kind: 'tutorial', returnTo: 'day' });
     }
@@ -284,9 +315,9 @@ export const useStore = create<Store>((set, get) => ({
       next = { ...next, tutorialDone: true };
     }
 
-    // Pièces débloquées selon le score du scénario
+    // Pièces débloquées selon le score du scénario (hors événements inline).
     let unlockedPieces: string[] = [];
-    if (dialogue) {
+    if (dialogue && !dialogue.inlineScenario) {
       const sc = scenarioById(dialogue.scenarioId);
       if (sc.outcome) {
         if (result.score >= sc.outcome.scoreThresholds.excellent) unlockedPieces = sc.outcome.unlocks.excellent;
@@ -321,9 +352,51 @@ export const useStore = create<Store>((set, get) => ({
       next = { ...next, stats: { ...next.stats, refusedMissions: next.stats.refusedMissions + 1 } };
     }
 
+    // Bilan de mission : la promesse initiale est confrontée au CIR réel (§6.3).
+    let promiseSettlement: { label: string; relation: number; profitability: number; reproach: string } | null = null;
+    if (result.kind === 'closing' && result.clientId) {
+      const cs = next.portfolio.find((p) => p.clientId === result.clientId);
+      const client = CLIENTS.find((c) => c.id === result.clientId);
+      if (cs?.promise && client) {
+        const realCir = cs.playerCir ?? cs.trueCir ?? Math.round((client.cirEstimate[0] + client.cirEstimate[1]) / 2);
+        const outcome = evaluatePromise({ min: cs.promise.min, max: cs.promise.max }, realCir);
+        const reproach =
+          outcome.churnRisk
+            ? `${client.contact.name} : « Vous m'aviez promis ${cs.promise.min.toLocaleString('fr-FR')} €. On est très loin du compte. »`
+            : outcome.relation < 0
+              ? `${client.contact.name} : « C'est un peu moins que ce que vous aviez annoncé… »`
+              : outcome.relation > 0 && cs.promise.kind === 'range'
+                ? `${client.contact.name} : « Vous aviez vu juste, c'est dans la fourchette annoncée. »`
+                : `${client.contact.name} prend note du montant final.`;
+        promiseSettlement = {
+          label: outcome.label,
+          relation: outcome.relation,
+          profitability: outcome.profitability,
+          reproach,
+        };
+        // Le churn ferme durablement la relation client.
+        if (outcome.churnRisk) {
+          next = {
+            ...next,
+            portfolio: next.portfolio.map((p) =>
+              p.clientId === result.clientId ? { ...p, trust: clamp(p.trust - 25), mood: clamp(p.mood - 20) } : p,
+            ),
+          };
+        }
+      }
+    }
+
     persist(next);
     set({ save: next, dialogue: null, view: dialogue?.returnTo ?? 'day' });
     get().addXp(xpBucket, 'Entretien mené');
+
+    if (promiseSettlement) {
+      get().applyGauges(
+        { relation: promiseSettlement.relation, profitability: promiseSettlement.profitability },
+        `Promesse : ${promiseSettlement.label}`,
+      );
+      get().toast(promiseSettlement.reproach);
+    }
 
     // Prospect : signature ou refus
     if (result.kind === 'prospect' && result.prospectId) {
@@ -549,6 +622,42 @@ export const useStore = create<Store>((set, get) => ({
     set({ save: next, view: 'day', lastDeltas: null });
     // Nouveaux prospects
     get().generateProspects(2);
+    // Événement aléatoire (33 %/cycle) — écrase la vue par un dialogue si tiré.
+    get().maybeTriggerEvent();
+  },
+
+  maybeTriggerEvent: () => {
+    const save = get().save;
+    if (!save) return false;
+    const rng = rngFromSeed(`${save.seed}:event:${save.cycle}`);
+    if (rng() >= balance.eventChance) return false;
+    const hasSignedClient = save.portfolio.some(
+      (c) => c.dossierState !== 'LEAD' && c.dossierState !== 'QUALIFIED' && c.dossierState !== 'LOST',
+    );
+    const candidates = EVENTS.filter(
+      (ev) =>
+        !save.firedEvents.includes(ev.id) &&
+        save.cycle >= ev.minCycle &&
+        save.cycle <= ev.maxCycle &&
+        (!ev.needsClient || hasSignedClient),
+    );
+    if (candidates.length === 0) return false;
+    const ev = candidates[Math.floor(rng() * candidates.length)];
+    const next = { ...save, firedEvents: [...save.firedEvents, ev.id] };
+    persist(next);
+    set({ save: next });
+    get().startDialogue({ scenarioId: ev.id, kind: 'event', returnTo: 'day', inlineScenario: eventToScenario(ev) });
+    return true;
+  },
+
+  commitQuiz: (phase, answers) => {
+    const save = get().save;
+    if (!save) return;
+    const next = phase === 'pre' ? { ...save, quizPre: answers } : { ...save, quizPost: answers };
+    persist(next);
+    set({ save: next });
+    if (phase === 'pre') get().startFirstDay();
+    else set({ view: 'end' });
   },
 
   runAudit: (clientId, outcome, reassessed) => {

@@ -3,6 +3,7 @@ import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { computeFinalScore } from '../engine/economy';
 import { BADGES } from '../engine/badges';
+import { QUIZ } from '../data/quiz';
 
 export function EndScreen() {
   const save = useStore((s) => s.save);
@@ -22,6 +23,10 @@ export function EndScreen() {
   const strengths = final.parts.filter((p) => p.value >= 65).map((p) => p.label);
   const improvements = final.parts.filter((p) => p.value < 50).map((p) => p.label);
   const earnedBadges = BADGES.filter((b) => save.badges.includes(b.id));
+
+  const preScore = QUIZ.reduce((n, q, i) => n + (save.quizPre[i] === q.correct ? 1 : 0), 0);
+  const postScore = QUIZ.reduce((n, q, i) => n + (save.quizPost[i] === q.correct ? 1 : 0), 0);
+  const hasQuiz = save.quizPre.length === QUIZ.length && save.quizPost.length === QUIZ.length;
 
   return (
     <div className="home" style={{ alignItems: 'flex-start', overflowY: 'auto' }}>
@@ -89,6 +94,48 @@ export function EndScreen() {
             ))}
           </div>
         </div>
+
+        {hasQuiz && (
+          <div className="panel" style={{ marginTop: 16, color: 'var(--text)' }}>
+            <h3>{STR.quiz.titlePost}</h3>
+            <div className="row" style={{ gap: 24, alignItems: 'baseline', marginBottom: 12 }}>
+              <div>
+                <div className="muted">{STR.quiz.before}</div>
+                <strong style={{ fontSize: '1.4rem' }}>
+                  {preScore}/{QUIZ.length}
+                </strong>
+              </div>
+              <div style={{ fontSize: '1.4rem' }} className="muted">
+                →
+              </div>
+              <div>
+                <div className="muted">{STR.quiz.after}</div>
+                <strong style={{ fontSize: '1.4rem' }} className={postScore >= preScore ? 'delta-pos' : ''}>
+                  {postScore}/{QUIZ.length}
+                </strong>
+              </div>
+              {postScore > preScore && (
+                <span className="tag tag-accent">
+                  +{postScore - preScore} {STR.quiz.progress}
+                </span>
+              )}
+            </div>
+            <ul style={{ fontSize: '0.85rem' }}>
+              {QUIZ.map((q, i) => {
+                const wasWrong = save.quizPre[i] !== q.correct;
+                const nowRight = save.quizPost[i] === q.correct;
+                return (
+                  <li key={q.id} className={nowRight ? 'delta-pos' : 'delta-neg'} style={{ marginBottom: 4 }}>
+                    {nowRight ? '✓ ' : '✗ '}
+                    {q.question}
+                    {wasWrong && nowRight && <span className="muted"> — acquis pendant la partie</span>}
+                    {!nowRight && <span className="muted"> — {q.explanation}</span>}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
 
         <div className="panel" style={{ marginTop: 16, color: 'var(--text)' }}>
           {!saved ? (
