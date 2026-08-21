@@ -3,6 +3,14 @@
 
 import type { CodexEntry } from '../engine/types';
 
+/**
+ * Fiches acquises d'entrée de jeu. Ce sont les fondamentaux — ce que le CIR
+ * est, ses taux, le cadre pédagogique du jeu — que le joueur doit pouvoir
+ * consulter dès la première minute. Les rattacher à un choix de dialogue les
+ * aurait rendues inatteignables pour qui ne tombe pas sur ce choix.
+ */
+export const CODEX_STARTER: string[] = ['cdx_objet', 'cdx_taux', 'cdx_disclaimer'];
+
 export const CODEX: CodexEntry[] = [
   // --- Le dispositif ---
   { id: 'cdx_objet', category: 'dispositif', title: 'Le CIR, en une phrase', body: 'Le Crédit d’Impôt Recherche soutient les dépenses de R&D des entreprises : 30 % de l’assiette éligible jusqu’à 100 M€, 5 % au-delà.', example: 'Une assiette de 200 000 € génère 60 000 € de crédit d’impôt.', source: 'CGI art. 244 quater B' },

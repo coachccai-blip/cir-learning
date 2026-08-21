@@ -572,7 +572,7 @@ Le moteur de calcul lit ce fichier. **Créer un `ruleset-2027.json` doit suffire
 Accessible dès le chapitre 3 terminé. Le joueur choisit :
 
 - **Un cas isolé** : rejouer n'importe quel RDV, n'importe quelle assiette, n'importe quel contrôle, sans conséquence sur la campagne.
-- **Une saison libre** : portefeuille tiré aléatoirement (3 à 6 clients, archétypes et profils mélangés), 24 cycles, pas de scénarisation. C'est le mode de rejouabilité et le mode leaderboard principal.
+- **Une saison libre** : portefeuille tiré aléatoirement (3 à 6 clients, archétypes et profils mélangés), une saison complète, pas de scénarisation. C'est le mode de rejouabilité et le mode leaderboard principal.
 
 > **Arbitrage du 21/08/2026 — « Jour / Nuit » devient « Relation client /
 > Technique ».** Le brief nomme les deux phases *jour* et *nuit*. La métaphore
@@ -582,6 +582,16 @@ Accessible dès le chapitre 3 terminé. Le joueur choisit :
 > désormais **Relation client** (🤝) et **Technique** (🔬). Les états internes
 > du moteur (`DAY` / `NIGHT`) sont inchangés : ce sont des identifiants, pas du
 > texte affiché.
+
+> **Arbitrage du 21/08/2026 — une partie tient en une heure.** La saison
+> passe de 24 à **6 cycles**, et le budget d'actions de 432 à **66 PA**. Le
+> calcul est simple : une action coûte au joueur ~1,5 minute, donc une heure de
+> jeu borne la saison à une soixantaine d'actions. À 24 cycles, le contenu écrit
+> n'occupait que 19 % du budget et les 81 % restants se remplissaient de
+> répétitions. Le portefeuille dépasse maintenant volontairement la capacité :
+> six clients pour ce qu'il faut de PA pour en mener trois ou quatre, et un
+> dossier laissé deux cycles sans nouvelles part à la concurrence. Choisir qui
+> l'on sert devient une décision de jeu.
 
 > **Arbitrage du 21/08/2026 — pas de défi quotidien.** Le brief prévoyait
 > initialement un défi quotidien seedé par la date. Learn CIR est un **parcours

@@ -1,5 +1,6 @@
 import balance from '../data/balance.json';
 import { clientById } from '../data/clients';
+import { CODEX_STARTER } from '../data/codex';
 import type { ClientState, GameMode, SaveGame } from '../engine/types';
 import { rngFromSeed } from '../engine/rng';
 
@@ -28,6 +29,7 @@ export function initClientState(
     scores: { discovery: null, kickoff: null, qualification: null, base: null, justification: null },
     investigateDebt: 0,
     followupDone: false,
+    lastTouchedCycle: 0,
     cardPlacements: {},
     assietteInput: null,
     playerCir: null,
@@ -58,7 +60,7 @@ export function createNewGame(mode: GameMode, createdAt: string, seedOverride?: 
     revenue: { signed: 0, collected: 0 },
     portfolio: [],
     prospects: [],
-    codexUnlocked: [],
+    codexUnlocked: [...CODEX_STARTER],
     codexRead: [],
     badges: [],
     history: [],

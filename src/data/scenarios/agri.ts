@@ -92,7 +92,7 @@ export const AGRI_KICKOFF: Scenario = {
       text: 'On est prêts ! Je vous ai tout préparé : on a innové sur toute la ligne cette année.',
       choices: [
         choice('optimal', 'empathie', 'Formidable. Listons les projets un par un, y compris ceux qui ont échoué.', { relation: 5, security: 10, profitability: -2, mood: 4, trust: 6 }, { what: 'Vous ouvrez large.', why: 'Les projets abandonnés matérialisent l’incertitude et sont souvent les plus éligibles.', rule: 'En kick-off, on collecte large puis on resserre.', codexUnlock: 'cdx_echecs_eligibles' }, 'n2', { flags: ['a_demande_les_echecs'] }),
-        choice('acceptable', 'synthese', 'Parfait. Qui a réellement mené les travaux techniques chez vous ?', { security: 8, mood: 1, trust: 3 }, { what: 'Vous identifiez les interlocuteurs.', why: 'Bon réflexe : on parle aux bonnes personnes.', rule: 'Le kick-off identifie les référents techniques.', codexUnlock: 'cdx_kickoff' }, 'n2'),
+        choice('acceptable', 'technique', 'Parfait. Qui a réellement mené les travaux techniques chez vous ?', { security: 8, mood: 1, trust: 3 }, { what: 'Vous identifiez les interlocuteurs.', why: 'Bon réflexe : on parle aux bonnes personnes.', rule: 'Le kick-off identifie les référents techniques.', codexUnlock: 'cdx_kickoff' }, 'n2'),
         choice('tempting', 'commercial', 'Super, on prend tout ce que vous avez préparé, ça ira très bien !', { relation: 6, security: -10, mood: 4 }, { what: 'Vous prenez sans trier.', why: 'Ce que le client a « préparé » n’est pas forcément éligible.', rule: 'Collecter n’est pas valider.' }, 'n2'),
         choice('poor', 'fermete', 'Donnez-moi juste les montants et on ira beaucoup plus vite.', { relation: -6, security: -6 }, { what: 'Vous sautez le cadrage.', why: 'Sans périmètre ni interlocuteurs, l’assiette sera fragile.', rule: 'Pas de chiffre sans cadrage.' }, 'n2'),
       ],
@@ -130,7 +130,18 @@ export const AGRI_KICKOFF: Scenario = {
         choice('optimal', 'synthese', 'Je vous envoie la liste des pièces, et on fait un point dans trois semaines.', { relation: 5, security: 8, profitability: 2, trust: 4 }, { what: 'Vous posez le calendrier.', why: 'La preuve se collecte au fil de l’eau, pas à la fin.', rule: 'Un plan de collecte daté sécurise le dossier.', codexUnlock: 'cdx_pieces' }, null),
         choice('acceptable', 'fermete', 'Rassemblez vos justificatifs et je reviens vers vous rapidement.', { security: 5, relation: 1 }, { what: 'Vous déléguez la collecte.', why: 'Correct mais un peu vague sur le « quoi » et le « quand ».', rule: 'Un plan précis vaut mieux qu’un « rassemblez tout ».' }, null),
         choice('tempting', 'commercial', 'Ne vous embêtez pas : je me débrouillerai avec ce que vous avez.', { relation: 6, security: -10 }, { what: 'Vous renoncez à la collecte.', why: 'Sans pièces, le dossier ne sera pas opposable.', rule: 'Pas de collecte = pas de preuve.' }, null),
-        choice('poor', 'empathie', 'On verra les documents plus tard. L’important, c’est d’avancer.', { relation: 4, security: -12 }, { what: 'Vous repoussez la preuve.', why: 'Repousser la collecte, c’est la perdre.', rule: 'La preuve différée est une preuve perdue.' }, null),
+        choice('poor', 'empathie', 'On verra les documents plus tard. L’important, c’est d’avancer.', { relation: 4, security: -12 }, { what: 'Vous repoussez la preuve.', why: 'Repousser la collecte, c’est la perdre.', rule: 'La preuve différée est une preuve perdue.' }, 'nK'),
+      ],
+    },
+    {
+      // Couperet : deux choix sous pression, aucune sortie confortable.
+      id: 'nK',
+      speaker: 'Marc Dupuis',
+      expression: 'agace',
+      text: 'Mes gens n’ont pas le temps de remplir des tableaux. Vous les prenez au mot, ou on arrête les frais ?',
+      choices: [
+        choice('optimal', 'fermete', 'Sans relevés, je ne peux pas défendre vos taux. Dix minutes par semaine suffisent.', { relation: -3, security: 14, mood: -4, trust: 5 }, { what: 'Vous tenez la ligne malgré la tension.', why: 'Un taux déclaré sans relevé est le premier poste que le vérificateur rabote.', rule: 'On négocie le format de la collecte, jamais son existence.' }, null),
+        choice('poor', 'commercial', 'Très bien, on partira de ce que vos équipes annoncent et on verra ensuite au moment du dépôt.', { relation: 6, security: -16, mood: 5 }, { what: 'Vous cédez sur la preuve.', why: 'Vous venez d’accepter de construire l’assiette sur du déclaratif pur.', rule: 'Céder sur la collecte, c’est signer le redressement à venir.' }, null),
       ],
     },
   ],

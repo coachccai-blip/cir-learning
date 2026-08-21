@@ -1,7 +1,7 @@
 {
   "actionPoints": {
-    "day": 10,
-    "night": 8
+    "day": 6,
+    "night": 5
   },
   "energy": {
     "start": 100,
@@ -99,5 +99,6 @@
     "feeRate": 0.18,
     "cardCount": 6,
     "maxActiveClients": 7
-  }
+  },
+  "neglectGraceCycles": 2
 }

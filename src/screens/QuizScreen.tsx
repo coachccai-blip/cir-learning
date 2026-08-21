@@ -1,26 +1,29 @@
 import { useMemo, useState } from 'react';
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
-import { QUIZ } from '../data/quiz';
+import { QUIZ, QUIZ_POST } from '../data/quiz';
 import { shuffleForDisplay } from '../engine/rng';
 
 export function QuizScreen() {
   const phase = useStore((s) => s.quizPhase);
   const seed = useStore((s) => s.save?.seed ?? 'x');
   const commitQuiz = useStore((s) => s.commitQuiz);
-  const [answers, setAnswers] = useState<number[]>(() => QUIZ.map(() => -1));
+  // Deux jeux jumeaux : mêmes notions, cas différents. Reposer les mêmes
+  // questions mesurerait la mémoire, pas ce que le joueur a appris.
+  const questions = phase === 'pre' ? QUIZ : QUIZ_POST;
+  const [answers, setAnswers] = useState<number[]>(() => questions.map(() => -1));
 
   // Ordre d'affichage mélangé : la bonne réponse n'est jamais toujours en A.
   // On conserve l'index d'origine pour que le score reste comparable pre/post.
   const shuffled = useMemo(
     () =>
-      QUIZ.map((q) =>
+      questions.map((q) =>
         shuffleForDisplay(
           q.options.map((text, originalIndex) => ({ text, originalIndex })),
           `${seed}:quiz:${q.id}`,
         ),
       ),
-    [seed],
+    [seed, questions],
   );
 
   const allAnswered = answers.every((a) => a >= 0);
@@ -34,7 +37,7 @@ export function QuizScreen() {
         </div>
 
         <div className="stack">
-          {QUIZ.map((q, qi) => (
+          {questions.map((q, qi) => (
             <div className="panel" key={q.id} style={{ color: 'var(--text)' }}>
               <div className="muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 {STR.quiz.question} {qi + 1}

@@ -80,7 +80,7 @@ export const BIOTECH_KICKOFF: Scenario = {
       text: 'On a aussi fait appel à un prestataire qui sous-traite lui-même une partie. Ça se cumule ?',
       choices: [
         choice('optimal', 'preuve', 'La re-sous-traitance est admise au 2ᵉ rang ; le 3ᵉ rang, lui, n’est pas éligible.', { security: 12, relation: 2, mood: 3, trust: 4 }, { what: 'Vous coupez le 3ᵉ rang.', why: 'La cascade est limitée au 2ᵉ rang.', rule: '3ᵉ rang de sous-traitance = non éligible.', codexUnlock: 'cdx_st_cascade' }, 'n2'),
-        choice('acceptable', 'synthese', 'Il faut tracer la chaîne : au-delà du 2ᵉ rang, on n’éligibilise plus la dépense.', { security: 8, trust: 2 }, { what: 'Vous demandez la chaîne.', why: 'Correct.', rule: 'On documente le rang de chaque prestataire.' }, 'n2'),
+        choice('acceptable', 'technique', 'Il faut tracer la chaîne : au-delà du 2ᵉ rang, on n’éligibilise plus la dépense.', { security: 8, trust: 2 }, { what: 'Vous demandez la chaîne.', why: 'Correct.', rule: 'On documente le rang de chaque prestataire.' }, 'n2'),
         choice('tempting', 'commercial', 'Tout ce qui est sous-traité, on le prend dans l’assiette, peu importe le rang.', { relation: 3, security: -14 }, { what: 'Vous ignorez la cascade.', why: 'Le 3ᵉ rang est explicitement exclu.', rule: 'La cascade a une limite légale.' }, 'n2'),
         choice('poor', 'fermete', 'La sous-traitance profite aussi du forfait de 40 %, on l’ajoute au calcul.', { security: -16 }, { what: 'Vous appliquez un forfait interdit.', why: 'Aucun forfait de fonctionnement sur la sous-traitance.', rule: 'Pas de forfait sur la sous-traitance.', codexUnlock: 'cdx_forfait' }, 'n2'),
       ],
@@ -106,7 +106,18 @@ export const BIOTECH_KICKOFF: Scenario = {
         choice('optimal', 'preuve', 'Agréments MESR, conventions d’aide, comptes rendus d’essais de la CRO, feuilles de temps.', { relation: 5, security: 10, profitability: 2, mood: 3, trust: 5 }, { what: 'Vous listez le dossier.', why: 'Un dossier biotech vit et meurt par ses conventions et agréments.', rule: 'La preuve se planifie au kick-off.', codexUnlock: 'cdx_pieces' }, null),
         choice('acceptable', 'synthese', 'Surtout les conventions d’aide et les agréments : ce sont vos points de contrôle.', { security: 6, trust: 2 }, { what: 'Vous ciblez les points durs.', why: 'Pertinent.', rule: 'Conventions et agréments d’abord.' }, null),
         choice('tempting', 'commercial', 'Envoyez-moi simplement les factures des prestataires, je m’occupe de tout le reste.', { relation: 3, security: -8 }, { what: 'Vous réduisez à la facture.', why: 'Une facture sans convention ni agrément ne prouve rien.', rule: 'La facture ne suffit pas.' }, null),
-        choice('poor', 'fermete', 'On verra les justificatifs plus tard, si jamais le fisc vient nous les réclamer.', { security: -14 }, { what: 'Vous repoussez au contrôle.', why: 'C’est l’erreur qui coûte le plus cher.', rule: 'La preuve se constitue avant, pas pendant le contrôle.', codexUnlock: 'cdx_preuve' }, null),
+        choice('poor', 'fermete', 'On verra les justificatifs plus tard, si jamais le fisc vient nous les réclamer.', { security: -14 }, { what: 'Vous repoussez au contrôle.', why: 'C’est l’erreur qui coûte le plus cher.', rule: 'La preuve se constitue avant, pas pendant le contrôle.', codexUnlock: 'cdx_preuve' }, 'nK'),
+      ],
+    },
+    {
+      // Couperet : le DAF met la trésorerie dans la balance.
+      id: 'nK',
+      speaker: 'Laurent Kaplan',
+      expression: 'ferme',
+      text: 'Notre levée dépend de ce chiffre. Si vous déduisez toutes les aides, le montant fond. Vous maintenez ?',
+      choices: [
+        choice('optimal', 'preuve', 'Je maintiens. Un chiffre gonflé ne survivrait pas à la due diligence de vos investisseurs.', { relation: -2, security: 16, mood: -3, trust: 7 }, { what: 'Vous tenez, et vous parlez sa langue.', why: 'Un investisseur qui découvre une assiette gonflée en audit fait plus de dégâts que le fisc.', rule: 'Les aides publiques se déduisent, quel que soit l’enjeu du moment.', codexUnlock: 'cdx_subventions' }, null),
+        choice('poor', 'commercial', 'On peut retarder la déduction de l’avance remboursable jusqu’après la levée, si cela vous arrange vraiment.', { relation: 7, security: -20, mood: 6 }, { what: 'Vous acceptez de décaler une déduction obligatoire.', why: 'Une avance remboursable se déduit dès son octroi : la décaler est une fraude à l’assiette.', rule: 'Aucun calendrier de levée ne change la date de déduction d’une aide.' }, null),
       ],
     },
   ],

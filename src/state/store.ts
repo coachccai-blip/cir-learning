@@ -28,6 +28,7 @@ import { computeBreakdown } from '../engine/cir/calculator';
 import { newBadges } from '../engine/badges';
 import { evaluatePromise, generateProspect, resolveGenericMission } from '../engine/prospects';
 import { buildClientFromProspect, prospectBecomesClient } from '../engine/clientgen';
+import { neglectedClients, resolveMilestone } from '../engine/milestones';
 import { loadGeneratedClients, registerGeneratedClient } from '../data/registry';
 import { rngFromSeed } from '../engine/rng';
 import {
@@ -123,6 +124,8 @@ interface UIState {
   } | null;
   /** Overlay de transition jour/nuit (label affiché plein écran). */
   transition: { label: string; phase: 'DAY' | 'NIGHT' } | null;
+  /** Contrôle de mi-saison (demande d'information) ou contrôle final. */
+  auditMode: 'interim' | 'final';
   /** Célébration plein écran (confettis) ou constat d'échec. */
   celebration: {
     id: string;
@@ -192,6 +195,8 @@ interface Actions {
   maybeTriggerEvent: () => boolean;
   runAudit: (clientId: string, outcome: 'validated' | 'partial' | 'total', reassessed: number) => void;
   finishSeason: () => void;
+  /** Referme la demande d'information et rend la main au joueur. */
+  closeInterimAudit: () => void;
   commitQuiz: (phase: 'pre' | 'post', answers: number[]) => void;
   saveLeaderboard: (pseudo: string, score: number, grade: string) => void;
 }
@@ -219,6 +224,7 @@ export const useStore = create<Store>((set, get) => ({
   settlement: null,
   transition: null,
   celebration: null,
+  auditMode: 'final',
 
   boot: () => {
     const save = loadSave();
@@ -237,9 +243,11 @@ export const useStore = create<Store>((set, get) => ({
 
   newGame: (mode, seedOverride) => {
     const save = createNewGame(mode, new Date(0).toISOString(), seedOverride);
-    // Générer les leads du portefeuille selon le mode.
-    const count = mode === 'expert' ? CLIENTS.length : Math.min(4, CLIENTS.length);
-    save.portfolio = CLIENTS.slice(0, count).map((c) => initClientState(c.id));
+    // Le portefeuille s'ouvre sur les leads du premier cycle ; les autres
+    // arrivent au fil des semaines. Il y aura toujours plus de dossiers que de
+    // points d'action : choisir qui l'on sert fait partie du jeu.
+    const opening = mode === 'expert' ? CLIENTS : CLIENTS.filter((c) => c.leadCycle <= 1);
+    save.portfolio = opening.map((c) => initClientState(c.id));
     loadGeneratedClients([]);
     persist(save);
     // Quiz d'entrée avant de commencer (mesure de l'apprentissage §18.1).
@@ -444,7 +452,9 @@ export const useStore = create<Store>((set, get) => ({
           const followupDone = cs.followupDone || result.kind === 'followup';
           const promise = result.promise ? { ...result.promise, cycle: save.cycle } : cs.promise;
           const piecesCollected = Array.from(new Set([...cs.piecesCollected, ...unlockedPieces]));
-          return { ...cs, scores, flags, dossierState, promise, piecesCollected, followupDone };
+          // Le joueur s'est occupé de ce dossier : il ne l'abandonne pas.
+          const lastTouchedCycle = save.cycle;
+          return { ...cs, scores, flags, dossierState, promise, piecesCollected, followupDone, lastTouchedCycle };
         }),
       };
     }
@@ -697,6 +707,7 @@ export const useStore = create<Store>((set, get) => ({
           ? {
               ...cs,
               cardPlacements: placements,
+              lastTouchedCycle: save.cycle,
               investigateDebt: cs.investigateDebt + investigate,
               dossierState: cs.dossierState === 'KICKED_OFF' || cs.dossierState === 'SIGNED' ? 'CARDS_DONE' : cs.dossierState,
               scores: { ...cs.scores, qualification: pct },
@@ -743,6 +754,7 @@ export const useStore = create<Store>((set, get) => ({
           ? {
               ...cs,
               assietteInput: input,
+              lastTouchedCycle: save.cycle,
               playerCir: player.cir,
               trueCir: score.trueCir,
               dossierState: 'BASE_DONE' as const,
@@ -783,7 +795,13 @@ export const useStore = create<Store>((set, get) => ({
       ...save,
       portfolio: save.portfolio.map((cs) =>
         cs.clientId === clientId
-          ? { ...cs, justifChoices: choices, dossierState: 'JUSTIFIED' as const, scores: { ...cs.scores, justification: score } }
+          ? {
+              ...cs,
+              justifChoices: choices,
+              dossierState: 'JUSTIFIED' as const,
+              lastTouchedCycle: save.cycle,
+              scores: { ...cs.scores, justification: score },
+            }
           : cs,
       ),
     };
@@ -823,16 +841,43 @@ export const useStore = create<Store>((set, get) => ({
     // Week-end
     energy = clamp(energy + balance.energy.weekend);
 
-    // Deadlines manquées ce cycle
+    // Échéance du cycle : chacune a une conséquence, aucune n'est décorative.
     const missed: string[] = [...save.missedDeadlines];
     const ms = MILESTONES.find((m) => m.cycle === save.cycle);
-    if (ms && ms.id === 'ms_deposit') {
-      // dépôt : clients non déposés → pénalité
-      save.portfolio.forEach((cs) => {
-        if (cs.dossierState !== 'DEPOSITED' && cs.dossierState !== 'JUSTIFIED' && cs.dossierState !== 'CLOSED') {
-          if (!missed.includes(cs.clientId)) missed.push(`deposit_${cs.clientId}`);
-        }
-      });
+    let portfolio = save.portfolio;
+    const reports: string[] = [];
+    if (ms) {
+      const outcome = resolveMilestone(ms.id, portfolio);
+      for (const id of outcome.missed) if (!missed.includes(id)) missed.push(id);
+      if (outcome.report) reports.push(outcome.report);
+      if (outcome.patches.length > 0) {
+        portfolio = portfolio.map((cs) => {
+          const patch = outcome.patches.find((p) => p.clientId === cs.clientId);
+          if (!patch) return cs;
+          return {
+            ...cs,
+            mood: clamp(cs.mood + (patch.mood ?? 0)),
+            trust: clamp(cs.trust + (patch.trust ?? 0)),
+            piecesCollected: patch.losePieces
+              ? cs.piecesCollected.filter((x) => !patch.losePieces!.includes(x))
+              : cs.piecesCollected,
+          };
+        });
+      }
+      if (Object.keys(outcome.gauges).length > 0) {
+        get().applyGauges(outcome.gauges, ms.label);
+      }
+    }
+
+    // Dossiers abandonnés : un client sans nouvelles depuis deux cycles s'en va.
+    const dropped = neglectedClients(portfolio, save.cycle, balance.neglectGraceCycles);
+    if (dropped.length > 0) {
+      const lost = new Set(dropped.map((c) => c.clientId));
+      portfolio = portfolio.map((cs) => (lost.has(cs.clientId) ? { ...cs, dossierState: 'LOST' as const } : cs));
+      for (const cs of dropped) {
+        missed.push(`neglected_${cs.clientId}`);
+        reports.push(STR.milestones.lostClient(clientById(cs.clientId).name));
+      }
     }
 
     const nextCycle = save.cycle + 1;
@@ -848,6 +893,7 @@ export const useStore = create<Store>((set, get) => ({
 
     const next: SaveGame = {
       ...save,
+      portfolio,
       cycle: nextCycle,
       phase: 'DAY',
       actionPoints: Math.max(1, dayPA),
@@ -866,8 +912,8 @@ export const useStore = create<Store>((set, get) => ({
         },
       ],
     };
-    // Arrivée des leads du catalogue à leur cycle : les deux derniers dossiers
-    // écrits (Solterra, Data-O) n'étaient jamais servis hors mode expert.
+    // Arrivée des leads du catalogue à leur cycle : le portefeuille dépasse
+    // toujours ce que le budget d'actions permet de servir.
     const arriving = CLIENTS.filter(
       (c) => c.leadCycle <= nextCycle && !next.portfolio.some((cs) => cs.clientId === c.id),
     );
@@ -882,6 +928,12 @@ export const useStore = create<Store>((set, get) => ({
       lastDeltas: null,
       transition: { label: `Semaine ${nextCycle} — ${STR.hud.day}`, phase: 'DAY' },
     });
+    // Demande d'information de l'administration : le contrôle arrive tant
+    // qu'il reste un cycle pour corriger les autres dossiers.
+    if (ms?.id === 'ms_info_request' && portfolio.some((c) => c.assietteInput !== null)) {
+      set({ view: 'audit', auditMode: 'interim', transition: null });
+    }
+    for (const r of reports) get().toast(r);
     for (const c of arriving) get().toast(STR.prospects.newLead(c.name, c.sectorLabel));
     // Nouveaux prospects
     get().generateProspects(2);
@@ -961,8 +1013,13 @@ export const useStore = create<Store>((set, get) => ({
     if (!save) return;
     const next = { ...save, finished: true };
     persist(next);
-    set({ save: next, view: 'audit' });
+    set({ save: next, view: 'audit', auditMode: 'final' });
     get().checkBadges();
+  },
+
+  closeInterimAudit: () => {
+    const save = get().save;
+    set({ auditMode: 'final', view: save?.phase === 'NIGHT' ? 'night' : 'day' });
   },
 
   saveLeaderboard: (pseudo, score, grade) => {

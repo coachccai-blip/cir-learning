@@ -80,7 +80,7 @@ export const GREEN_KICKOFF: Scenario = {
       text: 'Mon responsable industrialisation dit qu’il est à 60 % R&D. On valide et on avance ?',
       choices: [
         choice('optimal', 'preuve', 'L’industrialisation est en aval de la R&D : ses relevés montrent plutôt 25 %.', { security: 12, relation: 1, mood: 2, trust: 4 }, { what: 'Vous corrigez le taux.', why: 'Mettre l’industrialisation en R&D est le piège du dossier greentech.', rule: 'L’industrialisation n’est pas de la R&D.', codexUnlock: 'cdx_personnel' }, 'n2'),
-        choice('acceptable', 'synthese', 'On s’appuie sur ses feuilles de temps réelles, pas sur une estimation de mémoire.', { security: 8, trust: 2 }, { what: 'Vous demandez la trace.', why: 'Juste.', rule: 'Le prorata se prouve.' }, 'n2'),
+        choice('acceptable', 'technique', 'On s’appuie sur ses feuilles de temps réelles, pas sur une estimation de mémoire.', { security: 8, trust: 2 }, { what: 'Vous demandez la trace.', why: 'Juste.', rule: 'Le prorata se prouve.' }, 'n2'),
         choice('tempting', 'commercial', '60 %, c’est ce qu’il annonce lui-même : on gagne du temps et on valide comme ça.', { relation: 4, security: -12, mood: 1 }, { what: 'Vous validez pour aller vite.', why: 'La vitesse ne dispense pas de la preuve.', rule: 'Aller vite ≠ valider à l’aveugle.' }, 'n2'),
         choice('poor', 'fermete', 'Mettons 80 %, il est clé pour le projet et personne n’ira vérifier ce chiffre.', { security: -16 }, { what: 'Vous surévaluez.', why: 'Un poste d’aval majoritairement industriel ne peut être à 80 % R&D.', rule: 'L’importance n’est pas un taux.' }, 'n2'),
       ],

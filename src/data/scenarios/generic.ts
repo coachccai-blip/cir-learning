@@ -31,7 +31,20 @@ export const GENERIC_FOLLOWUP: Scenario = {
         choice('optimal', 'preuve', 'Chaque pièce d’aujourd’hui, c’est un point de moins à défendre au contrôle.', { relation: 5, security: 8, trust: 3 }, { what: 'Vous donnez du sens.', why: 'Le client accepte l’effort s’il en comprend la valeur.', rule: 'Expliquer la valeur désamorce l’irritant.' }, null),
         choice('acceptable', 'empathie', 'Je comprends que ce soit prenant. On ira droit à l’essentiel.', { relation: 6, security: 1 }, { what: 'Vous rassurez.', why: 'Bon pour la relation, un peu court sur le fond.', rule: 'Reconnaître l’effort du client compte.' }, null),
         choice('tempting', 'commercial', 'C’est bientôt fini, et le montant sera énorme, vous verrez, faites-moi confiance !', { relation: 6, security: -8 }, { what: 'Vous surpromettez.', why: 'Promettre « énorme » recrée une dette de promesse.', rule: 'Ne pas relancer la surenchère en suivi.' }, null),
-        choice('poor', 'fermete', 'C’est la procédure imposée, on n’y peut pas grand-chose.', { relation: -6 }, { what: 'Vous vous réfugiez derrière la procédure.', why: '« C’est la procédure » n’explique rien au client.', rule: 'On explique, on ne se retranche pas.' }, null),
+        choice('poor', 'fermete', 'C’est la procédure imposée, on n’y peut pas grand-chose.', { relation: -6 }, { what: 'Vous vous réfugiez derrière la procédure.', why: '« C’est la procédure » n’explique rien au client.', rule: 'On explique, on ne se retranche pas.' }, 'n3'),
+      ],
+    },
+    {
+      // Nœud d'arbitrage : deux réponses défendables qui s'excluent. Le joueur
+      // ne cherche pas « la bonne » — il choisit ce qu'il accepte de perdre.
+      id: 'n3',
+      speaker: 'Le client',
+      expression: 'neutre',
+      text: 'Mon équipe est débordée. Je peux vous donner les feuilles de temps, ou vous laisser tranquilles jusqu’au dépôt. Pas les deux.',
+      choices: [
+        choice('optimal', 'preuve', 'Prenons les feuilles de temps : sans elles, votre assiette ne tient pas.', { relation: -4, security: 14, trust: 2 }, { what: 'Vous choisissez la preuve.', why: 'Vous sacrifiez du confort relationnel pour un dossier défendable — c’est un arbitrage, pas une erreur.', rule: 'Entre la preuve et le confort, la preuve se rattrape rarement après coup.' }, null),
+        choice('optimal', 'empathie', 'Je vous laisse respirer, et je reviens avec une liste de trois pièces.', { relation: 10, security: 4, trust: 4 }, { what: 'Vous choisissez la relation.', why: 'Vous préservez un client à bout, au prix d’un dossier moins étayé.', rule: 'Un client qui tient jusqu’au bout vaut mieux qu’un dossier parfait abandonné.' }, null),
+        choice('tempting', 'commercial', 'On se débrouillera sans, ne vous inquiétez pas pour ça du tout.', { relation: 5, security: -14 }, { what: 'Vous renoncez sans contrepartie.', why: 'Ce n’est pas un arbitrage : vous perdez la preuve sans rien gagner en échange.', rule: 'Renoncer n’est un choix que si l’on sait ce qu’on achète.' }, null),
       ],
     },
   ],
@@ -71,7 +84,18 @@ export const GENERIC_CLOSING: Scenario = {
         choice('optimal', 'synthese', 'Volontiers. On repart plus tôt sur la collecte et on qualifie ce projet.', { relation: 6, security: 4, profitability: 5, trust: 4 }, { what: 'Vous ouvrez l’upsell qualifié.', why: 'Fidéliser sur du sérieux prépare un meilleur dossier.', rule: 'On prépare l’an prochain dès le bilan.' }, null),
         choice('acceptable', 'empathie', 'Avec plaisir. On refait le point ensemble à la rentrée.', { relation: 5, profitability: 2 }, { what: 'Vous entretenez le lien.', why: 'Bonne suite.', rule: 'La relation se cultive dans la durée.' }, null),
         choice('tempting', 'commercial', 'Oui ! Et je vous promets un montant encore plus gros l’an prochain, vous verrez !', { relation: 6, security: -10 }, { what: 'Vous repromettez du chiffre.', why: 'Promettre plus gros relance la dette de promesse.', rule: 'On ne surpromet pas la saison suivante.' }, null),
-        choice('poor', 'fermete', 'On verra bien l’an prochain, mais rien n’est encore sûr.', { relation: -4, profitability: -2 }, { what: 'Vous refroidissez.', why: 'Un bilan est le moment de sécuriser la reconduction.', rule: 'Le bilan ouvre la suite, il ne la ferme pas.' }, null),
+        choice('poor', 'fermete', 'On verra bien l’an prochain, mais rien n’est encore sûr.', { relation: -4, profitability: -2 }, { what: 'Vous refroidissez.', why: 'Un bilan est le moment de sécuriser la reconduction.', rule: 'Le bilan ouvre la suite, il ne la ferme pas.' }, 'n3'),
+      ],
+    },
+    {
+      // Couperet : deux choix, sous pression, aucune réponse confortable.
+      id: 'n3',
+      speaker: 'Le client',
+      expression: 'neutre',
+      text: 'Dernière chose. Mon expert-comptable veut inscrire le montant au bilan dès demain matin. Je lui dis quoi ?',
+      choices: [
+        choice('optimal', 'preuve', 'Qu’il provisionne le montant net, en le notant comme estimation non définitive.', { relation: 3, security: 10, trust: 4 }, { what: 'Vous cadrez l’écriture comptable.', why: 'Un montant provisionné et qualifié n’engage personne ; un montant ferme, si.', rule: 'Une estimation écrite comme telle protège le client et vous.' }, null),
+        choice('poor', 'commercial', 'Qu’il inscrive le montant en produit acquis, c’est du solide.', { relation: 4, security: -16 }, { what: 'Vous faites inscrire un chiffre non définitif.', why: 'Si le contrôle rabote le crédit, c’est le bilan du client qu’il faut corriger.', rule: 'On ne fait jamais écrire un montant CIR comme certain avant le dépôt.' }, null),
       ],
     },
   ],
@@ -112,7 +136,18 @@ export const GENERIC_DISCOVERY: Scenario = {
         choice('optimal', 'synthese', 'Une fourchette prudente d’abord, un chiffre ferme après les feuilles de temps.', { relation: 4, security: 8, profitability: 2, trust: 4 }, { what: 'Vous cadrez la promesse.', why: 'Une fourchette annoncée comme provisoire ne se transforme pas en dette.', rule: 'Fourchette maintenant, chiffre ferme sur pièces.', codexUnlock: 'cdx_estimer' }, null),
         choice('acceptable', 'preuve', 'Je vous réponds après avoir vu vos coûts salariaux et vos aides publiques.', { security: 6, trust: 2 }, { what: 'Vous conditionnez aux pièces.', why: 'Rigoureux, un peu frustrant pour le client.', rule: 'Le chiffre se calcule sur pièces.' }, null),
         choice('tempting', 'commercial', 'À vue de nez, je dirais que ce sera un très beau montant cette année, vous verrez.', { relation: 5, security: -10 }, { what: 'Vous lâchez une promesse floue.', why: '« Un très beau montant » sera retenu comme un engagement au bilan.', rule: 'Le flou vaut promesse.' }, null),
-        choice('poor', 'fermete', 'Impossible de vous répondre, et cette question n’a pas de sens à ce stade.', { relation: -6 }, { what: 'Vous fermez la porte.', why: 'Refuser tout ordre de grandeur passe pour de l’incompétence.', rule: 'On donne un cadre, même sans chiffre.' }, null),
+        choice('poor', 'fermete', 'Impossible de vous répondre, et cette question n’a pas de sens à ce stade.', { relation: -6 }, { what: 'Vous fermez la porte.', why: 'Refuser tout ordre de grandeur passe pour de l’incompétence.', rule: 'On donne un cadre, même sans chiffre.' }, 'n3'),
+      ],
+    },
+    {
+      // Couperet : le client force la main, il n'y a pas de sortie confortable.
+      id: 'n3',
+      speaker: 'Le client',
+      expression: 'agace',
+      text: 'On m’a dit que d’autres cabinets valorisent tout le service technique. Vous faites pareil, ou je me suis trompé de prestataire ?',
+      choices: [
+        choice('optimal', 'fermete', 'Je ne fais pas pareil, et c’est précisément ce que vous payez.', { relation: -2, security: 14, trust: 6 }, { what: 'Vous tenez la ligne.', why: 'Céder ici, c’est signer un dossier que vous ne pourrez pas défendre trois ans plus tard.', rule: 'Un désaccord assumé vaut mieux qu’un dossier indéfendable.' }, null),
+        choice('tempting', 'commercial', 'On peut regarder large, comme eux, si c’est ce que vous attendez.', { relation: 6, security: -16, mood: 4 }, { what: 'Vous vous alignez sur le moins-disant.', why: 'Vous venez de laisser un concurrent fixer votre niveau de risque.', rule: 'Ne jamais laisser un autre cabinet définir votre périmètre.' }, null),
       ],
     },
   ],

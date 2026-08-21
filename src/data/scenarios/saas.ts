@@ -106,7 +106,18 @@ export const SAAS_KICKOFF: Scenario = {
         choice('optimal', 'synthese', 'Feuilles de temps, journaux d’expériences avec les essais ratés, état de l’art.', { relation: 5, security: 8, profitability: 2, trust: 4 }, { what: 'Vous listez les pièces clés.', why: 'Les journaux d’expériences font la preuve de la démarche.', rule: 'La preuve se planifie dès le kick-off.', codexUnlock: 'cdx_pieces' }, null),
         choice('acceptable', 'technique', 'Surtout vos logs d’expérimentation et vos benchmarks face à l’existant.', { security: 6, mood: 2 }, { what: 'Vous ciblez la preuve technique.', why: 'Pertinent pour un dossier algorithmique.', rule: 'Les benchmarks documentent le progrès.' }, null),
         choice('tempting', 'commercial', 'Envoyez-moi ce que vous avez sous la main, ça ira très bien comme ça.', { relation: 4, security: -10 }, { what: 'Vous relâchez la collecte.', why: '« Ce qu’il y a sous la main » n’est pas un dossier.', rule: 'Une collecte non cadrée laisse des trous.' }, null),
-        choice('poor', 'fermete', 'Pas besoin de documents : votre parole suffira pour l’état de l’art.', { security: -14 }, { what: 'Vous renoncez à la preuve.', why: 'Un dossier SaaS sans traces d’expériences ne tient pas.', rule: 'Sans logs, pas de démarche opposable.' }, null),
+        choice('poor', 'fermete', 'Pas besoin de documents : votre parole suffira pour l’état de l’art.', { security: -14 }, { what: 'Vous renoncez à la preuve.', why: 'Un dossier SaaS sans traces d’expériences ne tient pas.', rule: 'Sans logs, pas de démarche opposable.' }, 'nK'),
+      ],
+    },
+    {
+      // Couperet : la CTO force la main sur les taux d'affectation.
+      id: 'nK',
+      speaker: 'Elsa Brunet',
+      expression: 'ferme',
+      text: 'Soyons clairs : soit vous prenez mes développeurs à 80 %, soit je vois avec un autre cabinet. Vous choisissez.',
+      choices: [
+        choice('optimal', 'preuve', 'Alors voyons avec un autre cabinet. Je ne signe pas un taux que je ne peux pas prouver.', { relation: -5, security: 16, mood: -5, trust: 6 }, { what: 'Vous refusez le chantage.', why: 'Un client qui impose ses taux impose aussi son redressement — et vous en répondrez.', rule: 'Mieux vaut perdre une mission que la défendre trois ans plus tard.', codexUnlock: 'cdx_dire_non' }, null),
+        choice('tempting', 'commercial', 'D’accord pour 80 %, on ajustera plus tard si jamais l’administration venait à poser des questions.', { relation: 8, security: -18, mood: 6 }, { what: 'Vous achetez la paix au prix du dossier.', why: '« On ajustera plus tard » n’existe pas : le taux déposé est celui qu’on défend.', rule: 'Un taux ne se négocie pas, il se justifie.' }, null),
       ],
     },
   ],

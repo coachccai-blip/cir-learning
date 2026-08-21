@@ -72,7 +72,10 @@ describe('Dossier fabriqué pour un prospect converti', () => {
 
   it('propose un tri qui n’est pas gagnable en cochant une seule colonne', () => {
     for (const { b } of built) {
-      expect(new Set(b.cardset.cards.map((c) => c.verdict)).size).toBeGreaterThanOrEqual(2);
+      const counts: Record<string, number> = {};
+      for (const c of b.cardset.cards) counts[c.verdict] = (counts[c.verdict] ?? 0) + 1;
+      expect(Object.keys(counts).length).toBe(3);
+      expect(Math.max(...Object.values(counts))).toBeLessThanOrEqual(b.cardset.cards.length / 2);
     }
   });
 
