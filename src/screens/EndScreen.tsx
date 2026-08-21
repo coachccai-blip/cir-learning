@@ -43,7 +43,7 @@ export function EndScreen() {
       <div className="container" style={{ width: 'min(900px,100%)', color: '#fff' }}>
         <div className="center">
           <p style={{ opacity: 0.8 }}>{STR.end.grade}</p>
-          <div className="score-hero" style={{ color: 'var(--leyton-orange-main)' }}>
+          <div className="score-hero" style={{ color: 'var(--brand-orange-main)' }}>
             {final.grade}
           </div>
           <p style={{ fontSize: '1.4rem' }}>{final.total} / 100</p>

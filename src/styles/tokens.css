@@ -1,14 +1,14 @@
-/* Design tokens — inspirés de la charte Leyton, ajustés pour la lisibilité.
-   Écarts assumés (voir docs/DECISIONS.md) : contrastes renforcés, encres de
-   texte plus sombres/claires que la charte, ambre pour les états intermédiaires. */
+/* Design tokens — palette de marque CIR Corp (entreprise fictive), calibrée pour la lisibilité.
+   Contrastes renforcés, encres de
+   texte à fort contraste, ambre pour les états intermédiaires (voir docs/DECISIONS.md). */
 
 :root {
   /* Marque */
-  --leyton-blue-main: #002c49;
-  --leyton-blue-dark: #002235;
-  --leyton-blue-mid: #0a3d61;
-  --leyton-orange-main: #ff6633;
-  --leyton-orange-dark: #c34024;
+  --brand-blue-main: #002c49;
+  --brand-blue-dark: #002235;
+  --brand-blue-mid: #0a3d61;
+  --brand-orange-main: #ff6633;
+  --brand-orange-dark: #c34024;
 
   /* Jauges métier (usage fonctionnel) */
   --gauge-relation: #1fa9ba;
@@ -53,9 +53,9 @@
   --text-inverse: #ffffff;
   --border: #d8e0e8;
   --border-strong: #b9c6d2;
-  --brand: var(--leyton-blue-main);
+  --brand: var(--brand-blue-main);
   --brand-contrast: #ffffff;
-  --accent: var(--leyton-orange-main);
+  --accent: var(--brand-orange-main);
   --accent-text: #b03a1e;   /* orange assombri : lisible en texte fin */
   --header-bg: linear-gradient(120deg, #002c49, #0a3d61);
   --header-text: #ffffff;
@@ -78,7 +78,7 @@
   --border-strong: rgba(180, 202, 219, 0.45);
   --brand: #f0f6fb;
   --brand-contrast: #032840;
-  --accent: var(--leyton-orange-main);
+  --accent: var(--brand-orange-main);
   --accent-text: #ffa07d;   /* orange éclairci : lisible sur fond sombre */
   --header-bg: linear-gradient(120deg, #021c2e, #0b3a59);
   --header-text: #f0f6fb;

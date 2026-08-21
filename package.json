@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Learn CIR — serious game de simulation du métier de consultant CIR (Leyton France)",
+  "description": "Learn CIR — serious game de simulation du métier de consultant CIR (entreprise fictive CIR Corp)",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

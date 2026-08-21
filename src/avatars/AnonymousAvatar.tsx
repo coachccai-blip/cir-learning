@@ -52,7 +52,7 @@ export function AnonymousAvatar({ gender, className, phone }: AnonymousAvatarPro
       <circle cx="50" cy="50" r="47" fill="none" stroke="var(--border-strong, #b9c6d2)" strokeWidth="2.5" strokeDasharray="5 5" />
       {phone && (
         <g>
-          <circle cx="80" cy="80" r="13" fill="var(--leyton-orange-main, #ff6633)" />
+          <circle cx="80" cy="80" r="13" fill="var(--brand-orange-main, #ff6633)" />
           <text x="80" y="85" textAnchor="middle" fontSize="13">
             📞
           </text>

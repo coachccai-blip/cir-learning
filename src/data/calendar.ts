@@ -99,7 +99,7 @@ export const MILESTONES: CalendarMilestone[] = [
 export const CHAPTERS: ChapterDef[] = [
   {
     num: 1,
-    title: 'Bienvenue chez Leyton',
+    title: 'Bienvenue chez CIR Corp',
     fromCycle: 1,
     toCycle: 1,
     notion: 'Vocabulaire, rôle du consultant, déroulé d’une mission',

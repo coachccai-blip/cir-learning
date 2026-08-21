@@ -5,6 +5,8 @@ Recherche). Le jour, vous décrochez des clients ; la nuit, vous montez leurs
 dossiers ; à la fin de la saison fiscale, l'administration vous dit si vous aviez
 raison.
 
+Vous êtes consultant chez **CIR Corp**, un cabinet de conseil fictif.
+
 Site statique React + TypeScript + Vite, jouable depuis une simple URL, sans
 compte et sans backend.
 

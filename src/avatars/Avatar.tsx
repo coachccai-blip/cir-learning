@@ -1,5 +1,5 @@
 // Avatars SVG paramétriques déterministes (§12.3). < 8 ko, aucun binaire.
-// Style flat professionnel, monochrome bleu Leyton + accent orange.
+// Style flat professionnel, monochrome bleu de marque + accent orange.
 
 import { useState } from 'react';
 import { hashString } from '../engine/rng';
@@ -109,7 +109,7 @@ export function Avatar({ seed, expression = 'neutre', className, mood }: AvatarP
         {/* buste / tenue */}
         <path d="M15 100 C15 78 32 70 50 70 C68 70 85 78 85 100 Z" fill={outfit} />
         <path d="M50 70 L44 86 L50 92 L56 86 Z" fill="#ffffff" opacity="0.9" />
-        <circle cx="50" cy="82" r="2.4" fill="var(--leyton-orange-main, #ff6633)" />
+        <circle cx="50" cy="82" r="2.4" fill="var(--brand-orange-main, #ff6633)" />
         {/* cou */}
         <rect x="43" y="58" width="14" height="16" rx="6" fill={skin} />
         {/* visage */}

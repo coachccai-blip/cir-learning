@@ -141,3 +141,18 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
   consultant CIR senior ; validation de l'usage de la marque Leyton par la
   Direction Marque.
 - **R2** : points [À CONFIRMER] du §9.7 avant implémentation.
+
+## Marque fictive et vocabulaire métier (demande utilisateur)
+
+29. **Aucune référence à une entreprise réelle** : le cabinet employeur est
+    désormais **CIR Corp**, entreprise fictive. Remplacements effectués dans le
+    contenu visible (tutoriel, chapitre 1, accroche d'accueil, mode
+    « Onboarding »), les métadonnées (`package.json`) et les variables CSS
+    (`--leyton-*` → `--brand-*`). Cela lève au passage le risque R3 du brief
+    (validation de l'usage de la marque par la Direction Marque).
+30. **Vocabulaire** : ne jamais qualifier le consultant de « technicien » —
+    c'est péjoratif dans le métier. Le tutoriel dit désormais « bon commercial
+    et bon consultant ». Attention : « chercheurs et **techniciens de
+    recherche** » reste le terme légal du CGI pour le personnel éligible, et
+    « technicien de labo » est un poste réel des cas — ces occurrences sont
+    conservées telles quelles.

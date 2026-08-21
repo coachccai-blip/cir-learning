@@ -1,4 +1,4 @@
-# Learn CIR (ex-CIR Quest) — repère projet
+# Learn CIR — repère projet
 
 Le document de référence fonctionnel est **`docs/BRIEF.md`**. Toute décision de
 gameplay, de données ou de design doit s'y conformer ; si une ambiguïté apparaît,
@@ -13,7 +13,7 @@ la lever explicitement avec l'utilisateur et mettre à jour le brief.
   ruleset daté.
 - **Aucune chaîne de texte visible codée en dur** dans un composant : le chrome
   d'UI vit dans `src/i18n/fr.ts`, le contenu de jeu dans `src/data/`.
-- Charte Leyton : `#002C49` dominant, `#FF6633` en accent seulement.
+- Charte de marque **CIR Corp** (entreprise fictive) : `#002C49` dominant, `#FF6633` en accent seulement. Aucune référence à une entreprise réelle dans le contenu.
 - TypeScript strict, aucun `any`.
 
 ## Commandes

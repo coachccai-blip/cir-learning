@@ -29,7 +29,7 @@ export function ModeScreen() {
                 style={{
                   textAlign: 'left',
                   cursor: 'pointer',
-                  border: active ? '2px solid var(--leyton-orange-main)' : '1px solid var(--border)',
+                  border: active ? '2px solid var(--brand-orange-main)' : '1px solid var(--border)',
                   outline: 'none',
                 }}
                 aria-pressed={active}

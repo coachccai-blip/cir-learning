@@ -3,7 +3,7 @@
 
 export const STR = {
   appTitle: 'Learn CIR',
-  appTagline: 'Une saison fiscale chez Leyton',
+  appTagline: 'Une saison fiscale chez CIR Corp',
   disclaimer:
     'Les cas, entreprises et montants sont fictifs. Ce jeu est un outil pédagogique et ne constitue en aucun cas un conseil fiscal. Les barèmes reflètent l’état du droit au 20 août 2026 (LF 2026 promulguée le 19 février 2026).',
   menu: {
@@ -27,7 +27,7 @@ export const STR = {
     },
     onboarding: {
       label: 'Onboarding',
-      audience: 'Nouveaux consultants Leyton',
+      audience: 'Nouveaux consultants du cabinet',
       desc: 'Règles réelles, tolérance ±5 %, 2 indices par cycle, contrôle fiscal possible en fin de saison, deadlines fermes.',
     },
     expert: {

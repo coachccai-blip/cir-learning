@@ -116,7 +116,7 @@
 .topbar .brand .o {
   width: 14px;
   height: 14px;
-  border: 3px solid var(--leyton-orange-main);
+  border: 3px solid var(--brand-orange-main);
   border-radius: 50%;
   display: inline-block;
 }
@@ -149,7 +149,7 @@
   background: rgba(255, 255, 255, 0.25);
 }
 .pa-dot.on {
-  background: var(--leyton-orange-main);
+  background: var(--brand-orange-main);
 }
 
 /* ---------- Jauges ---------- */
@@ -264,7 +264,7 @@
 .home-logo .o {
   width: 0.7em;
   height: 0.7em;
-  border: 0.16em solid var(--leyton-orange-main);
+  border: 0.16em solid var(--brand-orange-main);
   border-radius: 50%;
   display: inline-block;
 }
@@ -640,7 +640,7 @@
 }
 .deadline-alert {
   background: rgba(195, 64, 36, 0.35);
-  border: 1px solid var(--leyton-orange-main);
+  border: 1px solid var(--brand-orange-main);
   border-radius: var(--radius-md);
   padding: 4px 12px;
   animation: pulse-alert 1.4s ease-in-out infinite;
@@ -666,7 +666,7 @@
 }
 .phase-transition.to-day {
   background: radial-gradient(circle at 50% 30%, #fff7ee 0%, #dfe9f2 55%, #b9cddd 100%);
-  color: var(--leyton-blue-main);
+  color: var(--brand-blue-main);
 }
 .phase-transition-label {
   font-family: var(--font-title);
