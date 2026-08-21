@@ -4,7 +4,7 @@ import { useStore } from '../state/store';
 import { persistLeaderboard } from '../state/persistence';
 import type { GameMode, LeaderboardEntry } from '../engine/types';
 
-const MODES: GameMode[] = ['discovery', 'onboarding', 'expert'];
+const MODES: GameMode[] = ['onboarding', 'expert'];
 
 export function LeaderboardScreen() {
   const go = useStore((s) => s.go);

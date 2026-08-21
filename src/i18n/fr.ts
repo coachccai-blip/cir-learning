@@ -22,11 +22,6 @@ export const STR = {
     start: 'Démarrer la saison',
   },
   modes: {
-    discovery: {
-      label: 'Découverte',
-      audience: 'Candidats, stagiaires, écoles',
-      desc: 'Vocabulaire vulgarisé, assiette pré-remplie, tolérance ±15 %, indices gratuits, pas de contrôle fiscal, deadlines souples.',
-    },
     onboarding: {
       label: 'Onboarding',
       audience: 'Nouveaux consultants du cabinet',
@@ -183,6 +178,7 @@ export const STR = {
     partial: 'Rappel partiel',
     total: 'Rappel important + intérêts',
     reassessed: 'Montant redressé',
+    noAudit: 'Vos dossiers sont suffisamment solides : pas de rappel cette saison.',
   },
   end: {
     title: 'Fin de saison',

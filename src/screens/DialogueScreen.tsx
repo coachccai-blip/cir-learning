@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { scenarioById } from '../data/scenarios/index';
@@ -73,6 +73,13 @@ export function DialogueScreen() {
   );
 
   const node = scenario && session?.currentNodeId ? getNode(scenario, session.currentNodeId) : null;
+
+  // Le nœud disparaît dès qu'un choix mène à `next: null`, alors que son
+  // feedback reste affiché. Sans mémoire du dernier nœud, l'interlocuteur
+  // perdrait son nom et son portrait sur le dernier écran de l'entretien.
+  const lastNode = useRef<typeof node>(null);
+  if (node) lastNode.current = node;
+  const shownNode = node ?? lastNode.current;
 
   const order = useMemo(() => {
     if (!scenario || !node || !save) return [];
@@ -169,7 +176,7 @@ export function DialogueScreen() {
     if (score >= 80) toast(`${STR.dialogue.scoreLabel} : ${score}/100`);
   }
 
-  const speaker = node?.speaker ?? '';
+  const speaker = shownNode?.speaker ?? '';
   const avatarSeed = client?.contact.avatarSeed ?? speaker;
   const prospect = ctx.prospectId ? save?.prospects.find((p) => p.id === ctx.prospectId) : undefined;
   const codexUnlock = feedback?.feedback.codexUnlock ? codexById(feedback.feedback.codexUnlock) : null;

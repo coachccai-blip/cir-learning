@@ -130,7 +130,6 @@ export function computeFinalScore(save: SaveGame, auditPassed: boolean, reassess
   else if (total >= 55) grade = 'B';
   else if (total >= 40) grade = 'C';
   else grade = 'D';
-  if (save.mode === 'discovery' && grade === 'D') grade = 'C'; // le mode découverte ne descend pas sous C (§20)
 
   return { total, grade, parts, penalties };
 }
