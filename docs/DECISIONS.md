@@ -156,3 +156,23 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
     recherche** » reste le terme légal du CGI pour le personnel éligible, et
     « technicien de labo » est un poste réel des cas — ces occurrences sont
     conservées telles quelles.
+
+## Prospection : 14 situations d'appel distinctes (demande utilisateur)
+
+31. **Fin de l'appel unique** : `sc_prospect_call` (un seul scénario générique
+    servi à tous les prospects) est remplacé par **14 situations d'appel**
+    (`src/data/scenarios/calls.ts`), chacune centrée sur une compétence
+    téléphonique réelle :
+    barrage de l'accueil · « on a déjà un cabinet » · peur du contrôle ·
+    « on est trop petits » · objection prix · « envoyez une doc » ·
+    « vous avez 30 secondes » · dirigeant excédé · recommandation ·
+    « chez nous tout est innovant » · le DAF · non-éligible évident ·
+    entreprise déjà redressée · le curieux mal informé.
+32. **Sélection par profil** (`CALL_POOL`) : un prospect NOT_ELIGIBLE ne tire
+    jamais un scénario supposant un vrai projet R&D, et inversement. La
+    sélection se fait par **rotation** dans le pool (et non tirage aléatoire
+    pur) : deux prospects consécutifs ne tombent jamais sur la même situation.
+33. Chaque scénario conserve le patron du brief (4 choix, rôles uniques,
+    feedback quoi/pourquoi/règle) et se termine par un flag d'issue
+    (`prospect_sign` / `prospect_maybe` / `prospect_decline` /
+    `prospect_decline_rude`) exploité par `resolveProspectCall`.

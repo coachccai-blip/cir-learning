@@ -2,7 +2,8 @@
 
 import balance from '../data/balance.json';
 import type { GeneratedProspect, ProspectTemplate } from './types';
-import { pick, randInt, rngFromSeed } from './rng';
+import { CALL_POOL } from '../data/scenarios/calls';
+import { hashString, pick, randInt, rngFromSeed } from './rng';
 
 const FIRST_NAMES = [
   'Claire', 'Antoine', 'Fatou', 'Julien', 'Inès', 'Mathieu', 'Léa', 'Romain',
@@ -23,6 +24,12 @@ const LAST_NAMES = [
   'Marchal', 'Nguyen', 'Diallo', 'Petit', 'Fontaine', 'Garcia', 'Lemoine',
   'Bourgeois', 'Robin', 'Chevalier', 'Masson', 'Barbier', 'Costa', 'Renard',
 ];
+
+/** Parcourt un pool sans répétition immédiate, avec un décalage propre à la partie. */
+function rotate(pool: string[], index: number, seed: string): string {
+  const offset = hashString(seed) % pool.length;
+  return pool[(index + offset) % pool.length];
+}
 
 export function generateProspect(
   templates: ProspectTemplate[],
@@ -52,6 +59,10 @@ export function generateProspect(
     avatarSeed: `${company}-${contactName}`,
     // Portrait générique révélé à la signature (4 visuels par genre).
     portraitId: `prospect-${gender === 'F' ? 'f' : 'm'}-0${randInt(rng, 1, 4)}`,
+    // Situation d'appel cohérente avec le profil d'éligibilité. Rotation
+    // (et non tirage pur) : deux prospects consécutifs ne tombent jamais sur
+    // la même situation, le joueur voit un maximum de cas de figure.
+    callScenarioId: rotate(CALL_POOL[tpl.eligibilityProfile], index, seed),
     status: 'NEW',
   };
 }

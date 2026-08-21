@@ -349,6 +349,8 @@ export interface GeneratedProspect {
   avatarSeed: string;
   /** Portrait générique attribué s'il devient client (prospect-f-01 … prospect-m-04). */
   portraitId: string;
+  /** Situation d'appel tirée pour ce prospect (barrage, objection, referral…). */
+  callScenarioId: string;
   status: 'NEW' | 'SIGNED' | 'DECLINED' | 'LOST';
   /** CA encaissé si la mission conseil a été signée. */
   revenue?: number;
