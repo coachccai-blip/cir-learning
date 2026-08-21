@@ -1,4 +1,4 @@
-# CIR Quest
+# Learn CIR
 
 Serious game de simulation du métier de **consultant CIR** (Crédit d'Impôt
 Recherche). Le jour, vous décrochez des clients ; la nuit, vous montez leurs

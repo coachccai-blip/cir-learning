@@ -22,7 +22,7 @@ export function TopBar() {
     <header className="topbar">
       {/* Groupe 1 — temps : phase, date, chapitre */}
       <div className="brand" onClick={() => go('home')} role="button" tabIndex={0} style={{ cursor: 'pointer' }}>
-        CIR QUEST
+        {STR.appTitle.toUpperCase()}
       </div>
       <div className="hud-group hud-time">
         <div className="hud-chip hud-primary">

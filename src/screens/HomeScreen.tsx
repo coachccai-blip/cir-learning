@@ -9,7 +9,7 @@ export function HomeScreen() {
     <div className="home">
       <div className="home-card">
         <div className="home-logo">
-          CIR QUEST
+          {STR.appTitle.toUpperCase()}
         </div>
         <div className="home-sub">{STR.appTagline}</div>
         <div className="home-menu">
