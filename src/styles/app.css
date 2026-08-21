@@ -275,6 +275,13 @@
   margin-top: 8px;
   font-size: 1.05rem;
 }
+.home-pitch {
+  margin: 14px auto 0;
+  max-width: 46ch;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
 .home-menu {
   margin-top: var(--sp-6);
   display: grid;

@@ -1,6 +1,11 @@
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 
+/**
+ * Rejouer. Learn CIR est un parcours complet en une partie : pas de défi
+ * quotidien, pas de contenu qui se renouvelle jour après jour. Cet écran sert
+ * uniquement à relancer une saison entière avec un portefeuille différent.
+ */
 export function FreeModeScreen() {
   const go = useStore((s) => s.go);
   const newGame = useStore((s) => s.newGame);
@@ -14,33 +19,13 @@ export function FreeModeScreen() {
           {STR.common.back}
         </button>
       </div>
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', marginTop: 16 }}>
-        <div className="panel">
-          <h3>{STR.freeMode.season}</h3>
-          <p className="muted">{STR.freeMode.seasonDesc}</p>
-          <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => newGame('onboarding')}>
-            {STR.common.play}
-          </button>
-        </div>
-        <div className="panel">
-          <h3>{STR.freeMode.daily}</h3>
-          <p className="muted">{STR.freeMode.dailyDesc}</p>
-          {(() => {
-            // Seed dérivée de la date : même portefeuille et mêmes tirages pour
-            // tous les joueurs du jour (§10.3).
-            const today = new Date().toISOString().slice(0, 10);
-            return (
-              <>
-                <p style={{ marginTop: 8 }}>
-                  <span className="tag tag-accent">Défi du {today.split('-').reverse().join('/')}</span>
-                </p>
-                <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => newGame('onboarding', `daily-${today}`)}>
-                  {STR.common.play}
-                </button>
-              </>
-            );
-          })()}
-        </div>
+      <div className="panel" style={{ marginTop: 16, maxWidth: 640 }}>
+        <h3>{STR.freeMode.season}</h3>
+        <p className="muted">{STR.freeMode.seasonDesc}</p>
+        <p className="muted" style={{ marginTop: 8 }}>{STR.freeMode.replayNote}</p>
+        <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => newGame('onboarding')}>
+          {STR.common.play}
+        </button>
       </div>
     </div>
   );

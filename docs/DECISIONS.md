@@ -221,3 +221,53 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
     sein d'un nœud, et **au plus 40 %** des nœuds où la bonne réponse est aussi
     la plus longue (le hasard donnerait 25 %). Même contrainte sur les blocs du
     justificatif et les propositions du quiz.
+
+## Le portefeuille ne se tarit plus (demande utilisateur)
+
+40. **Les leads du catalogue arrivent enfin.** `ClientDef.leadCycle` n'était lu
+    nulle part : hors mode expert, le portefeuille était figé aux 4 premiers
+    clients et **Solterra (S10) et Data-O (S16) n'étaient jamais joués** — six
+    scénarios écrits, jamais servis. `advanceCycle` fait désormais entrer au
+    CRM tout client dont le `leadCycle` est atteint.
+41. **Un prospect signé peut devenir un vrai client.** Jusqu'ici, signer en
+    prospection n'ajoutait qu'une ligne de chiffre d'affaires : une fois les
+    quatre dossiers déposés, il ne restait plus rien à instruire la nuit.
+    Une partie des signatures ouvre maintenant une **mission de fond** qui entre
+    au portefeuille à l'état `SIGNED` et se joue entièrement (kick-off →
+    qualification → assiette → justificatif → bilan).
+42. **Certaines, pas toutes** (`prospectBecomesClient`) : jamais un prospect non
+    éligible (il n'y a rien à instruire), jamais un dossier sous
+    `minEstimatedCir` (l'enjeu ne justifie pas une mission), et au-delà un tirage
+    déterministe à `conversionRatio`. Un plafond `maxActiveClients` évite que le
+    portefeuille ne dépasse le budget d'actions. Toutes ces valeurs vivent dans
+    `balance.json`.
+43. **Dossier fabriqué, pas improvisé** (`engine/clientgen.ts`) : fiche client,
+    cas d'assiette et jeu de cartes sont assemblés à partir des briques de
+    `data/dossier-kit.ts` (par secteur), puis **recalés sur le CIR annoncé au
+    téléphone** — les montants sont mis à l'échelle pour que le CIR légal réel
+    tombe à ±15 % de l'estimation, sinon la promesse faite en prospection
+    n'aurait aucun sens. Chaque dossier mêle toujours des postes sains et des
+    postes piégés, et le tri de cartes n'est jamais gagnable en cochant une
+    seule colonne. Tout est déterministe : même graine, même dossier.
+44. **Deux scénarios génériques** (`sc_generic_discovery`, `sc_generic_kickoff`)
+    complètent le suivi et le bilan déjà génériques, pour que ces dossiers se
+    jouent avec le même moteur que les clients écrits à la main.
+45. **Persistance** : les dossiers générés sont stockés dans
+    `SaveGame.generatedClients` et réinjectés dans un registre runtime
+    (`data/registry.ts`) au `boot`, avant qu'un écran ne tente de résoudre un
+    `clientId`. Sans cela, un rechargement de page perdrait le client.
+46. **Accord grammatical** : le prénom d'un membre d'équipe généré est tiré en
+    accord avec le genre de l'intitulé de poste — pas de « Zoé Oliveira,
+    Ingénieur matériaux ». Verrouillé par un test.
+
+## Jeu « one-shot » : suppression du défi quotidien (demande utilisateur)
+
+47. **Plus de défi quotidien.** Le brief prévoyait un défi seedé par la date.
+    Learn CIR est un **parcours d'onboarding qui se joue d'une traite** : une
+    saison complète, du premier appel au contrôle fiscal. Un rendez-vous
+    quotidien suppose un joueur qui revient chaque jour — ce n'est pas la
+    situation d'un consultant en cours d'intégration. Le §10.3 du brief est
+    mis à jour en conséquence.
+48. Le mode libre devient **« Rejouer une saison »** : une seule carte, qui
+    relance les 24 semaines avec un portefeuille tiré différemment. L'accueil
+    annonce désormais explicitement la promesse du parcours.

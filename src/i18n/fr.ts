@@ -4,12 +4,14 @@
 export const STR = {
   appTitle: 'Learn CIR',
   appTagline: 'Une saison fiscale chez CIR Corp',
+  appPitch:
+    'Parcours d’onboarding complet : une saison entière pour apprendre les deux métiers du CIR — décrocher des clients le jour, monter des dossiers qui tiennent au contrôle la nuit.',
   disclaimer:
     'Les cas, entreprises et montants sont fictifs. Ce jeu est un outil pédagogique et ne constitue en aucun cas un conseil fiscal. Les barèmes reflètent l’état du droit au 20 août 2026 (LF 2026 promulguée le 19 février 2026).',
   menu: {
-    newGame: 'Nouvelle partie',
+    newGame: 'Commencer le parcours',
     continue: 'Continuer',
-    freeMode: 'Mode libre',
+    freeMode: 'Rejouer une saison',
     codex: 'Codex',
     leaderboard: 'Classement',
     options: 'Options',
@@ -62,6 +64,14 @@ export const STR = {
     prospects: 'Prospects',
     clients: 'Clients signés',
     noProspects: 'Aucun prospect. Faites de la prospection téléphonique ou du réseautage.',
+  },
+  prospects: {
+    becameClient: (company: string, contact: string) =>
+      `${company} entre au portefeuille — ${contact} attend son kick-off de mission.`,
+    newClientTitle: (company: string) => `${company} rejoint le portefeuille`,
+    newClientSubtitle: 'Une mission de fond à instruire : kick-off, qualification, assiette, justificatif.',
+    newLead: (company: string, sector: string) =>
+      `Nouveau lead au CRM : ${company} (${sector}). À qualifier en rendez-vous découverte.`,
   },
   night: {
     title: 'Bureau — Nuit',
@@ -242,11 +252,11 @@ export const STR = {
     pieces: 'Pièces collectées',
   },
   freeMode: {
-    title: 'Mode libre',
-    season: 'Saison libre',
-    seasonDesc: 'Portefeuille tiré aléatoirement, 24 cycles, mode leaderboard principal.',
-    daily: 'Défi quotidien',
-    dailyDesc: 'Portefeuille du jour, identique pour tous les joueurs. Comparez votre score.',
+    title: 'Rejouer une saison',
+    season: 'Nouvelle saison, nouveau portefeuille',
+    seasonDesc: 'Les 24 semaines complètes, avec des clients et des prospects tirés différemment.',
+    replayNote:
+      'Learn CIR se joue d’une traite : une saison entière, du premier appel au contrôle fiscal. Rien à revenir chercher demain.',
     locked: 'Terminez le chapitre 3 pour débloquer le mode libre.',
   },
 } as const;

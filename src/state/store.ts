@@ -27,6 +27,8 @@ import { scoreAssiette } from '../engine/cir/scoring';
 import { computeBreakdown } from '../engine/cir/calculator';
 import { newBadges } from '../engine/badges';
 import { evaluatePromise, generateProspect, resolveGenericMission } from '../engine/prospects';
+import { buildClientFromProspect, prospectBecomesClient } from '../engine/clientgen';
+import { loadGeneratedClients, registerGeneratedClient } from '../data/registry';
 import { rngFromSeed } from '../engine/rng';
 import {
   DEFAULT_OPTIONS,
@@ -41,9 +43,12 @@ import {
   type Options,
 } from './persistence';
 import { createNewGame, initClientState } from './factory';
+import { STR } from '../i18n/fr';
 import { playSound, type SoundName } from '../app/sound';
 
 const RULESET = ruleset as Ruleset;
+/** Millésime instruit pendant la saison (les cas écrits à la main sont sur 2025). */
+const FISCAL_YEAR = 2025;
 
 export type View =
   | 'home'
@@ -217,6 +222,9 @@ export const useStore = create<Store>((set, get) => ({
 
   boot: () => {
     const save = loadSave();
+    // Les dossiers générés doivent être dans le registre avant que le moindre
+    // écran ne tente de résoudre un `clientId` de prospect converti.
+    loadGeneratedClients(save?.generatedClients ?? []);
     set({
       save,
       options: loadOptions(),
@@ -232,6 +240,7 @@ export const useStore = create<Store>((set, get) => ({
     // Générer les leads du portefeuille selon le mode.
     const count = mode === 'expert' ? CLIENTS.length : Math.min(4, CLIENTS.length);
     save.portfolio = CLIENTS.slice(0, count).map((c) => initClientState(c.id));
+    loadGeneratedClients([]);
     persist(save);
     // Quiz d'entrée avant de commencer (mesure de l'apprentissage §18.1).
     set({ save, view: 'quiz', quizPhase: 'pre', settlement: null, transition: null });
@@ -551,11 +560,39 @@ export const useStore = create<Store>((set, get) => ({
 
     if (willSign) {
       const outcome = resolveGenericMission(p);
+      // Certaines signatures deviennent de vraies missions de fond : elles
+      // entrent au portefeuille avec leur propre dossier à instruire la nuit.
+      // Les autres restent des missions conseil qui n'apportent que du CA.
+      const openSlots = save.portfolio.filter(
+        (cs) => cs.dossierState !== 'CLOSED' && cs.dossierState !== 'DEPOSITED' && cs.dossierState !== 'LOST',
+      ).length;
+      const becomesClient =
+        openSlots < balance.prospectToClient.maxActiveClients &&
+        prospectBecomesClient(p, save.seed, balance.prospectToClient);
+
+      let portfolio = save.portfolio;
+      let generatedClients = save.generatedClients;
+      if (becomesClient) {
+        const bundle = buildClientFromProspect(
+          p,
+          save.seed,
+          RULESET,
+          balance.prospectToClient,
+          FISCAL_YEAR,
+        );
+        registerGeneratedClient(bundle);
+        generatedClients = [...save.generatedClients, bundle];
+        // Le contrat est déjà signé au téléphone : le dossier démarre au kick-off.
+        portfolio = [...save.portfolio, initClientState(bundle.client.id, 'SIGNED')];
+      }
+
       const next: SaveGame = {
         ...save,
         prospects: save.prospects.map((x) =>
           x.id === prospectId ? { ...x, status: 'SIGNED' as const, revenue: outcome.revenue } : x,
         ),
+        portfolio,
+        generatedClients,
         revenue: { ...save.revenue, signed: save.revenue.signed + outcome.revenue },
         stats: { ...save.stats, prospectsSigned: save.stats.prospectsSigned + 1 },
       };
@@ -567,12 +604,22 @@ export const useStore = create<Store>((set, get) => ({
           ? `Mission toxique signée : ${p.company} n'a pas de R&D réelle`
           : `Mission conseil signée : ${p.company}`,
       );
-      get().toast(
-        outcome.toxic
-          ? `${p.company} signé… mais rien d'éligible. Cette mission va vous coûter.`
-          : `🤝 ${p.company} signé — ${p.contactName} rejoint votre portefeuille (+${outcome.revenue.toLocaleString('fr-FR')} € CA)`,
-      );
-      get().playSfx('validate');
+      if (outcome.toxic) {
+        get().toast(`${p.company} signé… mais rien d'éligible. Cette mission va vous coûter.`);
+      } else if (becomesClient) {
+        get().toast(STR.prospects.becameClient(p.company, p.contactName));
+        get().celebrate({
+          icon: '🏢',
+          title: STR.prospects.newClientTitle(p.company),
+          subtitle: STR.prospects.newClientSubtitle,
+          tone: 'good',
+        });
+      } else {
+        get().toast(
+          `${p.company} signé — mission conseil (+${outcome.revenue.toLocaleString('fr-FR')} € CA)`,
+        );
+      }
+      get().playSfx(becomesClient ? 'fanfare' : 'validate');
     } else {
       const goodRefusal = p.eligibility === 'NOT_ELIGIBLE' && !flags.includes('prospect_decline_rude');
       const next: SaveGame = {
@@ -819,6 +866,15 @@ export const useStore = create<Store>((set, get) => ({
         },
       ],
     };
+    // Arrivée des leads du catalogue à leur cycle : les deux derniers dossiers
+    // écrits (Solterra, Data-O) n'étaient jamais servis hors mode expert.
+    const arriving = CLIENTS.filter(
+      (c) => c.leadCycle <= nextCycle && !next.portfolio.some((cs) => cs.clientId === c.id),
+    );
+    if (arriving.length > 0) {
+      next.portfolio = [...next.portfolio, ...arriving.map((c) => initClientState(c.id))];
+    }
+
     persist(next);
     set({
       save: next,
@@ -826,6 +882,7 @@ export const useStore = create<Store>((set, get) => ({
       lastDeltas: null,
       transition: { label: `Semaine ${nextCycle} — Jour`, phase: 'DAY' },
     });
+    for (const c of arriving) get().toast(STR.prospects.newLead(c.name, c.sectorLabel));
     // Nouveaux prospects
     get().generateProspects(2);
     // Événement aléatoire (33 %/cycle) — écrase la vue par un dialogue si tiré.

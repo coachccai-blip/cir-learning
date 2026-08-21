@@ -567,7 +567,14 @@ Accessible dès le chapitre 3 terminé. Le joueur choisit :
 
 - **Un cas isolé** : rejouer n'importe quel RDV, n'importe quelle assiette, n'importe quel contrôle, sans conséquence sur la campagne.
 - **Une saison libre** : portefeuille tiré aléatoirement (3 à 6 clients, archétypes et profils mélangés), 24 cycles, pas de scénarisation. C'est le mode de rejouabilité et le mode leaderboard principal.
-- **Un défi quotidien** : seed dérivée de la date, même portefeuille pour tous les joueurs du jour, comparaison de score.
+
+> **Arbitrage du 21/08/2026 — pas de défi quotidien.** Le brief prévoyait
+> initialement un défi quotidien seedé par la date. Learn CIR est un **parcours
+> d'onboarding qui se joue d'une traite** : une saison complète, du premier
+> appel au contrôle fiscal. Un rendez-vous quotidien suppose un joueur qui
+> revient chaque jour, ce qui n'est pas la situation d'un consultant en cours
+> d'intégration. Le mode libre se réduit donc au fait de **rejouer une saison
+> entière** avec un autre portefeuille.
 
 ### 10.4 Événements aléatoires (1 chance sur 3 par cycle)
 
@@ -1011,7 +1018,7 @@ Mini-jeu de cartes, tableur d'assiette branché sur le moteur du lot 1, éditeur
 Les 9 chapitres, 6 clients, 24 scénarios, 90 cartes, 6 cas d'assiette, 20 événements. **DoD** : la campagne se termine en mode onboarding en ~2 h ; volume conforme au §10.1.
 
 ### Lot 9 — Mode libre, polish, PWA
-Saison libre, cas isolés, défi quotidien, service worker, budget de perf, passe d'accessibilité, passe d'équilibrage. **DoD** : Lighthouse ≥ 90 sur les 4 axes, jouable hors ligne, budget JS respecté.
+Saison libre, cas isolés, service worker, budget de perf, passe d'accessibilité, passe d'équilibrage. **DoD** : Lighthouse ≥ 90 sur les 4 axes, jouable hors ligne, budget JS respecté.
 
 ### Lot 10 — Recette métier
 Playtests avec 5 consultants Leyton + 3 nouveaux arrivants. Grille de recueil : justesse métier, difficulté ressentie, clarté des feedbacks, notions retenues (quiz avant/après). Corrections d'équilibrage.

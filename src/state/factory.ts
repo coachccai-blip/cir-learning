@@ -1,5 +1,5 @@
 import balance from '../data/balance.json';
-import { CLIENTS } from '../data/clients';
+import { clientById } from '../data/clients';
 import type { ClientState, GameMode, SaveGame } from '../engine/types';
 import { rngFromSeed } from '../engine/rng';
 
@@ -10,14 +10,18 @@ export function makeSeed(): string {
 }
 let seedCounter = 1;
 
-export function initClientState(clientId: string): ClientState {
-  const c = CLIENTS.find((c) => c.id === clientId)!;
+export function initClientState(
+  clientId: string,
+  /** Un prospect converti entre au portefeuille déjà signé, pas en simple lead. */
+  dossierState: ClientState['dossierState'] = 'LEAD',
+): ClientState {
+  const c = clientById(clientId);
   return {
     clientId,
     mood: c.contact.initialMood,
     trust: c.contact.initialTrust,
     flags: [],
-    dossierState: 'LEAD',
+    dossierState,
     feeRate: c.fees.successRate,
     promise: null,
     piecesCollected: [],
@@ -80,5 +84,6 @@ export function createNewGame(mode: GameMode, createdAt: string, seedOverride?: 
     quizPost: [],
     mailsRead: [],
     gaugeHistory: [],
+    generatedClients: [],
   };
 }

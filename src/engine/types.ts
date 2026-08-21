@@ -429,6 +429,13 @@ export interface DeltaLogEntry {
   cause: string;
 }
 
+/** Dossier complet fabriqué pour un prospect signé, persisté dans la sauvegarde. */
+export interface GeneratedClientBundle {
+  client: ClientDef;
+  case: AssietteCase;
+  cardset: Cardset;
+}
+
 export interface SaveGame {
   schemaVersion: number;
   mode: GameMode;
@@ -473,6 +480,12 @@ export interface SaveGame {
   mailsRead: string[];
   /** Valeurs des jauges en fin de chaque cycle (sparklines du bilan). */
   gaugeHistory: { cycle: number; relation: number; security: number; profitability: number }[];
+  /**
+   * Dossiers fabriqués en cours de partie pour les prospects convertis en
+   * clients. Persistés avec la sauvegarde : sans eux, un rechargement ne
+   * saurait plus résoudre `clientId` / `caseId` / `cardsetId`.
+   */
+  generatedClients: GeneratedClientBundle[];
 }
 
 export interface LeaderboardEntry {

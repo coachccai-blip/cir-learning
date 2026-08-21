@@ -80,3 +80,84 @@ export const GENERIC_CLOSING: Scenario = {
     unlocks: { excellent: [], good: [], poor: [] },
   },
 };
+
+// Découverte générique — sert les dossiers signés en prospection, dont le
+// périmètre reste à cadrer alors que le contrat est déjà là.
+export const GENERIC_DISCOVERY: Scenario = {
+  id: 'sc_generic_discovery',
+  type: 'DISCOVERY',
+  title: 'Rendez-vous de cadrage',
+  context: 'Le contrat est signé au téléphone, mais rien n’est encore qualifié. Ce rendez-vous fixe le périmètre réel.',
+  objectives: ['Chercher le verrou, pas le budget', 'Cadrer le périmètre', 'Ne rien promettre trop vite'],
+  entryNode: 'n1',
+  nodes: [
+    {
+      id: 'n1',
+      speaker: 'Le client',
+      expression: 'neutre',
+      text: 'On a signé, très bien. Concrètement, vous prenez tout ce qu’on fait de technique, c’est ça ?',
+      choices: [
+        choice('optimal', 'technique', 'Pas tout : ce qui levait une incertitude que l’état de l’art ne résolvait pas.', { relation: 3, security: 10, trust: 4 }, { what: 'Vous posez le bon critère.', why: 'Cadrer dès le premier rendez-vous évite de tout reprendre au montage.', rule: 'Le périmètre se définit par l’incertitude, pas par le budget.', codexUnlock: 'cdx_verrou' }, 'n2'),
+        choice('acceptable', 'synthese', 'On va trier ensemble : tout le technique n’entre pas dans l’assiette du CIR.', { security: 7, relation: 2 }, { what: 'Vous annoncez le tri.', why: 'Correct.', rule: 'Le tri fait partie de la mission.' }, 'n2'),
+        choice('tempting', 'commercial', 'On prend tout, on verra bien ce que l’administration voudra bien retenir.', { relation: 4, security: -12 }, { what: 'Vous ratissez large.', why: 'Un périmètre non trié se paie au premier contrôle.', rule: 'On ne met jamais « pour voir ».' }, 'n2'),
+        choice('poor', 'fermete', 'C’est bien trop technique pour vous : laissez-moi faire ça tout seul de mon côté.', { relation: -8, trust: -4 }, { what: 'Vous excluez le client.', why: 'Sans lui, vous n’aurez ni les pièces ni les explications.', rule: 'Un dossier CIR se construit avec le client.' }, 'n2'),
+      ],
+    },
+    {
+      id: 'n2',
+      speaker: 'Le client',
+      expression: 'neutre',
+      text: 'Et vous pensez qu’on arrive à quel montant, à la louche ?',
+      choices: [
+        choice('optimal', 'synthese', 'Une fourchette prudente d’abord, un chiffre ferme après les feuilles de temps.', { relation: 4, security: 8, profitability: 2, trust: 4 }, { what: 'Vous cadrez la promesse.', why: 'Une fourchette annoncée comme provisoire ne se transforme pas en dette.', rule: 'Fourchette maintenant, chiffre ferme sur pièces.', codexUnlock: 'cdx_estimer' }, null),
+        choice('acceptable', 'preuve', 'Je vous réponds après avoir vu vos coûts salariaux et vos aides publiques.', { security: 6, trust: 2 }, { what: 'Vous conditionnez aux pièces.', why: 'Rigoureux, un peu frustrant pour le client.', rule: 'Le chiffre se calcule sur pièces.' }, null),
+        choice('tempting', 'commercial', 'À vue de nez, je dirais que ce sera un très beau montant cette année, vous verrez.', { relation: 5, security: -10 }, { what: 'Vous lâchez une promesse floue.', why: '« Un très beau montant » sera retenu comme un engagement au bilan.', rule: 'Le flou vaut promesse.' }, null),
+        choice('poor', 'fermete', 'Impossible de vous répondre, et cette question n’a pas de sens à ce stade.', { relation: -6 }, { what: 'Vous fermez la porte.', why: 'Refuser tout ordre de grandeur passe pour de l’incompétence.', rule: 'On donne un cadre, même sans chiffre.' }, null),
+      ],
+    },
+  ],
+  outcome: {
+    scoreThresholds: { excellent: 75, good: 55 },
+    unlocks: { excellent: [], good: [], poor: [] },
+  },
+};
+
+// Kick-off générique — lancement d'une mission signée en prospection.
+export const GENERIC_KICKOFF: Scenario = {
+  id: 'sc_generic_kickoff',
+  type: 'KICKOFF',
+  title: 'Kick-off de mission',
+  context: 'Première réunion de travail. Il faut organiser la collecte des preuves avant que les équipes ne passent à autre chose.',
+  objectives: ['Organiser la collecte', 'Fixer les points durs', 'Impliquer les équipes'],
+  entryNode: 'n1',
+  nodes: [
+    {
+      id: 'n1',
+      speaker: 'Le client',
+      expression: 'neutre',
+      text: 'Mes équipes sont déjà sous l’eau. Qu’est-ce que vous attendez d’elles, exactement ?',
+      choices: [
+        choice('optimal', 'preuve', 'Des feuilles de temps par projet et des comptes rendus datés, au fil de l’eau.', { relation: 3, security: 10, trust: 4 }, { what: 'Vous lancez la collecte.', why: 'Une preuve constituée pendant les travaux vaut dix reconstitutions après coup.', rule: 'La preuve se constitue au moment des travaux.', codexUnlock: 'cdx_preuve' }, 'n2'),
+        choice('acceptable', 'synthese', 'Peu de choses, mais régulièrement : le temps passé et ce qui a été essayé.', { security: 7, relation: 3 }, { what: 'Vous allégez la demande.', why: 'Réaliste, un peu vague sur le format attendu.', rule: 'Une collecte régulière coûte moins qu’un rattrapage.' }, 'n2'),
+        choice('tempting', 'commercial', 'Presque rien, on s’occupe de tout : vous n’aurez pas à lever le petit doigt.', { relation: 6, security: -12 }, { what: 'Vous promettez la passivité.', why: 'Sans les équipes, il n’y aura ni feuilles de temps ni comptes rendus.', rule: 'Un dossier CIR ne se monte pas à la place du client.' }, 'n2'),
+        choice('poor', 'fermete', 'Tout, et rapidement : c’est le prix à payer pour un crédit d’impôt.', { relation: -8, mood: -5 }, { what: 'Vous braquez les équipes.', why: 'Une demande massive et sèche ne produit jamais de pièces.', rule: 'La collecte se négocie, elle ne s’impose pas.' }, 'n2'),
+      ],
+    },
+    {
+      id: 'n2',
+      speaker: 'Le client',
+      expression: 'neutre',
+      text: 'Il y a des sujets sur lesquels vous voulez qu’on fasse attention ?',
+      choices: [
+        choice('optimal', 'technique', 'Les prestataires sans agrément MESR et toute aide publique reçue sur le projet.', { relation: 3, security: 12, trust: 4 }, { what: 'Vous ciblez les points durs.', why: 'Agrément et aides publiques concentrent l’essentiel des redressements.', rule: 'Agréments et aides : les deux vérifications qui sauvent un dossier.', codexUnlock: 'cdx_subventions' }, null),
+        choice('acceptable', 'synthese', 'Surtout vos contrats de sous-traitance et vos conventions de financement.', { security: 8, trust: 2 }, { what: 'Vous demandez les bons documents.', why: 'Pertinent.', rule: 'Contrats et conventions d’abord.' }, null),
+        choice('tempting', 'commercial', 'Rien de particulier, on regardera les détails au moment du dépôt du dossier.', { relation: 3, security: -12 }, { what: 'Vous repoussez les vérifications.', why: 'Découvrir une aide non déduite au dépôt oblige à tout refaire.', rule: 'Les points durs se traitent au lancement.' }, null),
+        choice('poor', 'fermete', 'Vous verrez bien : je vous dirai ce qui ne va pas quand je l’aurai trouvé.', { relation: -6, trust: -3 }, { what: 'Vous gardez l’information.', why: 'Un client non prévenu ne prépare rien et découvre les mauvaises nouvelles tard.', rule: 'On annonce les points durs dès le départ.' }, null),
+      ],
+    },
+  ],
+  outcome: {
+    scoreThresholds: { excellent: 75, good: 55 },
+    unlocks: { excellent: ['piece_feuilles_temps'], good: [], poor: [] },
+  },
+};

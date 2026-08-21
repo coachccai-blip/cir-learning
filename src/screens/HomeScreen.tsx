@@ -12,6 +12,7 @@ export function HomeScreen() {
           {STR.appTitle.toUpperCase()}
         </div>
         <div className="home-sub">{STR.appTagline}</div>
+        <p className="home-pitch">{STR.appPitch}</p>
         <div className="home-menu">
           <button className="btn btn-primary" onClick={() => go('mode')}>
             {STR.menu.newGame}

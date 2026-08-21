@@ -5,7 +5,7 @@ import { INDUS_DISCOVERY, INDUS_KICKOFF } from './indus';
 import { BIOTECH_DISCOVERY, BIOTECH_KICKOFF } from './biotech';
 import { GREEN_DISCOVERY, GREEN_KICKOFF } from './green';
 import { SERVICES_DISCOVERY, SERVICES_KICKOFF } from './services';
-import { GENERIC_FOLLOWUP, GENERIC_CLOSING } from './generic';
+import { GENERIC_DISCOVERY, GENERIC_KICKOFF, GENERIC_FOLLOWUP, GENERIC_CLOSING } from './generic';
 import { TUTORIAL } from './misc';
 import { CALL_SCENARIOS } from './calls';
 
@@ -23,6 +23,8 @@ export const SCENARIOS: Scenario[] = [
   GREEN_KICKOFF,
   SERVICES_DISCOVERY,
   SERVICES_KICKOFF,
+  GENERIC_DISCOVERY,
+  GENERIC_KICKOFF,
   GENERIC_FOLLOWUP,
   GENERIC_CLOSING,
   ...CALL_SCENARIOS,
