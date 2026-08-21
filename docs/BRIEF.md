@@ -57,15 +57,21 @@ Corollaire : les 4 réponses d'un dialogue ne sont **jamais** « 1 bonne + 3 abs
 
 ## 2. Public cible et niveaux de difficulté
 
-Trois modes, **même moteur, même contenu, filtres différents** :
+Deux modes, **même moteur, même contenu, filtres différents** :
 
 | Mode | Public | Ce qui change |
 |---|---|---|
-| **Découverte** (`discovery`) | Candidats, stagiaires, écoles | Vocabulaire vulgarisé, assiette pré-remplie à 70 %, tolérance de calcul ±15 %, indices gratuits, pas de contrôle fiscal, deadlines molles |
-| **Onboarding** (`onboarding`) — *mode par défaut* | Nouveaux consultants Leyton (semaines 1-4) | Règles réelles, tolérance ±5 %, 2 indices par cycle, contrôle fiscal possible en fin de saison, deadlines fermes |
+| **Onboarding** (`onboarding`) — *mode par défaut* | Nouveaux consultants (semaines 1-4) | Règles réelles, tolérance ±5 %, 2 indices par cycle, contrôle fiscal possible en fin de saison, deadlines fermes |
 | **Expert** (`expert`) | Consultants en poste | Tolérance ±1 %, aucun indice, cas limites (entités liées, subventions partielles, sous-traitance en cascade, articulation CIR/CII), contrôle fiscal systématique, portefeuille plus large que le budget d'actions |
 
 Le mode est choisi au lancement et **stocké dans la sauvegarde**. Le leaderboard est segmenté par mode.
+
+> **Arbitrage du 21/08/2026 — le mode Découverte est retiré.** Le brief prévoyait
+> un troisième mode, plus permissif, pour les candidats et les écoles. Learn CIR
+> est un **parcours d'onboarding de consultants** : un mode qui supprime le
+> contrôle fiscal et tolère ±15 % d'erreur d'assiette enseigne l'inverse du
+> métier. Restent **Onboarding** (par défaut) et **Expert**. Les parties et les
+> scores enregistrés en Découverte basculent automatiquement sur Onboarding.
 
 ---
 

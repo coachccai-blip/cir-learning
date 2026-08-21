@@ -321,3 +321,26 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
     valides sont documentées dans le README.
 55. `dist/.nojekyll` est ajouté au build : en mode branche, Pages fait passer le
     contenu par Jekyll, qui écarterait tout chemin commençant par un souligné.
+
+## Deux modes, et le portrait qui disparaissait (demande utilisateur)
+
+56. **Le mode « Découverte » est retiré.** Restent **Onboarding** (par défaut)
+    et **Expert**. Un mode qui supprime le contrôle fiscal et tolère ±15 %
+    d'erreur d'assiette enseigne l'inverse du métier — hors sujet pour un
+    parcours d'onboarding de consultants. Le garde-fou « ce mode ne descend
+    jamais sous la note C » disparaît avec lui, ainsi que ses barèmes dans
+    `balance.json`. Le §6 du brief porte l'arbitrage.
+57. **Les parties et les scores enregistrés en Découverte basculent sur
+    Onboarding** (`migrateSave`, `loadLeaderboard`) : sans cela, une sauvegarde
+    resterait sur un mode dont plus aucun barème n'existe, et
+    `toleranceForMode` renverrait `undefined`. Verrouillé par
+    `tests/engine/modes.test.ts`, qui vérifie aussi qu'aucun troisième mode ne
+    subsiste dans les barèmes ni dans l'i18n.
+
+58. **Bug corrigé : l'interlocuteur perdait nom et portrait sur le dernier
+    écran d'un entretien.** `DialogueScreen` lisait le nœud courant via
+    `session.currentNodeId`, qui passe à `null` dès qu'un choix mène à
+    `next: null` — alors que le feedback de ce choix reste affiché. Le nom
+    tombait donc à la chaîne vide et `avatarSeed` avec lui, d'où l'avatar SVG
+    générique à la place de la photo. L'écran mémorise désormais le dernier
+    nœud affiché et s'y rabat tant que le feedback est à l'écran.

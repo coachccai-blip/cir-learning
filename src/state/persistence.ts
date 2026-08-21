@@ -37,6 +37,10 @@ export function migrateSave(data: unknown): SaveGame | null {
   // ancienne ne doit jamais crasher le jeu.
   const filled: SaveGame = {
     ...(s as SaveGame),
+    // Le mode « Découverte » a été retiré : une partie en cours bascule sur
+    // Onboarding, le mode le plus proche, plutôt que de rester sur un mode
+    // dont plus aucun barème n'existe.
+    mode: (s.mode as string) === 'discovery' ? 'onboarding' : (s.mode ?? 'onboarding'),
     firedEvents: s.firedEvents ?? [],
     quizPre: s.quizPre ?? [],
     quizPost: s.quizPost ?? [],
@@ -74,7 +78,11 @@ export function persistSave(save: SaveGame | null): void {
 }
 
 export function loadLeaderboard(): LeaderboardEntry[] {
-  return safeParse<LeaderboardEntry[]>(localStorage.getItem(LB_KEY), []);
+  // Même bascule que pour les sauvegardes : les scores enregistrés en
+  // « Découverte » restent visibles, rattachés à Onboarding.
+  return safeParse<LeaderboardEntry[]>(localStorage.getItem(LB_KEY), []).map((e) =>
+    (e.mode as string) === 'discovery' ? { ...e, mode: 'onboarding' as const } : e,
+  );
 }
 
 export function persistLeaderboard(entries: LeaderboardEntry[]): void {

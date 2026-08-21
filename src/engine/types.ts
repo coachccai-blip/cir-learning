@@ -358,7 +358,7 @@ export interface GeneratedProspect {
 
 // ---------- Sauvegarde / état ----------
 
-export type GameMode = 'discovery' | 'onboarding' | 'expert';
+export type GameMode = 'onboarding' | 'expert';
 export type Phase = 'DAY' | 'NIGHT';
 
 export type DossierState =

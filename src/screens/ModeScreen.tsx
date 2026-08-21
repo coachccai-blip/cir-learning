@@ -3,7 +3,7 @@ import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import type { GameMode } from '../engine/types';
 
-const MODES: GameMode[] = ['discovery', 'onboarding', 'expert'];
+const MODES: GameMode[] = ['onboarding', 'expert'];
 
 export function ModeScreen() {
   const [selected, setSelected] = useState<GameMode>('onboarding');

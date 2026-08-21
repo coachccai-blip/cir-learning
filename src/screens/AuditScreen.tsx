@@ -21,7 +21,6 @@ export function AuditScreen() {
   // Sélection du dossier contrôlé selon le mode.
   const target = useMemo(() => {
     if (!save) return null;
-    if (save.mode === 'discovery') return null;
     const dossiers = save.portfolio.filter((c) => c.assietteInput !== null);
     if (dossiers.length === 0) return null;
     if (save.mode === 'onboarding' && save.gauges.security >= balance.auditSecurityThreshold) {
@@ -50,9 +49,7 @@ export function AuditScreen() {
         <div className="panel center" style={{ marginTop: 40 }}>
           <h1>{STR.audit.title}</h1>
           <p className="muted">
-            {save.mode === 'discovery'
-              ? 'Mode découverte : pas de contrôle fiscal. Direction le bilan de saison.'
-              : 'Vos dossiers sont suffisamment solides : pas de rappel cette saison.'}
+            {STR.audit.noAudit}
           </p>
           <button className="btn btn-primary" onClick={toEnd}>
             {STR.end.title} →

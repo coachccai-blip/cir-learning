@@ -19,12 +19,10 @@
     "restfulNightBonus": 5
   },
   "tolerance": {
-    "discovery": 0.15,
     "onboarding": 0.05,
     "expert": 0.01
   },
   "hints": {
-    "discovery": 99,
     "onboarding": 2,
     "expert": 0
   },
