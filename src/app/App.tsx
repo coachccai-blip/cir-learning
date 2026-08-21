@@ -22,6 +22,7 @@ import { QuizScreen } from '../screens/QuizScreen';
 import { SettlementScreen } from '../screens/SettlementScreen';
 import { PhaseTransition } from '../components/PhaseTransition';
 import { Celebration } from '../components/Celebration';
+import { useUiSounds } from './uiSounds';
 
 const TEXT_SCALE = { normal: '1', large: '1.25', xlarge: '1.5' };
 
@@ -35,13 +36,20 @@ export function App() {
     boot();
   }, [boot]);
 
+  // Retour sonore sur tous les contrôles, branché une fois pour toute l'appli.
+  useUiSounds(options.volume);
+
   // Thème jour/nuit + taille de texte sur <html>
   useEffect(() => {
     const root = document.documentElement;
     const phase = save && (view === 'night' || view === 'audit') ? 'NIGHT' : save?.phase ?? 'DAY';
     root.setAttribute('data-phase', view === 'home' ? 'DAY' : phase);
     root.style.setProperty('--text-scale', TEXT_SCALE[options.textSize]);
-  }, [save, view, options.textSize]);
+    // L'option « Réduire les animations » était stockée sans jamais être
+    // appliquée : elle pilote maintenant les mêmes règles que la préférence
+    // système, via un attribut sur <html>.
+    root.toggleAttribute('data-reduce-motion', options.reduceMotion);
+  }, [save, view, options.textSize, options.reduceMotion]);
 
   const chromeless = view === 'home' || view === 'mode' || view === 'end' || view === 'quiz';
 

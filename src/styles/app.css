@@ -1015,3 +1015,187 @@
   0%, 100% { filter: brightness(1); }
   40% { filter: brightness(1.45); }
 }
+
+/* ==========================================================================
+   Bouton « écouter la réplique »
+   ========================================================================== */
+
+/* La bulle accueille le bouton dans son coin, sans bousculer le texte. */
+.bubble {
+  padding-right: 62px;
+}
+.speak-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.speak-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.08);
+}
+.speak-btn:active { transform: scale(0.94); }
+.speak-btn.is-speaking {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+/* Trois barres qui pulsent pendant la lecture : l'état s'entend, il se voit aussi. */
+.speak-waves {
+  position: absolute;
+  inset: auto 0 -12px;
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  height: 8px;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+.speak-btn.is-speaking .speak-waves { opacity: 1; }
+.speak-waves i {
+  width: 2px;
+  height: 100%;
+  border-radius: 1px;
+  background: var(--accent);
+  transform-origin: bottom;
+  animation: speak-wave 900ms ease-in-out infinite;
+}
+.speak-waves i:nth-child(2) { animation-delay: 150ms; }
+.speak-waves i:nth-child(3) { animation-delay: 300ms; }
+@keyframes speak-wave {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+
+/* ==========================================================================
+   Gamification : micro-réactions aux interactions
+   ========================================================================== */
+
+/* Enfoncement franc de tout contrôle : le clic se sent avant de s'entendre. */
+.btn:active:not(:disabled),
+.choice:active:not(:disabled),
+.card:active {
+  transform: translateY(1px) scale(0.985);
+}
+.btn:disabled {
+  cursor: not-allowed;
+}
+
+/* Le bouton principal respire tant qu'il est la seule action attendue. */
+.btn-primary:not(:disabled) {
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary:not(:disabled)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, 0.28) 50%, transparent 65%);
+  transform: translateX(-120%);
+  animation: btn-sheen 4.5s ease-in-out 1.5s infinite;
+  pointer-events: none;
+}
+@keyframes btn-sheen {
+  0% { transform: translateX(-120%); }
+  22%, 100% { transform: translateX(120%); }
+}
+
+/* Les réponses d'un dialogue entrent en cascade : la scène se pose. */
+.choices .choice {
+  animation: choice-in 260ms ease both;
+}
+.choices .choice:nth-child(2) { animation-delay: 60ms; }
+.choices .choice:nth-child(3) { animation-delay: 120ms; }
+.choices .choice:nth-child(4) { animation-delay: 180ms; }
+@keyframes choice-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* La bulle du personnage arrive juste avant ses réponses. */
+.bubble {
+  animation: bubble-in 240ms ease both;
+}
+@keyframes bubble-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.99); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Les panneaux d'un écran se posent en cascade légère. */
+.stack > .panel,
+.grid > .panel {
+  animation: panel-in 300ms ease both;
+}
+.stack > .panel:nth-child(2), .grid > .panel:nth-child(2) { animation-delay: 50ms; }
+.stack > .panel:nth-child(3), .grid > .panel:nth-child(3) { animation-delay: 100ms; }
+.stack > .panel:nth-child(4), .grid > .panel:nth-child(4) { animation-delay: 150ms; }
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Une jauge qui bouge se voit bouger, au lieu de sauter. */
+.gauge-fill,
+.gauge-bar > span {
+  transition: width 520ms cubic-bezier(0.22, 1, 0.36, 1), background-color 300ms ease;
+}
+
+/* Un point d'action dépensé s'éteint visiblement. */
+.pa-dot {
+  transition: background-color 220ms ease, transform 220ms ease, opacity 220ms ease;
+}
+.pa-dot.on {
+  animation: pa-pop 260ms ease both;
+}
+@keyframes pa-pop {
+  from { transform: scale(0.6); }
+  60% { transform: scale(1.15); }
+  to { transform: scale(1); }
+}
+
+/* Rien de tout cela ne s'impose à qui demande moins d'animation — que ce soit
+   par la préférence système ou par l'option du jeu. */
+:root[data-reduce-motion] .speak-waves i,
+:root[data-reduce-motion] .btn-primary:not(:disabled)::after,
+:root[data-reduce-motion] .choices .choice,
+:root[data-reduce-motion] .bubble,
+:root[data-reduce-motion] .stack > .panel,
+:root[data-reduce-motion] .grid > .panel,
+:root[data-reduce-motion] .pa-dot.on,
+:root[data-reduce-motion] .home-aurora,
+:root[data-reduce-motion] .home-bubble {
+  animation: none;
+}
+:root[data-reduce-motion] .btn:active:not(:disabled),
+:root[data-reduce-motion] .choice:active:not(:disabled),
+:root[data-reduce-motion] .card:active {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .speak-waves i,
+  .btn-primary:not(:disabled)::after,
+  .choices .choice,
+  .bubble,
+  .stack > .panel,
+  .grid > .panel,
+  .pa-dot.on {
+    animation: none;
+  }
+  .btn:active:not(:disabled),
+  .choice:active:not(:disabled),
+  .card:active {
+    transform: none;
+  }
+}

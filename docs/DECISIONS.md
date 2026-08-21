@@ -401,3 +401,47 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
     registre **technique**, absent de quatre kick-offs, est désormais proposé
     dans chaque scénario client — un test l'exige, et interdit qu'un registre
     monopolise plus de la moitié des choix.
+
+## Retour sonore, animations et lecture à haute voix (demande utilisateur)
+
+67. **Le son répond à toutes les interactions**, via un **écouteur unique en
+    capture sur le document** (`app/uiSounds.ts`) plutôt qu'un `onClick` sonore
+    dans chaque composant : le son suit la nature du contrôle, et aucun écran
+    n'a à s'en préoccuper. Cinq nouveaux timbres — `tap`, `tapPrimary`,
+    `toggle`, `back`, `deny` — s'ajoutent aux neuf existants. `pointerdown`
+    plutôt que `click` : le son part à l'appui. Le clavier est couvert à part
+    (Entrée / Espace), car il ne produit pas de `pointerdown`.
+68. **Un contrôle désactivé sonne quand même** (`deny`, sourd) : le silence
+    laisserait croire à un bug plutôt qu'à une action indisponible.
+69. **Le son est désormais actif par défaut** (volume 35). Il était à zéro depuis
+    l'origine (§12.4) ; avec un jeu qui répond à chaque interaction, un joueur
+    qui n'ouvre jamais les options n'entendrait rien. Le curseur revient à zéro
+    en un geste.
+70. **Micro-réactions d'interface** : enfoncement des boutons, reflet lent sur
+    l'action principale, entrée en cascade des réponses et des panneaux,
+    transition des jauges, pastille de PA qui éclôt. Rien de gratuit : chaque
+    animation rend lisible un changement d'état.
+71. **Bug corrigé au passage : l'option « Réduire les animations » n'était
+    appliquée nulle part.** Elle était stockée et affichée dans les options
+    depuis le début, sans le moindre effet. Elle pose maintenant
+    `data-reduce-motion` sur `<html>`, qui neutralise les mêmes règles que la
+    préférence système.
+
+72. **Lecture à haute voix des répliques** (`app/speech.ts`, `SpeakButton`) :
+    un bouton haut-parleur dans la bulle du personnage, avec des ondes qui
+    pulsent pendant la lecture. Web Speech API — aucun fichier audio, aucun
+    service tiers, la voix est celle du système du joueur.
+73. **Voix choisie selon le genre de l'interlocuteur.** Les six clients écrits
+    portent désormais un `gender` explicite sur leur fiche ; les clients issus
+    de prospection héritent de celui du prospect ; les PNJ récurrents ont une
+    table dédiée (`data/voices.ts`), et « Le client » / « Le prospect »
+    empruntent la voix de l'interlocuteur en cours. La sélection est extraite en
+    fonction pure `pickVoice(voices, gender)` pour être testable sans
+    navigateur — la disponibilité des voix dépend du système et n'est pas
+    reproductible en test.
+74. **Dégradations assumées** : sans voix française installée, le bouton **ne
+    s'affiche pas** plutôt que de lire du français avec un accent anglais ;
+    quand la voix retenue ne porte pas de genre, les hauteurs sont écartées pour
+    que deux personnages ne se ressemblent pas ; et l'affectation de la voix est
+    protégée, car un navigateur qui la refuse laissait le bouton bloqué sur
+    « lecture en cours ».

@@ -15,6 +15,7 @@ export const CLIENTS: ClientDef[] = [
     leadCycle: 1,
     contact: {
       name: 'Marc Dupuis',
+      gender: 'M',
       role: 'Directeur général',
       archetype: 'DREAMER',
       avatarSeed: 'dupuis-01',
@@ -45,6 +46,7 @@ export const CLIENTS: ClientDef[] = [
     leadCycle: 1,
     contact: {
       name: 'Elsa Brunet',
+      gender: 'F',
       role: 'CTO co-fondatrice',
       archetype: 'GEEK',
       avatarSeed: 'brunet-02',
@@ -75,6 +77,7 @@ export const CLIENTS: ClientDef[] = [
     leadCycle: 1,
     contact: {
       name: 'Hervé Verdier',
+      gender: 'M',
       role: 'Directeur général',
       archetype: 'SCEPTIC',
       avatarSeed: 'verdier-03',
@@ -105,6 +108,7 @@ export const CLIENTS: ClientDef[] = [
     leadCycle: 2,
     contact: {
       name: 'Laurent Kaplan',
+      gender: 'M',
       role: 'Directeur administratif et financier',
       archetype: 'CFO',
       avatarSeed: 'kaplan-04',
@@ -135,6 +139,7 @@ export const CLIENTS: ClientDef[] = [
     leadCycle: 2,
     contact: {
       name: 'Marion Vasseur',
+      gender: 'F',
       role: 'CEO',
       archetype: 'RUSHED',
       avatarSeed: 'vasseur-05',
@@ -165,6 +170,7 @@ export const CLIENTS: ClientDef[] = [
     leadCycle: 3,
     contact: {
       name: 'Paul Lenoir',
+      gender: 'M',
       role: 'Directeur des opérations',
       archetype: 'SILENT',
       avatarSeed: 'lenoir-06',

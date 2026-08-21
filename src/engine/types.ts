@@ -214,6 +214,8 @@ export interface ClientDef {
   leadCycle: number;
   contact: {
     name: string;
+    /** Pilote la voix de la lecture à haute voix. */
+    gender: 'F' | 'M';
     role: string;
     archetype: Archetype;
     avatarSeed: string;
