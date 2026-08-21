@@ -399,6 +399,12 @@ export interface HistoryEntry {
   nodeId: string;
   choiceId: string;
   role: ChoiceRole;
+  clientId?: string;
+  /** Texte du choix, figé au moment où il est joué (pour flashbacks et débrief). */
+  text: string;
+  /** Somme des deltas de jauges du choix (négatif = décision coûteuse). */
+  impact: number;
+  rule: string;
 }
 
 export interface Gauges {
@@ -453,6 +459,10 @@ export interface SaveGame {
   /** Réponses au quiz d'entrée et de sortie (index d'option par question). */
   quizPre: number[];
   quizPost: number[];
+  /** Mails lus dans la boîte de réception du jour. */
+  mailsRead: string[];
+  /** Valeurs des jauges en fin de chaque cycle (sparklines du bilan). */
+  gaugeHistory: { cycle: number; relation: number; security: number; profitability: number }[];
 }
 
 export interface LeaderboardEntry {

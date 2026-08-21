@@ -597,6 +597,184 @@
   border-left: 4px solid var(--accent);
 }
 
+/* ---------- HUD hiérarchisé ---------- */
+.hud-group {
+  display: flex;
+  gap: var(--sp-4);
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.06);
+}
+.hud-time {
+  background: transparent;
+  padding: 0;
+}
+.hud-primary strong {
+  font-size: 1.05rem;
+}
+.hud-secondary {
+  opacity: 0.62;
+  background: transparent;
+}
+.hud-chapter {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+.deadline-alert {
+  background: rgba(195, 64, 36, 0.35);
+  border: 1px solid var(--leyton-orange-main);
+  border-radius: var(--radius-md);
+  padding: 4px 12px;
+  animation: pulse-alert 1.4s ease-in-out infinite;
+}
+@keyframes pulse-alert {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 102, 51, 0.55); }
+  50% { box-shadow: 0 0 0 7px rgba(255, 102, 51, 0); }
+}
+
+/* ---------- Transition jour/nuit ---------- */
+.phase-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  animation: phase-fade 1100ms ease forwards;
+  pointer-events: none;
+}
+.phase-transition.to-night {
+  background: radial-gradient(circle at 50% 30%, #0a3d61 0%, #002235 60%, #001420 100%);
+  color: #eaf2f8;
+}
+.phase-transition.to-day {
+  background: radial-gradient(circle at 50% 30%, #fff7ee 0%, #dfe9f2 55%, #b9cddd 100%);
+  color: var(--leyton-blue-main);
+}
+.phase-transition-label {
+  font-family: var(--font-title);
+  font-size: clamp(1.6rem, 5vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  animation: phase-label 1100ms ease;
+}
+.phase-icon {
+  font-size: 1.2em;
+}
+@keyframes phase-fade {
+  0% { opacity: 0; }
+  18% { opacity: 1; }
+  75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes phase-label {
+  0% { transform: translateY(14px) scale(0.96); }
+  30% { transform: translateY(0) scale(1); }
+}
+
+/* ---------- Téléphone / rappels / streak ---------- */
+.phone-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--brand);
+  color: var(--brand-contrast);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-md);
+}
+.phone-icon {
+  animation: phone-ring 1.6s ease-in-out infinite;
+  display: inline-block;
+}
+@keyframes phone-ring {
+  0%, 60%, 100% { transform: rotate(0); }
+  65%, 75%, 85% { transform: rotate(-14deg); }
+  70%, 80%, 90% { transform: rotate(12deg); }
+}
+.bubble-recall {
+  border-left: 4px solid var(--gauge-relation);
+  font-size: 0.95rem;
+  margin-bottom: var(--sp-3);
+  opacity: 0.95;
+}
+.bubble-recall .tag {
+  display: inline-flex;
+}
+.streak-chip {
+  animation: slideup 250ms ease;
+}
+
+/* ---------- Boîte mail ---------- */
+.mail-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  padding: var(--sp-3);
+  cursor: pointer;
+  transition: border-color 120ms ease;
+}
+.mail-item:hover {
+  border-color: var(--accent);
+}
+.mail-item.unread {
+  border-left: 4px solid var(--accent);
+}
+.mail-item .mail-head {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 0.82rem;
+}
+.mail-body {
+  margin-top: 8px;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+/* ---------- Comparateur d'assiette ---------- */
+.compare-row {
+  margin-bottom: 10px;
+}
+.compare-row .labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  margin-bottom: 3px;
+}
+.compare-track {
+  position: relative;
+  height: 14px;
+  border-radius: 7px;
+  background: var(--bg-sunken);
+  overflow: hidden;
+}
+.compare-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 7px;
+}
+.compare-marker {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 3px;
+  background: var(--text);
+  border-radius: 2px;
+}
+
+/* ---------- Sparklines ---------- */
+.sparkline {
+  display: block;
+  width: 100%;
+  height: 36px;
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 860px) {
   .dialogue-wrap { grid-template-columns: 1fr; }

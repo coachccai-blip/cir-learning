@@ -12,46 +12,61 @@ export function TopBar() {
   const ms = nextMilestone(save.cycle);
   const grade = gradeForXp(save.xp);
   const estate = energyState(save.energy);
+  // Alerte « J-2 » : l'échéance tombe cette semaine ou la suivante.
+  const deadlineSoon = ms !== null && ms.cycle - save.cycle <= 1 && ms.consequence !== '';
 
   const dots = [];
   for (let i = 0; i < 6; i++) dots.push(<span key={i} className={`pa-dot${i < save.actionPoints ? ' on' : ''}`} />);
 
   return (
     <header className="topbar">
+      {/* Groupe 1 — temps : phase, date, chapitre */}
       <div className="brand" onClick={() => go('home')} role="button" tabIndex={0} style={{ cursor: 'pointer' }}>
         CIR QUEST
       </div>
-      <span className="tag" style={{ background: 'rgba(255,255,255,0.14)', color: '#fff' }}>
-        Ch.{chapter.num} · {chapter.title}
-      </span>
-      <div className="hud">
-        <div className="hud-chip">
+      <div className="hud-group hud-time">
+        <div className="hud-chip hud-primary">
           <span>
             {save.phase === 'DAY' ? '☀ ' + STR.hud.day : '☾ ' + STR.hud.night} · {STR.hud.cycle} {save.cycle}
           </span>
           <strong>{CYCLE_DATES[save.cycle - 1]}</strong>
         </div>
-        <div className="hud-chip">
-          <span>{STR.hud.pa}</span>
-          <span className="pa-dots">{dots}</span>
+        <span className="tag hud-chapter">
+          Ch.{chapter.num} · {chapter.title}
+        </span>
+      </div>
+
+      <div className="hud">
+        {/* Groupe 2 — ressources actionnables : PA, énergie */}
+        <div className="hud-group">
+          <div className="hud-chip hud-primary">
+            <span>{STR.hud.pa}</span>
+            <span className="pa-dots">{dots}</span>
+          </div>
+          <div className="hud-chip hud-primary">
+            <span>
+              {STR.hud.energy} · {ENERGY_STATE_LABEL[estate]}
+            </span>
+            <strong>{save.energy}</strong>
+          </div>
         </div>
-        <div className="hud-chip">
-          <span>
-            {STR.hud.energy} · {ENERGY_STATE_LABEL[estate]}
-          </span>
-          <strong>{save.energy}</strong>
+
+        {/* Groupe 3 — progression : discret */}
+        <div className="hud-group hud-secondary">
+          <div className="hud-chip">
+            <span>{grade.label}</span>
+            <strong>{save.xp} XP</strong>
+          </div>
+          <div className="hud-chip">
+            <span>{STR.hud.revenue}</span>
+            <strong>{save.revenue.signed.toLocaleString('fr-FR')} €</strong>
+          </div>
         </div>
-        <div className="hud-chip">
-          <span>{grade.label}</span>
-          <strong>{save.xp} XP</strong>
-        </div>
-        <div className="hud-chip">
-          <span>{STR.hud.revenue}</span>
-          <strong>{save.revenue.signed.toLocaleString('fr-FR')} €</strong>
-        </div>
+
+        {/* Deadline : chip normale, ou alerte pulsante à J-2 */}
         {ms && (
-          <div className="hud-chip" title={ms.label}>
-            <span>{STR.hud.nextDeadline}</span>
+          <div className={`hud-chip${deadlineSoon ? ' deadline-alert' : ' hud-secondary'}`} title={ms.consequence || ms.label}>
+            <span>{deadlineSoon ? '⚠ ' + STR.hud.nextDeadline : STR.hud.nextDeadline}</span>
             <strong>
               {ms.date} (S{ms.cycle})
             </strong>

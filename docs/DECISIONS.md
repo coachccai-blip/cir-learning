@@ -73,6 +73,43 @@ Quatre améliorations à fort levier, ajoutées après la première mise en lign
 Champs de sauvegarde ajoutés (`firedEvents`, `quizPre`, `quizPost`) avec backfill
 défensif dans `migrateSave` : une sauvegarde v1 reste lisible.
 
+## Itération « immersion & design » (post-v1.1)
+
+13. **Historique des décisions exploité** : chaque choix joué est enregistré
+    (texte figé, impact, règle). Le contrôle fiscal cite les décisions risquées
+    mot pour mot (« Semaine N, vous aviez déclaré… ») et l'écran de fin livre un
+    débrief nominatif (décisions les plus coûteuses + meilleurs réflexes).
+14. **Mémoire relationnelle parlante** (§8.3) : les PNJ citent en ouverture la
+    promesse chiffrée et les flags mémorisés (`src/data/recalls.ts`), avec un
+    contexte d'ambiance par client pour les scénarios génériques.
+15. **Scène de règlement de promesse** : le reproche du client est une vraie
+    scène (portrait, réplique, deltas, leçon), plus un toast.
+16. **Anneau d'humeur** : l'humeur de chaque client est portée par un anneau
+    coloré autour de son portrait (arc proportionnel, rouge→ambre→cyan→vert),
+    doublé d'un `role="meter"` accessible. La barre d'humeur est remplacée.
+17. **Polices auto-hébergées** : Montserrat + Nunito Sans en fontes variables
+    (latin, ~69 ko, licence OFL) dans `public/fonts/` — zéro requête tierce.
+18. **HUD hiérarchisé + alerte J-2** : chips groupées (temps / ressources /
+    progression discrète), échéance pulsante en rouge quand elle tombe dans la
+    semaine ou la suivante.
+19. **Transition jour/nuit ritualisée** : overlay plein écran ~1,1 s (« Semaine
+    N — Nuit »), désactivé par `prefers-reduced-motion`.
+20. **Boîte mail du jour** (§6.1) : `src/data/mails.ts`, mails contextuels par
+    fenêtre de cycles, certains liés à une fiche codex (dont une fausse
+    newsletter pré-2025 — piège pédagogique).
+21. **Sons synthétisés WebAudio** (badge, validation, sonnerie, alerte), mute
+    par défaut, pilotés par l'option volume. Aucun fichier audio.
+22. **Sparklines de jauges** au bilan de cycle (une série par graphe, échelle
+    fixe 0-100) et **comparateur visuel d'assiette** (barre = montant retenu,
+    trait = montant juste, vert/rouge par poste).
+23. **Défi quotidien réellement seedé** par la date (`daily-YYYY-MM-DD`) : même
+    portefeuille et mêmes tirages pour tous les joueurs du jour.
+24. **Streak « Le mot juste »** enfin alimentée (choix optimal/acceptable
+    l'augmentent, tentant/mauvais la cassent) et affichée en dialogue (🔥 ×N).
+
+Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
+`history`) avec backfill défensif dans `migrateSave`.
+
 ## Points à valider (rappel des risques §21)
 
 - **R1/R3** : relecture métier des règles fiscales et des cas d'or par un
