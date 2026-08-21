@@ -16,6 +16,9 @@ const SPEAKER_GENDER: Record<string, Gender> = {
   'L’assistante de direction': 'F',
   'Le commissaire aux comptes': 'M',
   'Le vérificateur': 'M',
+  // Deuxième saison : le technicien qui contredit sa direction.
+  'Tom Aubert': 'M',
+  'Bruno Meyer': 'M',
 };
 
 /**

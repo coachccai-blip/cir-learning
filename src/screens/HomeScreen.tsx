@@ -1,6 +1,7 @@
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { ALL_PORTRAITS } from '../avatars/portraits';
+import { isUnlocked, journeyComplete, JOURNEY } from '../engine/journey';
 
 /**
  * Scène d'accueil. Les visages des clients et prospects flottent autour du
@@ -47,6 +48,7 @@ const BUBBLES: Bubble[] = [
 export function HomeScreen() {
   const go = useStore((s) => s.go);
   const save = useStore((s) => s.save);
+  const progress = useStore((s) => s.progress);
 
   return (
     <div className="home">
@@ -97,6 +99,25 @@ export function HomeScreen() {
               {STR.menu.options}
             </button>
           </div>
+        </div>
+        {/* Le parcours se joue dans l'ordre : l'accueil annonce où l'on en est. */}
+        <div className="home-journey" aria-label={STR.journey.title}>
+          {JOURNEY.map((m, i) => {
+            const done = progress.completed.includes(m);
+            const locked = !isUnlocked(m, progress);
+            return (
+              <span
+                key={m}
+                className={`journey-pill${done ? ' is-done' : ''}${locked ? ' is-locked' : ''}`}
+              >
+                <span className="journey-pill-mark">{done ? '✓' : locked ? '🔒' : i + 1}</span>
+                {STR.modes[m].label}
+              </span>
+            );
+          })}
+          {journeyComplete(progress) && (
+            <span className="journey-pill is-done">🏁 {STR.journey.complete}</span>
+          )}
         </div>
         <p className="disclaimer">⚠️ {STR.disclaimer}</p>
       </div>

@@ -445,3 +445,75 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
     que deux personnages ne se ressemblent pas ; et l'affectation de la voix est
     protégée, car un navigateur qui la refuse laissait le bouton bloqué sur
     « lecture en cours ».
+
+## Le parcours en deux saisons (lot « Onboarding → Expert »)
+
+75. **Le jeu devient un parcours ordonné, pas un curseur de difficulté.**
+    Jusqu'ici « Expert » rejouait la campagne d'Onboarding avec une tolérance
+    plus serrée et sans indices : le joueur revoyait les mêmes six clients, les
+    mêmes dialogues, les mêmes pièges. On termine désormais la première saison
+    pour ouvrir la seconde, et le parcours est déclaré complet quand les deux
+    sont menées. L'avancement vit hors de la sauvegarde de partie
+    (`cirquest.progress.v1`), au même titre que le codex lu : réinitialiser une
+    partie ne reverrouille pas la saison acquise.
+76. **La seconde saison a son propre portefeuille** (`clients-expert.ts`,
+    `cases-expert.ts`, `cards-expert.ts`) : quatre entreprises inédites, quatre
+    dossiers denses, quatre jeux de cartes. Les visages, eux, sont ceux déjà
+    produits pour le jeu — les figures secondaires de la première saison
+    (Nadia Cherif, Kevin Roy, Amina Sy, Bruno Meyer, Tom Aubert) passent au
+    premier plan dans d'autres maisons et d'autres rôles. Aucun nouveau
+    portrait n'a été nécessaire.
+77. **Trois mécaniques réservées à la seconde saison**, chacune portée par du
+    contenu écrit et non par un réglage :
+    - *l'interlocuteur embellit* — le taux réellement opposable n'est plus
+      affiché sur l'écran d'assiette ; il ne se révèle qu'à celui qui a
+      rapporté la pièce (`piece_feuilles_temps`, `piece_registre`). Toute ligne
+      piégée d'un dossier expert est donc adossée à une pièce : à ±1 % de
+      tolérance, un piège sans pièce serait indevinable (test dédié) ;
+    - *le dossier à refuser* — Forgeal Industries a un savoir-faire rare, un
+      concurrent qui « prend tout », et presque rien d'éligible. Le refus est
+      le choix optimal ; il sort le client du portefeuille (`refus_mission`),
+      coûte du chiffre d'affaires et rapporte de la sécurité ;
+    - *le contrôle contradictoire* — le vérificateur ne clôt plus un constat
+      d'une seule question. Il relance : « que proposez-vous ? ». Reconnaître
+      et rectifier n'efface pas le rappel, cela l'atténue (`audit.remedyRelief`
+      dans `balance.json`). C'est ce que fait un consultant en séance.
+78. **Courbe d'apprentissage de l'assiette** (`engine/progression.ts`). Le
+    premier dossier d'une partie présentait d'un coup les cinq postes, avec la
+    tolérance du dernier. Les postes arrivent maintenant dans l'ordre où on les
+    apprend — personnel, amortissements, sous-traitance, aides publiques,
+    postes supprimés — et l'exigence se resserre à chaque dossier (±15 % → ±5 %
+    en Onboarding, ±3 % → ±1 % en Expert). Le rang du dossier est figé dans la
+    sauvegarde (`ClientState.baseStep`) à la première ouverture de l'assiette :
+    un dossier repris plus tard ne change ni de postes ni de tolérance.
+79. **Le joueur et le corrigé travaillent sur le même cas restreint.**
+    `restrictCase` vide les postes non introduits ; l'assiette juste d'un
+    dossier « personnel seul » est bien celle du personnel seul. Le contrôle
+    fiscal passe par la même résolution (`state/dossier.ts`), faute de quoi le
+    vérificateur reprocherait une aide publique jamais affichée à l'écran.
+80. **Les honoraires restent calculés sur le dossier complet.** La restriction
+    est un dispositif pédagogique : elle ne change pas le crédit auquel le
+    client a droit, ni ce qu'on lui facture. L'objectif de chiffre d'affaires
+    de la saison devient en revanche propre au mode — la seconde compte moins
+    de dossiers, à un taux d'honoraires plus bas.
+81. **Les dossiers écrits varient d'une partie à l'autre** (`engine/casevar.ts`,
+    `data/case-twists.ts`). Deux leviers tirés de la graine : les montants sont
+    brouillés ligne par ligne (±12 %, arrondi à la centaine), et un « twist »
+    déclaratif déplace les pièges — le prestataire agréé de la partie
+    précédente ne l'est plus, l'aide change de nature, la personne « saine »
+    devient le poste à corriger. Le dossier d'origine reste dans le tirage :
+    c'est celui qui a été relu et équilibré.
+82. **Aucun libellé de piège ne cite plus de pourcentage.** Les ratios changent
+    d'une variante à l'autre : un piège qui écrivait « 35 % de R&D réelle, pas
+    50 % » se serait désynchronisé du chiffre affiché. Les six formulations
+    concernées ont été réécrites, et un test verrouille la règle.
+83. **Rien de tout cela n'est persisté.** Les variantes se recalculent à
+    l'identique depuis la graine à chaque chargement de page — même partie,
+    même dossier, sans un octet de sauvegarde en plus.
+84. **Conséquences annexes assumées** : le tutoriel ne se rejoue pas en seconde
+    saison (le joueur est censé être en poste depuis un an) ; les chapitres de
+    campagne ont leur propre récit en Expert ; un nœud de dialogue peut
+    surcharger le portrait affiché (`DialogueNode.avatarSeed`), ce qui permet au
+    technicien de contredire sa direction avec son propre visage ; et les
+    options offrent une réinitialisation du parcours, pour refaire jouer les
+    deux saisons à quelqu'un d'autre.

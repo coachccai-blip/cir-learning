@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import balance from '../data/balance.json';
 import ruleset from '../data/rules/ruleset-2026.json';
-import { CLIENTS, clientById } from '../data/clients';
-import { caseById } from '../data/cases';
+import { clientById, findClient, rosterFor } from '../data/clients';
+import { caseById, writtenCases } from '../data/cases';
 import { cardsetById } from '../data/cards';
 import { scenarioById } from '../data/scenarios/index';
 import { EVENTS } from '../data/events';
@@ -22,24 +22,31 @@ import type {
   Scenario,
 } from '../engine/types';
 import { clamp } from '../engine/dialogue/mood';
-import { energyState, gradeForXp, maxClients, xpForBaseAccuracy, toleranceForMode } from '../engine/economy';
+import { energyState, gradeForXp, maxClients, xpForBaseAccuracy } from '../engine/economy';
 import { scoreAssiette } from '../engine/cir/scoring';
 import { computeBreakdown } from '../engine/cir/calculator';
 import { newBadges } from '../engine/badges';
 import { evaluatePromise, generateProspect, resolveGenericMission } from '../engine/prospects';
 import { buildClientFromProspect, prospectBecomesClient } from '../engine/clientgen';
 import { neglectedClients, resolveMilestone } from '../engine/milestones';
-import { loadGeneratedClients, registerGeneratedClient } from '../data/registry';
+import { stepFor, stepForClient } from '../engine/progression';
+import { completeSeason, EMPTY_PROGRESS, isUnlocked, type Progress } from '../engine/journey';
+import { varyCase } from '../engine/casevar';
+import { twistsForCase } from '../data/case-twists';
+import { caseForClient } from './dossier';
+import { loadCaseVariations, loadGeneratedClients, registerGeneratedClient } from '../data/registry';
 import { rngFromSeed } from '../engine/rng';
 import {
   DEFAULT_OPTIONS,
   loadCodexRead,
   loadLeaderboard,
   loadOptions,
+  loadProgress,
   loadSave,
   persistCodexRead,
   persistLeaderboard,
   persistOptions,
+  persistProgress,
   persistSave,
   type Options,
 } from './persistence';
@@ -87,6 +94,17 @@ export interface DialogueContext {
   inlineScenario?: Scenario;
 }
 
+/**
+ * Installe les variantes de dossiers de la partie. Purement déterministe :
+ * la même graine redonne les mêmes montants et le même piège, y compris
+ * après un rechargement de page — rien n'a besoin d'être persisté.
+ */
+function applyCaseVariations(seed: string): void {
+  loadCaseVariations(
+    writtenCases().map((c) => varyCase(c, twistsForCase(c.id), `${seed}:case:${c.id}`)),
+  );
+}
+
 /** Transforme un événement (nœud unique à 4 choix) en scénario jouable. */
 export function eventToScenario(ev: GameEvent): Scenario {
   return {
@@ -104,6 +122,8 @@ interface UIState {
   save: SaveGame | null;
   options: Options;
   leaderboard: LeaderboardEntry[];
+  /** Avancement du parcours (saisons terminées) — hors sauvegarde de partie. */
+  progress: Progress;
   codexReadPersistent: string[];
   toasts: Toast[];
   dialogue: DialogueContext | null;
@@ -199,6 +219,10 @@ interface Actions {
   closeInterimAudit: () => void;
   commitQuiz: (phase: 'pre' | 'post', answers: number[]) => void;
   saveLeaderboard: (pseudo: string, score: number, grade: string) => void;
+  /** Marque la saison terminée : c'est ce qui déverrouille la suivante. */
+  completeSeason: (mode: GameMode, score: number) => void;
+  /** Remet le parcours à zéro (usage formateur, depuis les options). */
+  resetJourney: () => void;
 }
 
 export type Store = UIState & Actions;
@@ -215,6 +239,7 @@ export const useStore = create<Store>((set, get) => ({
   save: null,
   options: DEFAULT_OPTIONS,
   leaderboard: [],
+  progress: EMPTY_PROGRESS,
   codexReadPersistent: [],
   toasts: [],
   dialogue: null,
@@ -231,10 +256,12 @@ export const useStore = create<Store>((set, get) => ({
     // Les dossiers générés doivent être dans le registre avant que le moindre
     // écran ne tente de résoudre un `clientId` de prospect converti.
     loadGeneratedClients(save?.generatedClients ?? []);
+    if (save) applyCaseVariations(save.seed);
     set({
       save,
       options: loadOptions(),
       leaderboard: loadLeaderboard(),
+      progress: loadProgress(),
       codexReadPersistent: loadCodexRead(),
     });
   },
@@ -242,13 +269,16 @@ export const useStore = create<Store>((set, get) => ({
   go: (view) => set({ view }),
 
   newGame: (mode, seedOverride) => {
+    // Le parcours est ordonné : la deuxième saison suppose la première jouée.
+    if (!isUnlocked(mode, get().progress)) return;
     const save = createNewGame(mode, new Date(0).toISOString(), seedOverride);
     // Le portefeuille s'ouvre sur les leads du premier cycle ; les autres
     // arrivent au fil des semaines. Il y aura toujours plus de dossiers que de
     // points d'action : choisir qui l'on sert fait partie du jeu.
-    const opening = mode === 'expert' ? CLIENTS : CLIENTS.filter((c) => c.leadCycle <= 1);
+    const opening = rosterFor(mode).filter((c) => c.leadCycle <= 1);
     save.portfolio = opening.map((c) => initClientState(c.id));
     loadGeneratedClients([]);
+    applyCaseVariations(save.seed);
     persist(save);
     // Quiz d'entrée avant de commencer (mesure de l'apprentissage §18.1).
     set({ save, view: 'quiz', quizPhase: 'pre', settlement: null, transition: null });
@@ -298,7 +328,9 @@ export const useStore = create<Store>((set, get) => ({
     if (!save) return;
     set({ view: 'day' });
     get().generateProspects(3);
-    if (!save.tutorialDone) {
+    // Le tutoriel présente le cabinet et le métier : il n'a pas de sens en
+    // deuxième saison, où le joueur est censé être en poste depuis un an.
+    if (!save.tutorialDone && save.mode !== 'expert') {
       get().startDialogue({ scenarioId: 'sc_tutorial', kind: 'tutorial', returnTo: 'day' });
     }
   },
@@ -464,12 +496,25 @@ export const useStore = create<Store>((set, get) => ({
       next = { ...next, stats: { ...next.stats, refusedMissions: next.stats.refusedMissions + 1 } };
     }
 
+    // Refus ferme d'un dossier inexistant : le client sort du portefeuille.
+    // C'est un choix gagnant — il libère des points d'action et protège la
+    // saison — mais il faut assumer de perdre le chiffre d'affaires.
+    const refused = result.flags.includes('refus_mission') && result.clientId;
+    if (refused) {
+      next = {
+        ...next,
+        portfolio: next.portfolio.map((cs) =>
+          cs.clientId === result.clientId ? { ...cs, dossierState: 'LOST' as const } : cs,
+        ),
+      };
+    }
+
     // Bilan de mission : la promesse initiale est confrontée au CIR réel (§6.3).
     // Le règlement est présenté en vraie scène (view 'settlement'), pas en toast.
     let settlement: UIState['settlement'] = null;
     if (result.kind === 'closing' && result.clientId) {
       const cs = next.portfolio.find((p) => p.clientId === result.clientId);
-      const client = CLIENTS.find((c) => c.id === result.clientId);
+      const client = findClient(result.clientId);
       if (cs?.promise && client) {
         const realCir = cs.playerCir ?? cs.trueCir ?? Math.round((client.cirEstimate[0] + client.cirEstimate[1]) / 2);
         const outcome = evaluatePromise({ min: cs.promise.min, max: cs.promise.max }, realCir);
@@ -511,6 +556,17 @@ export const useStore = create<Store>((set, get) => ({
       view: settlement ? 'settlement' : (dialogue?.returnTo ?? 'day'),
     });
     get().addXp(xpBucket, 'Entretien mené');
+
+    if (refused && result.clientId) {
+      const refusedClient = findClient(result.clientId);
+      get().playSfx('badge');
+      get().celebrate({
+        icon: '🛡️',
+        title: STR.milestones.refusedTitle(refusedClient?.name ?? ''),
+        subtitle: STR.milestones.refusedSubtitle,
+        tone: 'good',
+      });
+    }
 
     if (settlement) {
       get().applyGauges(
@@ -653,6 +709,9 @@ export const useStore = create<Store>((set, get) => ({
     const c = clientById(clientId);
     const cs = save.portfolio.find((p) => p.clientId === clientId);
     if (!cs) return;
+    // Honoraires estimés sur le dossier complet : la restriction aux postes
+    // déjà introduits est un dispositif pédagogique, elle ne change pas le
+    // crédit auquel le client a droit — ni ce qu'on lui facture.
     const trueCir = computeBreakdown(caseById(c.caseId), null, RULESET, { legal: true }).cir;
     const signedRevenue = Math.round(trueCir * cs.feeRate);
     const next = {
@@ -742,9 +801,11 @@ export const useStore = create<Store>((set, get) => ({
     const save = get().save;
     if (!save) return;
     const c = clientById(clientId);
-    const theCase = caseById(c.caseId);
-    const tol = toleranceForMode(save.mode);
-    const score = scoreAssiette(theCase, input, RULESET, tol);
+    // Étape figée ici : le dossier gardera ses postes et sa tolérance même si
+    // le joueur en instruit d'autres avant d'y revenir.
+    const step = stepForClient(save, clientId);
+    const theCase = caseForClient(save, clientId);
+    const score = scoreAssiette(theCase, input, RULESET, step.tolerance);
     const player = computeBreakdown(theCase, input, RULESET, { legal: false });
     const exact = score.precision >= 0.99;
     const next = {
@@ -754,6 +815,7 @@ export const useStore = create<Store>((set, get) => ({
           ? {
               ...cs,
               assietteInput: input,
+              baseStep: step.index,
               lastTouchedCycle: save.cycle,
               playerCir: player.cir,
               trueCir: score.trueCir,
@@ -914,7 +976,7 @@ export const useStore = create<Store>((set, get) => ({
     };
     // Arrivée des leads du catalogue à leur cycle : le portefeuille dépasse
     // toujours ce que le budget d'actions permet de servir.
-    const arriving = CLIENTS.filter(
+    const arriving = rosterFor(save.mode).filter(
       (c) => c.leadCycle <= nextCycle && !next.portfolio.some((cs) => cs.clientId === c.id),
     );
     if (arriving.length > 0) {
@@ -1037,10 +1099,22 @@ export const useStore = create<Store>((set, get) => ({
     persistLeaderboard(lb);
     set({ leaderboard: lb });
   },
+
+  completeSeason: (mode, score) => {
+    const progress = completeSeason(get().progress, mode, score);
+    persistProgress(progress);
+    set({ progress });
+  },
+
+  resetJourney: () => {
+    persistProgress(EMPTY_PROGRESS);
+    set({ progress: EMPTY_PROGRESS });
+  },
 }));
 
-export function toleranceLabel(mode: GameMode): string {
-  return `±${Math.round(toleranceForMode(mode) * 100)} %`;
+/** Tolérance annoncée dans l'interface, pour le n-ième dossier d'une saison. */
+export function toleranceLabel(mode: GameMode, step = 1): string {
+  return `±${Math.round(stepFor(mode, step).tolerance * 100)} %`;
 }
 
 export { chapterForCycle, nextMilestone, maxClients };

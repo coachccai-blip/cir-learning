@@ -1199,3 +1199,80 @@
     transform: none;
   }
 }
+
+/* ---------- Parcours en deux saisons ---------- */
+
+.home-journey {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.journey-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px 5px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.journey-pill-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 0.7rem;
+}
+
+.journey-pill.is-done {
+  border-color: var(--brand-orange-main);
+  background: rgba(255, 102, 51, 0.16);
+}
+
+.journey-pill.is-done .journey-pill-mark {
+  background: var(--brand-orange-main);
+  color: #fff;
+}
+
+.journey-pill.is-locked {
+  opacity: 0.55;
+}
+
+/* Bandeau de fin de saison : ce qui vient d'être débloqué. */
+.journey-banner {
+  border-left: 4px solid var(--brand-orange-main);
+  background: linear-gradient(
+    120deg,
+    color-mix(in srgb, var(--brand-orange-main) 10%, var(--surface)),
+    var(--surface) 60%
+  );
+}
+
+/* Bandeau de progression au-dessus de l'assiette : postes ouverts, tolérance. */
+.progress-banner {
+  border-left: 4px solid var(--brand-orange-main);
+}
+
+.progress-banner .tag-accent {
+  animation: bubble-in 320ms ease-out both;
+}
+
+:root[data-reduce-motion] .progress-banner .tag-accent {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-banner .tag-accent {
+    animation: none;
+  }
+}

@@ -1,6 +1,7 @@
 // Les 6 clients de la campagne (§3.3, §3.4, §10.2). Données fictives.
 
-import type { ClientDef } from '../engine/types';
+import type { ClientDef, GameMode } from '../engine/types';
+import { EXPERT_CLIENTS } from './clients-expert';
 import { generatedClient, generatedClients } from './registry';
 
 export const CLIENTS: ClientDef[] = [
@@ -192,13 +193,31 @@ export const CLIENTS: ClientDef[] = [
   },
 ];
 
+/**
+ * Portefeuille de départ selon la saison jouée. L'Onboarding et l'Expert ne
+ * partagent aucun client : rejouer la même campagne en plus sévère
+ * n'apprenait rien de neuf.
+ */
+export function rosterFor(mode: GameMode): ClientDef[] {
+  return mode === 'expert' ? EXPERT_CLIENTS : CLIENTS;
+}
+
 export function clientById(id: string): ClientDef {
-  const c = CLIENTS.find((c) => c.id === id) ?? generatedClient(id);
+  const c =
+    CLIENTS.find((c) => c.id === id) ??
+    EXPERT_CLIENTS.find((c) => c.id === id) ??
+    generatedClient(id);
   if (!c) throw new Error(`Client inconnu : ${id}`);
   return c;
 }
 
-/** Catalogue écrit à la main + dossiers générés en cours de partie. */
+/** Le client existe-t-il ? Utilisé là où l'absence est un cas normal. */
+export function findClient(id: string | undefined): ClientDef | undefined {
+  if (!id) return undefined;
+  return CLIENTS.find((c) => c.id === id) ?? EXPERT_CLIENTS.find((c) => c.id === id) ?? generatedClient(id);
+}
+
+/** Catalogues écrits à la main + dossiers générés en cours de partie. */
 export function allClients(): ClientDef[] {
-  return [...CLIENTS, ...generatedClients()];
+  return [...CLIENTS, ...EXPERT_CLIENTS, ...generatedClients()];
 }

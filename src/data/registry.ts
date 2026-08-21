@@ -8,6 +8,9 @@ import type { AssietteCase, Cardset, ClientDef, GeneratedClientBundle } from '..
 const clients = new Map<string, ClientDef>();
 const cases = new Map<string, AssietteCase>();
 const cardsets = new Map<string, Cardset>();
+// Variantes des dossiers écrits à la main, recalculées à l'identique depuis la
+// graine à chaque chargement : rien de tout cela n'a besoin d'être persisté.
+const varied = new Map<string, AssietteCase>();
 
 /** Réalimente le registre depuis la sauvegarde (remplace le contenu précédent). */
 export function loadGeneratedClients(bundles: readonly GeneratedClientBundle[]): void {
@@ -34,4 +37,14 @@ export function generatedCardset(id: string): Cardset | undefined {
 }
 export function generatedClients(): ClientDef[] {
   return [...clients.values()];
+}
+
+/** Installe les variantes de la partie en cours (remplace les précédentes). */
+export function loadCaseVariations(cases: readonly AssietteCase[]): void {
+  varied.clear();
+  for (const c of cases) varied.set(c.id, c);
+}
+
+export function variedCase(id: string): AssietteCase | undefined {
+  return varied.get(id);
 }

@@ -25,7 +25,14 @@ const PORTRAITS: Record<string, string> = {
   'prospect-m-02': 'prospect-m-02.png',
   'prospect-m-03': 'prospect-m-03.png',
   'prospect-m-04': 'prospect-m-04.png',
-  // PNJ secondaires (usage futur — priorité 2 de l'Excel)
+  // Deuxième saison (mode Expert) : les figures secondaires de la première
+  // saison passent au premier plan, dans d'autres maisons et d'autres rôles.
+  'cherif-07': 'cherif-07.png',
+  'roy-09': 'roy-09.png',
+  'sy-dr-10': 'sy-dr-10.png',
+  'meyer-atelier-11': 'meyer-atelier-11.png',
+  'aubert-08': 'aubert-08.png',
+  // PNJ secondaires (priorité 2 de l'Excel)
   'Nadia Cherif (responsable qualité)': 'cherif-07.png',
   'Kevin (développeur front)': 'roy-09.png',
   'Dr. Amina Sy (directrice scientifique)': 'sy-dr-10.png',

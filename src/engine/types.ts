@@ -167,6 +167,12 @@ export type Expression = 'neutre' | 'satisfait' | 'agace' | 'ferme' | 'enthousia
 export interface DialogueNode {
   id: string;
   speaker: string;
+  /**
+   * Portrait à afficher sur ce nœud. Par défaut c'est celui du client ; un
+   * nœud le surcharge quand la parole passe à quelqu'un d'autre (un technicien
+   * qui contredit sa direction, par exemple).
+   */
+  avatarSeed?: string;
   expression: Expression;
   text: string;
   choices: DialogueChoice[];
@@ -402,6 +408,12 @@ export interface ClientState {
    */
   lastTouchedCycle: number;
   cardPlacements: Record<string, CardVerdict>;
+  /**
+   * Rang de ce dossier dans la courbe de progression, figé à la première
+   * ouverture de l'assiette. Sans ce repère, un dossier repris plus tard
+   * changerait de postes et de tolérance en cours de route.
+   */
+  baseStep: number | null;
   assietteInput: AssietteInput | null;
   playerCir: number | null;
   trueCir: number | null;
@@ -517,11 +529,17 @@ export interface AuditFinding {
   goodAnswer: string;
   weakAnswers: string[];
   reassessment: number; // montant de rappel si non défendu
+  /**
+   * Relance du vérificateur en séance contradictoire (deuxième saison) : une
+   * fois le constat posé, il demande ce que le conseil propose. Une
+   * rectification honnête n'efface pas le rappel, elle l'atténue.
+   */
+  followUp?: { question: string; goodAnswer: string; weakAnswers: string[] };
 }
 
 export interface AuditResult {
   outcome: 'validated' | 'partial' | 'total';
-  findings: { finding: AuditFinding; defended: boolean }[];
+  findings: { finding: AuditFinding; defended: boolean; mitigated: boolean }[];
   reassessedAmount: number;
   feesRefunded: number;
 }

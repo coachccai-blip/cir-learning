@@ -8,6 +8,7 @@ import { SERVICES_DISCOVERY, SERVICES_KICKOFF } from './services';
 import { GENERIC_DISCOVERY, GENERIC_KICKOFF, GENERIC_FOLLOWUP, GENERIC_CLOSING } from './generic';
 import { TUTORIAL } from './misc';
 import { CALL_SCENARIOS } from './calls';
+import { EXPERT_SCENARIOS } from './expert';
 
 export const SCENARIOS: Scenario[] = [
   TUTORIAL,
@@ -28,6 +29,7 @@ export const SCENARIOS: Scenario[] = [
   GENERIC_FOLLOWUP,
   GENERIC_CLOSING,
   ...CALL_SCENARIOS,
+  ...EXPERT_SCENARIOS,
 ];
 
 export function scenarioById(id: string): Scenario {

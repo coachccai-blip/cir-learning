@@ -85,7 +85,10 @@ export function computeFinalScore(save: SaveGame, auditPassed: boolean, reassess
           .reduce((s, c) => s + (c.scores.base ?? 0), 0) /
         save.portfolio.filter((c) => c.scores.base !== null).length
       : 0;
-  const revenueRatio = Math.min(w.revenueCapRatio, save.revenue.signed / balance.seasonRevenueTarget);
+  // L'objectif de chiffre d'affaires dépend de la saison : la deuxième compte
+  // moins de dossiers, plus denses, à un taux d'honoraires plus bas.
+  const target = balance.seasonRevenueTarget[save.mode];
+  const revenueRatio = Math.min(w.revenueCapRatio, save.revenue.signed / target);
 
   const parts = [
     { label: 'Sécurité fiscale', value: g.security, weight: w.security, contribution: g.security * w.security },

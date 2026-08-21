@@ -1,14 +1,23 @@
 import { useState } from 'react';
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
+import { isUnlocked, JOURNEY, requiredBefore } from '../engine/journey';
 import type { GameMode } from '../engine/types';
 
-const MODES: GameMode[] = ['onboarding', 'expert'];
-
+/**
+ * Choix de la saison. Ce n'est plus un curseur de difficulté : les deux
+ * saisons n'ont ni les mêmes clients, ni les mêmes mécaniques, et l'ordre est
+ * imposé — on ne défend pas un dossier avant de savoir en monter un.
+ */
 export function ModeScreen() {
-  const [selected, setSelected] = useState<GameMode>('onboarding');
+  const progress = useStore((s) => s.progress);
   const newGame = useStore((s) => s.newGame);
   const go = useStore((s) => s.go);
+  // La sélection s'ouvre sur la première saison encore à jouer.
+  const [selected, setSelected] = useState<GameMode>(
+    JOURNEY.find((m) => !progress.completed.includes(m) && isUnlocked(m, progress)) ?? 'onboarding',
+  );
+  const selectable = isUnlocked(selected, progress);
 
   return (
     <div className="home">
@@ -16,11 +25,17 @@ export function ModeScreen() {
         <div className="center" style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: '2rem', color: '#fff' }}>{STR.modeSelect.title}</h1>
           <p style={{ opacity: 0.8, color: '#fff' }}>{STR.modeSelect.subtitle}</p>
+          <p style={{ opacity: 0.7, color: '#fff', fontSize: '0.85rem', marginTop: 6 }}>
+            {STR.journey.progressLabel(progress.completed.length, JOURNEY.length)}
+          </p>
         </div>
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))' }}>
-          {MODES.map((m) => {
+          {JOURNEY.map((m, i) => {
             const meta = STR.modes[m];
+            const unlocked = isUnlocked(m, progress);
+            const done = progress.completed.includes(m);
             const active = selected === m;
+            const required = requiredBefore(m);
             return (
               <button
                 key={m}
@@ -31,17 +46,30 @@ export function ModeScreen() {
                   cursor: 'pointer',
                   border: active ? '2px solid var(--brand-orange-main)' : '1px solid var(--border)',
                   outline: 'none',
+                  opacity: unlocked ? 1 : 0.72,
                 }}
                 aria-pressed={active}
               >
-                <div className="row" style={{ justifyContent: 'space-between' }}>
+                <div className="row" style={{ justifyContent: 'space-between', gap: 8 }}>
                   <h3>{meta.label}</h3>
-                  {m === 'onboarding' && <span className="tag tag-accent">défaut</span>}
+                  <span className={`tag${done ? ' tag-accent' : ''}`}>
+                    {done ? STR.modeSelect.doneTag : unlocked ? STR.modeSelect.seasonTag(i + 1) : STR.modeSelect.lockedTag}
+                  </span>
                 </div>
                 <p className="muted" style={{ fontSize: '0.82rem', marginTop: 4 }}>
                   {meta.audience}
                 </p>
                 <p style={{ fontSize: '0.9rem', marginTop: 8 }}>{meta.desc}</p>
+                {!unlocked && required && (
+                  <p className="muted" style={{ fontSize: '0.82rem', marginTop: 8 }}>
+                    🔒 {STR.modeSelect.locked(STR.modes[required].label)}
+                  </p>
+                )}
+                {done && progress.best[m] !== undefined && (
+                  <p className="delta-pos" style={{ fontSize: '0.82rem', marginTop: 8 }}>
+                    {STR.modeSelect.bestScore(progress.best[m] ?? 0)}
+                  </p>
+                )}
               </button>
             );
           })}
@@ -50,7 +78,7 @@ export function ModeScreen() {
           <button className="btn" onClick={() => go('home')}>
             {STR.common.back}
           </button>
-          <button className="btn btn-primary" onClick={() => newGame(selected)}>
+          <button className="btn btn-primary" disabled={!selectable} onClick={() => newGame(selected)}>
             {STR.modeSelect.start}
           </button>
         </div>

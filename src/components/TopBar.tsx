@@ -8,7 +8,7 @@ export function TopBar() {
   const go = useStore((s) => s.go);
   if (!save) return null;
 
-  const chapter = chapterForCycle(save.cycle);
+  const chapter = chapterForCycle(save.cycle, save.mode);
   const ms = nextMilestone(save.cycle);
   const grade = gradeForXp(save.xp);
   const estate = energyState(save.energy);

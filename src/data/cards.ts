@@ -3,6 +3,7 @@
 // « À investiguer » est toujours accepté par le moteur, mais coûteux.
 
 import type { Cardset } from '../engine/types';
+import { EXPERT_CARDSETS } from './cards-expert';
 import { generatedCardset } from './registry';
 
 export const CARDSETS: Cardset[] = [
@@ -105,7 +106,10 @@ export const CARDSETS: Cardset[] = [
 ];
 
 export function cardsetById(id: string): Cardset {
-  const c = CARDSETS.find((c) => c.id === id) ?? generatedCardset(id);
+  const c =
+    CARDSETS.find((c) => c.id === id) ??
+    EXPERT_CARDSETS.find((c) => c.id === id) ??
+    generatedCardset(id);
   if (!c) throw new Error(`Jeu de cartes inconnu : ${id}`);
   return c;
 }

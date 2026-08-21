@@ -31,6 +31,7 @@ export function initClientState(
     followupDone: false,
     lastTouchedCycle: 0,
     cardPlacements: {},
+    baseStep: null,
     assietteInput: null,
     playerCir: null,
     trueCir: null,

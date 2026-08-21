@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { clientById } from '../data/clients';
-import { caseById } from '../data/cases';
+import { caseForClient } from '../state/dossier';
 import { cardsetById } from '../data/cards';
 import { Avatar } from '../avatars/Avatar';
 import { buildAuditFindings, resolveAudit } from '../engine/audit';
@@ -41,6 +41,11 @@ export function AuditScreen() {
 
   const [idx, setIdx] = useState(0);
   const [defended, setDefended] = useState<string[]>([]);
+  // Constats reconnus et rectifiés en séance contradictoire : le rappel est
+  // atténué, pas effacé.
+  const [mitigated, setMitigated] = useState<string[]>([]);
+  // Tour de parole sur le constat courant : le vérificateur relance une fois.
+  const [round, setRound] = useState<'constat' | 'relance'>('constat');
   const [finished, setFinished] = useState(false);
 
   // Fin de saison → quiz de sortie (mesure de l'apprentissage) puis écran de fin.
@@ -72,9 +77,14 @@ export function AuditScreen() {
   }
 
   const c = clientById(target.clientId);
-  const theCase = caseById(c.caseId);
+  // Le contrôle porte sur le dossier tel qu'il a été instruit : mêmes postes
+  // ouverts, même variante. Sans cela, le vérificateur reprocherait une aide
+  // publique que le joueur n'a jamais vue à l'écran.
+  const theCase = caseForClient(save, target.clientId);
   const cardset = cardsetById(c.cardsetId);
-  const allFindings = buildAuditFindings(target, theCase, cardset, RULESET);
+  // Deuxième saison : séance contradictoire, le vérificateur relance.
+  const contradictoire = save.mode === 'expert' && !interim;
+  const allFindings = buildAuditFindings(target, theCase, cardset, RULESET, { contradictoire });
   const findings = interim ? allFindings.slice(0, 2) : allFindings;
 
   // Flashbacks : le vérificateur a « relu vos échanges » — il cite vos propres
@@ -90,6 +100,8 @@ export function AuditScreen() {
       target.scores.justification ?? 0,
       target.playerCir ?? 0,
       target.feeRate,
+      mitigated,
+      balance.audit.remedyRelief,
     );
     return (
       <div className="container">
@@ -110,9 +122,13 @@ export function AuditScreen() {
           )}
           <ul style={{ marginTop: 12 }}>
             {result.findings.map((f) => (
-              <li key={f.finding.id} className={f.defended ? 'delta-pos' : 'delta-neg'}>
-                {f.defended ? '✓ ' : '✗ '}
+              <li
+                key={f.finding.id}
+                className={f.defended ? 'delta-pos' : f.mitigated ? '' : 'delta-neg'}
+              >
+                {f.defended ? '✓ ' : f.mitigated ? '~ ' : '✗ '}
                 {f.finding.label}
+                {f.mitigated && <span className="muted"> — {STR.audit.mitigated}</span>}
               </li>
             ))}
           </ul>
@@ -132,21 +148,44 @@ export function AuditScreen() {
   }
 
   const finding = findings[idx];
+  const relance = round === 'relance' ? finding.followUp : null;
+  const prompt = relance ? relance.question : finding.question;
+  const canDefend = relance ? true : finding.defensible;
+  const goodAnswer = relance ? relance.goodAnswer : finding.goodAnswer;
+  const weakAnswers = relance ? relance.weakAnswers : finding.weakAnswers;
 
   // La bonne réponse est mélangée aux réponses faibles : le joueur doit la
   // reconnaître, pas la repérer à sa position.
   const answerOptions = shuffleForDisplay(
     [
-      ...(finding.defensible ? [{ text: finding.goodAnswer, good: true }] : []),
-      ...finding.weakAnswers.map((w) => ({ text: w, good: false })),
+      ...(canDefend ? [{ text: goodAnswer, good: true }] : []),
+      ...weakAnswers.map((w) => ({ text: w, good: false })),
     ],
-    `${save.seed}:audit:${finding.id}`,
+    `${save.seed}:audit:${finding.id}:${round}`,
   );
 
-  function answer(defend: boolean) {
-    if (defend) setDefended((d) => [...d, finding.id]);
+  function nextFinding() {
+    setRound('constat');
     if (idx + 1 >= findings.length) setFinished(true);
     else setIdx((i) => i + 1);
+  }
+
+  function answer(good: boolean) {
+    if (round === 'relance') {
+      // Rectifier ne défend pas le constat : cela limite le rappel.
+      if (good) setMitigated((m) => [...m, finding.id]);
+      nextFinding();
+      return;
+    }
+    if (good && finding.defensible) {
+      setDefended((d) => [...d, finding.id]);
+      nextFinding();
+      return;
+    }
+    // Séance contradictoire : le vérificateur ne clôt pas sur un aveu, il
+    // demande ce que le conseil propose.
+    if (finding.followUp) setRound('relance');
+    else nextFinding();
   }
 
   return (
@@ -189,11 +228,12 @@ export function AuditScreen() {
             DGFiP · dossier {c.name}
           </div>
           <div className="muted" style={{ marginTop: 8, fontSize: '0.8rem' }}>
-            Question {idx + 1} / {findings.length}
+            {STR.audit.question} {idx + 1} / {findings.length}
+            {relance && <div className="tag tag-accent" style={{ marginTop: 6 }}>{STR.audit.relance}</div>}
           </div>
         </div>
         <div>
-          <div className="bubble">{finding.question}</div>
+          <div className="bubble">{prompt}</div>
           <div className="choices">
             {answerOptions.map((opt, i) => (
               <button key={opt.text} className="choice" onClick={() => answer(opt.good)}>

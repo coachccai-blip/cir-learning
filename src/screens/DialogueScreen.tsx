@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { scenarioById } from '../data/scenarios/index';
-import { CLIENTS } from '../data/clients';
+import { findClient } from '../data/clients';
 import { codexById } from '../data/codex';
 import { Avatar } from '../avatars/Avatar';
 import { AnonymousAvatar } from '../avatars/AnonymousAvatar';
@@ -37,7 +37,7 @@ export function DialogueScreen() {
     () => (ctx ? (ctx.inlineScenario ?? scenarioById(ctx.scenarioId)) : null),
     [ctx],
   );
-  const client = ctx?.clientId ? CLIENTS.find((c) => c.id === ctx.clientId) : undefined;
+  const client = findClient(ctx?.clientId);
   const clientState = save?.portfolio.find((p) => p.clientId === ctx?.clientId);
 
   const [session, setSession] = useState<DialogueSession | null>(null);
@@ -179,7 +179,7 @@ export function DialogueScreen() {
   }
 
   const speaker = shownNode?.speaker ?? '';
-  const avatarSeed = client?.contact.avatarSeed ?? speaker;
+  const avatarSeed = shownNode?.avatarSeed ?? client?.contact.avatarSeed ?? speaker;
   const prospect = ctx.prospectId ? save?.prospects.find((p) => p.id === ctx.prospectId) : undefined;
   // Voix de lecture : celle du client ou du prospect en face, sinon celle que
   // la table des PNJ attribue au locuteur.

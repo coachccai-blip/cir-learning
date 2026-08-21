@@ -2,10 +2,9 @@ import { useMemo, useState } from 'react';
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { clientById } from '../data/clients';
-import { caseById } from '../data/cases';
+import { caseForClient, stepForDossier } from '../state/dossier';
 import { computeBreakdown } from '../engine/cir/calculator';
 import { scoreAssiette } from '../engine/cir/scoring';
-import { toleranceForMode } from '../engine/economy';
 import ruleset from '../data/rules/ruleset-2026.json';
 import type { AssietteInput, Ruleset } from '../engine/types';
 
@@ -18,7 +17,10 @@ export function BaseScreen() {
   const go = useStore((s) => s.go);
 
   const c = clientId ? clientById(clientId) : null;
-  const theCase = c ? caseById(c.caseId) : null;
+  // Le dossier servi, pas le dossier écrit : variante de la partie en cours,
+  // restreinte aux postes que la courbe d'apprentissage a déjà introduits.
+  const step = save && clientId ? stepForDossier(save, clientId) : null;
+  const theCase = save && clientId ? caseForClient(save, clientId) : null;
   const cs = save?.portfolio.find((p) => p.clientId === clientId);
 
   const [input, setInput] = useState<AssietteInput>(() => ({
@@ -35,7 +37,7 @@ export function BaseScreen() {
     [theCase, input],
   );
 
-  if (!clientId || !c || !theCase || !save || !cs) return null;
+  if (!clientId || !c || !theCase || !save || !cs || !step) return null;
 
   function setRatio(id: string, v: number) {
     setInput((i) => ({ ...i, personnelRatios: { ...i.personnelRatios, [id]: Math.max(0, Math.min(1, v)) } }));
@@ -53,7 +55,7 @@ export function BaseScreen() {
   }
 
   if (done) {
-    const score = scoreAssiette(theCase, input, RULESET, toleranceForMode(save.mode));
+    const score = scoreAssiette(theCase, input, RULESET, step.tolerance);
     const playerBd = computeBreakdown(theCase, input, RULESET, { legal: false });
     const trueBd = computeBreakdown(theCase, null, RULESET, { legal: true });
     const compareRows = [
@@ -144,10 +146,21 @@ export function BaseScreen() {
     );
   }
 
-  // Tous les indices sont visibles quel que soit le mode : le joueur doit
-  // pouvoir construire l'assiette juste avec les informations à l'écran.
-  // La difficulté vient de la tolérance et des pièges, pas de l'information cachée.
+  // En Onboarding, tous les indices sont à l'écran : le joueur doit pouvoir
+  // construire l'assiette juste sans deviner, la difficulté venant de la
+  // tolérance et des pièges. En Expert, le taux opposable se gagne sur le
+  // terrain (cf. `revealsTruth`).
   const collected = cs.piecesCollected;
+
+  /**
+   * Le taux réellement opposable est-il visible ? En deuxième saison, le
+   * dirigeant embellit sciemment : seul le consultant qui a rapporté la pièce
+   * connaît le chiffre. Sans elle, il faut trancher au jugement.
+   */
+  function revealsTruth(evidence: string | undefined): boolean {
+    if (save!.mode !== 'expert') return true;
+    return !evidence || collected.includes(evidence);
+  }
 
   return (
     <div className="container">
@@ -168,21 +181,33 @@ export function BaseScreen() {
         </div>
       </div>
 
+      <div className="panel-flat progress-banner" style={{ marginTop: 12 }}>
+        <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+          <span className="tag tag-accent">{STR.base.dossierNo(step.index)}</span>
+          <span className="tag">{STR.base.toleranceTag(step.tolerance)}</span>
+          {step.postes.map((poste) => (
+            <span key={poste} className={`tag${step.introduces.includes(poste) ? ' tag-accent' : ''}`}>
+              {step.introduces.includes(poste) ? '✨ ' : ''}
+              {STR.base.postes[poste]}
+            </span>
+          ))}
+        </div>
+        {step.introduces.length > 0 && (
+          <p style={{ marginTop: 8, fontSize: '0.88rem' }}>
+            <strong>{STR.base.newPoste}</strong> —{' '}
+            {step.introduces.map((poste) => STR.base.posteIntro[poste]).join(' ')}
+          </p>
+        )}
+      </div>
+
       <div className="panel-flat" style={{ marginTop: 12, borderLeft: '4px solid var(--accent)' }}>
-        <strong>La méthode, en 4 réflexes</strong>
+        <strong>{STR.base.methodTitle(step.postes.length)}</strong>
         <ol style={{ margin: '6px 0 0', paddingLeft: 20, fontSize: '0.9rem', lineHeight: 1.65 }}>
-          <li>
-            <strong>Personnel</strong> — retenez le taux <em>justifiable par les pièces</em>, pas celui déclaré par le client.
-          </li>
-          <li>
-            <strong>Sous-traitance</strong> — décochez tout prestataire non agréé MESR ou au-delà du 2ᵉ rang.
-          </li>
-          <li>
-            <strong>Aides publiques</strong> — cochez « Déduire » : subventions et avances minorent toujours l’assiette.
-          </li>
-          <li>
-            <strong>Autres postes</strong> — brevets et veille sont supprimés depuis 2025 : laissez-les décochés.
-          </li>
+          {step.postes.map((poste) => (
+            <li key={poste}>
+              <strong>{STR.base.postes[poste]}</strong> — {STR.base.methode[poste]}
+            </li>
+          ))}
         </ol>
         <p className="muted" style={{ fontSize: '0.82rem', marginTop: 6 }}>
           La colonne « Ce que disent les pièces » vous donne l’information nécessaire ligne par ligne.
@@ -237,12 +262,19 @@ export function BaseScreen() {
                   {p.trap ? (
                     <>
                       <span className="delta-neg">⚠ {p.trap}</span>
-                      {/* Le taux justifiable est toujours affiché : le joueur doit pouvoir
-                          construire l'assiette juste sans deviner. La pièce, elle, reste
-                          ce qui rendra ce taux opposable au contrôle. */}
-                      <div className="delta-pos" style={{ marginTop: 4, fontWeight: 700 }}>
-                        → {STR.base.hintDefensible} {Math.round(p.trueRdRatio * 100)} %
-                      </div>
+                      {/* En Onboarding, le taux justifiable est donné : le joueur doit
+                          pouvoir construire l'assiette juste sans deviner. En Expert, il
+                          ne s'obtient qu'en rapportant la pièce du terrain — c'est tout
+                          l'intérêt d'avoir mené les entretiens. */}
+                      {revealsTruth(p.evidence) ? (
+                        <div className="delta-pos" style={{ marginTop: 4, fontWeight: 700 }}>
+                          → {STR.base.hintDefensible} {Math.round(p.trueRdRatio * 100)} %
+                        </div>
+                      ) : (
+                        <div className="muted" style={{ marginTop: 4, fontWeight: 700 }}>
+                          🔒 {STR.base.hintLocked}
+                        </div>
+                      )}
                       {p.evidence && !collected.includes(p.evidence) && (
                         <div className="muted" style={{ marginTop: 4 }}>
                           {STR.base.hintMissingPiece}

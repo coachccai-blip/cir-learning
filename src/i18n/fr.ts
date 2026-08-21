@@ -3,9 +3,9 @@
 
 export const STR = {
   appTitle: 'Learn CIR',
-  appTagline: 'Une saison fiscale chez CIR Corp',
+  appTagline: 'Deux saisons fiscales chez CIR Corp',
   appPitch:
-    'Parcours d’onboarding complet : une saison entière pour apprendre les deux métiers du CIR — décrocher des clients côté relation, monter des dossiers qui tiennent au contrôle côté technique.',
+    'Un parcours complet en deux saisons. La première apprend les deux métiers du CIR : décrocher des clients côté relation, monter des dossiers qui tiennent au contrôle côté technique. La seconde vous met en face de gens qui embellissent, d’un dossier qu’il faut refuser et d’un vérificateur qui relance.',
   disclaimer:
     'Les cas, entreprises et montants sont fictifs. Ce jeu est un outil pédagogique et ne constitue en aucun cas un conseil fiscal. Les barèmes reflètent l’état du droit au 20 août 2026 (LF 2026 promulguée le 19 février 2026).',
   menu: {
@@ -17,21 +17,42 @@ export const STR = {
     options: 'Options',
   },
   modeSelect: {
-    title: 'Choisissez votre mode',
-    subtitle: 'Même moteur, même contenu — la difficulté change le niveau d’exigence.',
+    title: 'Votre parcours en deux saisons',
+    subtitle:
+      'La première saison apprend le métier. La seconde vérifie que vous le tenez vraiment — autres clients, autres pièges.',
     start: 'Démarrer la saison',
+    locked: (required: string) => `Terminez la saison ${required} pour ouvrir celle-ci.`,
+    lockedTag: '🔒 Verrouillé',
+    doneTag: '✓ Terminée',
+    bestScore: (n: number) => `Meilleur score : ${n} / 100`,
+    seasonTag: (n: number) => `Saison ${n}`,
   },
   modes: {
     onboarding: {
       label: 'Onboarding',
-      audience: 'Nouveaux consultants du cabinet',
-      desc: 'Règles réelles, tolérance ±5 %, 2 indices par cycle, contrôle fiscal possible en fin de saison, deadlines fermes.',
+      audience: 'Saison 1 — apprendre le métier',
+      desc:
+        'Six clients qui se trompent de bonne foi. Les postes de dépense arrivent un par un, le taux justifiable est affiché à l’écran, et la tolérance se resserre de ±15 % à ±5 % au fil des dossiers.',
     },
     expert: {
       label: 'Expert',
-      audience: 'Consultants en poste',
-      desc: 'Tolérance ±1 %, aucun indice, cas limites, contrôle fiscal systématique, portefeuille plus large que le budget d’actions.',
+      audience: 'Saison 2 — tenir le dossier',
+      desc:
+        'Quatre dossiers denses, cinq postes dès le premier. Les interlocuteurs embellissent : le taux opposable ne se révèle qu’avec la pièce rapportée du terrain. Un dossier est à refuser, et le vérificateur relance. Tolérance ±3 % à ±1 %.',
     },
+  },
+  journey: {
+    title: 'Parcours',
+    progressLabel: (done: number, total: number) => `${done} / ${total} saisons terminées`,
+    complete: 'Parcours complété',
+    completeSub:
+      'Vous avez mené les deux saisons : décrocher une mission CIR, puis la défendre quand on la conteste. C’est tout le métier.',
+    unlocked: (label: string) => `Nouvelle saison débloquée : ${label}`,
+    startNext: (label: string) => `Enchaîner sur la saison ${label} →`,
+    resetTitle: 'Réinitialiser le parcours',
+    resetHelp:
+      'Reverrouille la saison Expert et efface les meilleurs scores. Utile pour refaire jouer le parcours complet à quelqu’un d’autre.',
+    resetDone: 'Parcours réinitialisé : la saison Expert est de nouveau verrouillée.',
   },
   hud: {
     day: 'Relation client',
@@ -64,6 +85,9 @@ export const STR = {
   milestones: {
     lostClient: (company: string) =>
       `${company} part à la concurrence : trop longtemps sans nouvelles de votre part.`,
+    refusedTitle: (company: string) => `Mission refusée : ${company}`,
+    refusedSubtitle:
+      'Vous perdez le chiffre d’affaires et vous évitez un redressement. Savoir dire non fait partie du métier.',
   },
   prospects: {
     becameClient: (company: string, contact: string) =>
@@ -154,6 +178,38 @@ export const STR = {
     hintClaimed: 'déclaré par le client',
     hintDefensible: 'Taux justifiable :',
     hintMissingPiece: 'Pièce à récupérer en suivi de mission pour rendre ce taux opposable.',
+    hintLocked: 'Aucune pièce ne confirme ce taux : le chiffre exact s’obtient sur le terrain.',
+    // Courbe d'apprentissage : les postes arrivent un par un.
+    dossierNo: (n: number) => `Dossier n° ${n}`,
+    toleranceTag: (t: number) => `Tolérance ±${Math.round(t * 100)} %`,
+    newPoste: 'Nouveau poste à traiter',
+    methodTitle: (n: number) => `La méthode, en ${n} réflexe${n > 1 ? 's' : ''}`,
+    postes: {
+      personnel: 'Personnel',
+      amortization: 'Amortissements',
+      subcontracting: 'Sous-traitance',
+      grants: 'Aides publiques',
+      decoys: 'Autres postes',
+    },
+    posteIntro: {
+      personnel:
+        'Tout part des dépenses de personnel : c’est le poste le plus lourd, et celui qui porte les taux d’affectation.',
+      amortization:
+        'Les amortissements entrent en jeu : seuls les équipements réellement affectés à la recherche comptent.',
+      subcontracting:
+        'La sous-traitance apparaît : l’agrément MESR et le rang de l’intervention décident de tout.',
+      grants:
+        'Les financements publics arrivent : subventions et avances minorent l’assiette, il faut penser à les déduire.',
+      decoys:
+        'Dernier étage : des postes que le client voudra ajouter alors qu’ils ont été supprimés de l’assiette.',
+    },
+    methode: {
+      personnel: 'retenez le taux justifiable par les pièces, pas celui déclaré par le client.',
+      amortization: 'ne retenez que les équipements réellement affectés aux travaux de recherche.',
+      subcontracting: 'décochez tout prestataire non agréé MESR ou intervenant au-delà du 2ᵉ rang.',
+      grants: 'cochez « Déduire » : subventions et avances minorent toujours l’assiette.',
+      decoys: 'brevets et veille sont supprimés depuis 2025 : laissez-les décochés.',
+    },
   },
   justif: {
     title: 'Rédaction du justificatif technique',
@@ -188,6 +244,10 @@ export const STR = {
     interimResult: 'Réponse à la demande d’information',
     noInterim: 'Aucun dossier chiffré à ce stade : l’administration attendra le dépôt.',
     backToWork: 'Retourner au bureau',
+    question: 'Question',
+    // Séance contradictoire (deuxième saison) : le vérificateur relance.
+    relance: 'Le vérificateur relance',
+    mitigated: 'rectifié en séance, rappel atténué',
   },
   end: {
     title: 'Fin de saison',

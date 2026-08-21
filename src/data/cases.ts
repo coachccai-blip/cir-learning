@@ -2,7 +2,8 @@
 // Les corrigés (« expected ») sont recalculés par le moteur, pas figés à la main.
 
 import type { AssietteCase } from '../engine/types';
-import { generatedCase } from './registry';
+import { EXPERT_CASES } from './cases-expert';
+import { generatedCase, variedCase } from './registry';
 
 export const CASES: AssietteCase[] = [
   {
@@ -20,7 +21,7 @@ export const CASES: AssietteCase[] = [
         claimedRdRatio: 1.0,
         trueRdRatio: 0.8,
         evidence: 'piece_feuilles_temps',
-        trap: 'Le DG déclare 100 % ; les feuilles de temps montrent 20 % de support production.',
+        trap: 'Le DG déclare tout son temps en R&D ; les feuilles de temps révèlent une part d’appui à la production.',
       },
       { id: 'p2', name: 'Tom Aubert', role: 'Technicien de labo', grossCost: 41000, claimedRdRatio: 0.6, trueRdRatio: 0.6 },
       {
@@ -67,7 +68,7 @@ export const CASES: AssietteCase[] = [
         claimedRdRatio: 0.5,
         trueRdRatio: 0.35,
         evidence: 'piece_feuilles_temps',
-        trap: 'Un CTO fait aussi du management et de l’avant-vente : 35 % de R&D réelle, pas 50 %.',
+        trap: 'Un CTO fait aussi du management et de l’avant-vente : la part réellement consacrée à la recherche est plus basse que le taux déclaré.',
       },
       { id: 'p2', name: 'Sami Toure', role: 'Chercheur ML', grossCost: 72000, claimedRdRatio: 0.9, trueRdRatio: 0.9 },
       { id: 'p3', name: 'Julie Amrani', role: 'Ingénieure R&D', grossCost: 64000, claimedRdRatio: 0.8, trueRdRatio: 0.8 },
@@ -109,7 +110,7 @@ export const CASES: AssietteCase[] = [
         claimedRdRatio: 0.5,
         trueRdRatio: 0.2,
         evidence: 'piece_feuilles_temps',
-        trap: 'La production série n’est pas de la R&D : seule la mise au point du procédé compte (20 %).',
+        trap: 'La production série n’est pas de la R&D : seule la mise au point du procédé entre dans l’assiette.',
       },
     ],
     amortization: [
@@ -190,7 +191,7 @@ export const CASES: AssietteCase[] = [
         claimedRdRatio: 0.6,
         trueRdRatio: 0.25,
         evidence: 'piece_feuilles_temps',
-        trap: 'L’industrialisation est en aval de la R&D : 25 % réels, pas 60 %.',
+        trap: 'L’industrialisation est en aval de la R&D : le taux justifiable est bien inférieur au taux déclaré.',
       },
     ],
     amortization: [{ id: 'a1', asset: 'Ligne pilote', annualDepreciation: 55000, rdRatio: 0.7, trueRdRatio: 0.7 }],
@@ -207,7 +208,7 @@ export const CASES: AssietteCase[] = [
       },
     ],
     grants: [
-      { id: 'g1', source: 'ADEME (subvention)', amount: 80000, rdAllocationRatio: 0.75, type: 'grant', trap: 'Seule la quote-part R&D (75 %) est déduite.' },
+      { id: 'g1', source: 'ADEME (subvention)', amount: 80000, rdAllocationRatio: 0.75, type: 'grant', trap: 'Seule la quote-part affectée à la R&D est déduite.' },
       { id: 'g2', source: 'Avance remboursable', amount: 50000, rdAllocationRatio: 1.0, type: 'repayableAdvance', trap: 'Avance remboursable déduite à l’octroi.' },
     ],
     decoys: [
@@ -229,7 +230,7 @@ export const CASES: AssietteCase[] = [
         claimedRdRatio: 0.8,
         trueRdRatio: 0.15,
         evidence: 'piece_feuilles_temps',
-        trap: 'Prestations client facturées : seuls ~15 % relèvent d’une R&D interne réelle.',
+        trap: 'Prestations client facturées : seule une petite part relève d’une R&D interne réelle.',
       },
       {
         id: 'p2',
@@ -269,8 +270,19 @@ export const CASES: AssietteCase[] = [
   },
 ];
 
+/** Tous les dossiers écrits à la main, Onboarding et Expert confondus. */
+export function writtenCases(): AssietteCase[] {
+  return [...CASES, ...EXPERT_CASES];
+}
+
 export function caseById(id: string): AssietteCase {
-  const c = CASES.find((c) => c.id === id) ?? generatedCase(id);
+  // La variante de la partie en cours prime : c'est elle que le joueur
+  // instruit, et c'est sur elle que le corrigé doit être calculé.
+  const c =
+    variedCase(id) ??
+    CASES.find((c) => c.id === id) ??
+    EXPERT_CASES.find((c) => c.id === id) ??
+    generatedCase(id);
   if (!c) throw new Error(`Cas inconnu : ${id}`);
   return c;
 }
