@@ -1,0 +1,32 @@
+import type { ClientState } from './types';
+
+/** Nature de l'activité commerciale proposée sur un dossier, à un instant donné. */
+export type ClientActionKind = 'discovery' | 'proposal' | 'kickoff' | 'followup' | 'closing';
+
+export type ClientAction = { kind: ClientActionKind; cost: number };
+
+/**
+ * Prochaine action disponible sur un dossier. Chaque activité est à usage unique :
+ * l'avancement de `dossierState` consomme naturellement découverte, proposition,
+ * kick-off et bilan. Le suivi de mission, lui, ne fait pas avancer l'état — c'est
+ * `followupDone` qui garantit qu'il ne se rejoue pas en boucle (un seul par client).
+ * `null` = plus rien à faire de jour sur ce dossier.
+ */
+export function nextClientAction(cs: ClientState): ClientAction | null {
+  switch (cs.dossierState) {
+    case 'LEAD':
+      return { kind: 'discovery', cost: 2 };
+    case 'QUALIFIED':
+      return { kind: 'proposal', cost: 1 };
+    case 'SIGNED':
+      return { kind: 'kickoff', cost: 2 };
+    case 'KICKED_OFF':
+    case 'CARDS_DONE':
+    case 'BASE_DONE':
+      return cs.followupDone ? null : { kind: 'followup', cost: 1 };
+    case 'JUSTIFIED':
+      return { kind: 'closing', cost: 2 };
+    default:
+      return null;
+  }
+}

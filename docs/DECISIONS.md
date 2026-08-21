@@ -176,3 +176,48 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
     feedback quoi/pourquoi/règle) et se termine par un flag d'issue
     (`prospect_sign` / `prospect_maybe` / `prospect_decline` /
     `prospect_decline_rude`) exploité par `resolveProspectCall`.
+
+## Passe « ludique & lisible » (7 corrections demandées)
+
+34. **Points d'action doublés** (`balance.json`) : 10 le jour, 8 la nuit
+    (au lieu de 5 / 4). Un cycle permet désormais de mener une action
+    commerciale *et* d'avancer un dossier la même journée, sans arbitrage
+    frustrant. Les pastilles de PA du bandeau s'adaptent au nouveau maximum.
+35. **Ordre des réponses aléatoire partout**. Le moteur de dialogue mélangeait
+    déjà ses choix, mais trois écrans affichaient leurs options dans l'ordre de
+    déclaration — donc la bonne réponse toujours en premier : le quiz
+    (`QuizScreen`), le justificatif (`JustifScreen`) et les réponses au
+    vérificateur (`AuditScreen`). Un helper commun `shuffleForDisplay(items,
+    seed)` (`engine/rng.ts`) mélange de façon **déterministe par graine**, si
+    bien qu'une partie reste reproductible et qu'un retour arrière ne rebat pas
+    les cartes.
+36. **Célébrations, sons et animations**. Un composant `Celebration` (confettis
+    + bandeau, `tone: good | bad`) marque les moments qui comptent : badge
+    obtenu, montée en grade, signature, assiette exacte ou ratée, contrôle
+    fiscal validé ou redressé, qualification parfaite. La palette sonore passe
+    de 4 à 9 bruitages synthétisés (WebAudio, aucun fichier). `AnimatedNumber`
+    fait défiler les montants. Tout respecte `prefers-reduced-motion` et le son
+    reste coupé par défaut.
+37. **Assiette : tous les indices sont donnés**. Le mode « indices » optionnel
+    disparaît au profit d'une colonne permanente « Ce que disent les pièces »,
+    plus un encadré « La méthode, en 4 réflexes ». Chaque ligne piégée affiche
+    désormais **le taux justifiable**, que la pièce ait été collectée ou non ;
+    la pièce manquante reste signalée, car c'est elle qui rendra le taux
+    opposable au contrôle. L'écran est vérifiable : un script qui ne lit que ce
+    qui est affiché construit une assiette exacte à 100 %.
+38. **Un seul suivi de mission par client**. Le suivi était la seule activité de
+    jour qui ne faisait pas avancer `dossierState` : il se rejouait donc en
+    boucle pour 1 PA. Le nouveau drapeau `ClientState.followupDone` le rend
+    unique. La machine à états sort du composant React pour vivre dans
+    `engine/activities.ts` (`nextClientAction`), conformément à la règle
+    « toute la logique dans le moteur », et est verrouillée par
+    `tests/engine/activities.test.ts`.
+39. **Longueur des réponses équilibrée**. Mesure avant correction : sur les
+    91 nœuds de dialogue, **100 %** avaient la bonne réponse comme réponse la
+    plus longue (155 caractères en moyenne, contre 60 pour les mauvaises) — le
+    jeu était gagnable sans lire. Les 4 formulations de chaque nœud ont été
+    réécrites dans une bande resserrée. `tests/engine/balance-length.test.ts`
+    verrouille durablement deux garde-fous : **écart max de 45 caractères** au
+    sein d'un nœud, et **au plus 40 %** des nœuds où la bonne réponse est aussi
+    la plus longue (le hasard donnerait 25 %). Même contrainte sur les blocs du
+    justificatif et les propositions du quiz.

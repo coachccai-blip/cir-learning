@@ -143,13 +143,15 @@
   gap: 3px;
 }
 .pa-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.22);
+  transition: background 200ms ease, transform 200ms ease;
 }
 .pa-dot.on {
   background: var(--brand-orange-main);
+  transform: scale(1.12);
 }
 
 /* ---------- Jauges ---------- */
@@ -805,4 +807,88 @@
 }
 @media (min-width: 561px) {
   .assiette-cards { display: none; }
+}
+
+/* ---------- Célébrations ---------- */
+.celebration {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  pointer-events: none;
+  overflow: hidden;
+}
+.confetti {
+  position: absolute;
+  top: -20px;
+  border-radius: 2px;
+  animation-name: confetti-fall;
+  animation-timing-function: cubic-bezier(0.3, 0.6, 0.5, 1);
+  animation-fill-mode: forwards;
+}
+@keyframes confetti-fall {
+  0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(105vh) rotate(540deg); opacity: 0.9; }
+}
+.celebration-banner {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 30px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  border: 2px solid var(--pos);
+  box-shadow: var(--shadow-lg);
+  animation: celebrate-pop 500ms cubic-bezier(0.2, 1.4, 0.4, 1);
+  max-width: min(560px, 92vw);
+}
+.celebration-banner.is-bad {
+  border-color: var(--neg);
+}
+@keyframes celebrate-pop {
+  0% { transform: translateX(-50%) scale(0.6); opacity: 0; }
+  60% { transform: translateX(-50%) scale(1.06); opacity: 1; }
+  100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+.celebration-icon {
+  font-size: 2.6rem;
+  line-height: 1;
+  animation: celebrate-icon 900ms ease 200ms both;
+}
+@keyframes celebrate-icon {
+  0%, 100% { transform: rotate(0) scale(1); }
+  30% { transform: rotate(-12deg) scale(1.18); }
+  60% { transform: rotate(10deg) scale(1.1); }
+}
+.celebration-title {
+  font-family: var(--font-title);
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: var(--text);
+}
+.celebration-sub {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  margin-top: 2px;
+}
+
+/* Retour visuel sur un choix : pression tactile */
+.choice:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+/* Feedback : teinte selon la qualité du choix */
+.feedback.fb-good { border-left-color: var(--pos); }
+.feedback.fb-bad { border-left-color: var(--neg); }
+
+/* Jauge : pulsation brève sur variation positive forte */
+.gauge.pulse .gauge-fill {
+  animation: gauge-pulse 600ms ease;
+}
+@keyframes gauge-pulse {
+  0%, 100% { filter: brightness(1); }
+  40% { filter: brightness(1.45); }
 }

@@ -21,6 +21,7 @@ import { ClientScreen } from '../screens/ClientScreen';
 import { QuizScreen } from '../screens/QuizScreen';
 import { SettlementScreen } from '../screens/SettlementScreen';
 import { PhaseTransition } from '../components/PhaseTransition';
+import { Celebration } from '../components/Celebration';
 
 const TEXT_SCALE = { normal: '1', large: '1.25', xlarge: '1.5' };
 
@@ -49,6 +50,7 @@ export function App() {
       {!chromeless && save && <TopBar />}
       <Toasts />
       <PhaseTransition />
+      <Celebration />
       <main style={{ flex: 1 }}>
         {view === 'home' && <HomeScreen />}
         {view === 'mode' && <ModeScreen />}

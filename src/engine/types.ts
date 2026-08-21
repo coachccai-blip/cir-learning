@@ -391,6 +391,8 @@ export interface ClientState {
   };
   /** Cartes placées en « à investiguer » → PA dus au cycle suivant. */
   investigateDebt: number;
+  /** Le suivi de mission n'est jouable qu'une fois par client. */
+  followupDone: boolean;
   cardPlacements: Record<string, CardVerdict>;
   assietteInput: AssietteInput | null;
   playerCir: number | null;

@@ -41,7 +41,7 @@ import {
   type Options,
 } from './persistence';
 import { createNewGame, initClientState } from './factory';
-import { playSound } from '../app/sound';
+import { playSound, type SoundName } from '../app/sound';
 
 const RULESET = ruleset as Ruleset;
 
@@ -118,6 +118,14 @@ interface UIState {
   } | null;
   /** Overlay de transition jour/nuit (label affiché plein écran). */
   transition: { label: string; phase: 'DAY' | 'NIGHT' } | null;
+  /** Célébration plein écran (confettis) ou constat d'échec. */
+  celebration: {
+    id: string;
+    icon: string;
+    title: string;
+    subtitle?: string;
+    tone: 'good' | 'bad';
+  } | null;
 }
 
 interface Actions {
@@ -137,8 +145,10 @@ interface Actions {
   }) => void;
   readMail: (id: string) => void;
   clearTransition: () => void;
+  celebrate: (c: { icon: string; title: string; subtitle?: string; tone?: 'good' | 'bad' }) => void;
+  clearCelebration: () => void;
   closeSettlement: () => void;
-  playSfx: (name: 'badge' | 'validate' | 'ring' | 'alert') => void;
+  playSfx: (name: SoundName) => void;
   setOptions: (patch: Partial<Options>) => void;
   resetSave: () => void;
   toast: (text: string, badge?: boolean) => void;
@@ -184,6 +194,7 @@ interface Actions {
 export type Store = UIState & Actions;
 
 let toastId = 1;
+let celebrationId = 0;
 
 function persist(save: SaveGame | null) {
   persistSave(save);
@@ -202,6 +213,7 @@ export const useStore = create<Store>((set, get) => ({
   quizPhase: 'pre',
   settlement: null,
   transition: null,
+  celebration: null,
 
   boot: () => {
     const save = loadSave();
@@ -250,6 +262,12 @@ export const useStore = create<Store>((set, get) => ({
   },
 
   clearTransition: () => set({ transition: null }),
+
+  celebrate: (c) => {
+    celebrationId += 1;
+    set({ celebration: { id: `celeb-${celebrationId}`, tone: 'good', ...c } });
+  },
+  clearCelebration: () => set({ celebration: null }),
 
   closeSettlement: () => set({ settlement: null, view: 'day' }),
 
@@ -326,7 +344,15 @@ export const useStore = create<Store>((set, get) => ({
     const next = { ...save, xp, cycleLog: log };
     persist(next);
     set({ save: next });
-    if (afterGrade.id !== beforeGrade) get().toast(`Nouveau grade : ${afterGrade.label}`, true);
+    if (afterGrade.id !== beforeGrade) {
+      get().toast(`Nouveau grade : ${afterGrade.label}`, true);
+      get().playSfx('levelup');
+      get().celebrate({
+        icon: '⭐',
+        title: `Promotion : ${afterGrade.label}`,
+        subtitle: `${xp} XP — votre travail paie.`,
+      });
+    }
   },
 
   unlockCodex: (id) => {
@@ -405,9 +431,11 @@ export const useStore = create<Store>((set, get) => ({
           if (result.kind === 'discovery' && dossierState === 'LEAD' && !result.declined) dossierState = 'QUALIFIED';
           if (result.kind === 'kickoff' && dossierState === 'SIGNED') dossierState = 'KICKED_OFF';
           if (result.kind === 'closing' && (dossierState === 'JUSTIFIED' || dossierState === 'BASE_DONE')) dossierState = 'CLOSED';
+          // Le suivi de mission ne se joue qu'une fois par client.
+          const followupDone = cs.followupDone || result.kind === 'followup';
           const promise = result.promise ? { ...result.promise, cycle: save.cycle } : cs.promise;
           const piecesCollected = Array.from(new Set([...cs.piecesCollected, ...unlockedPieces]));
-          return { ...cs, scores, flags, dossierState, promise, piecesCollected };
+          return { ...cs, scores, flags, dossierState, promise, piecesCollected, followupDone };
         }),
       };
     }
@@ -490,6 +518,11 @@ export const useStore = create<Store>((set, get) => ({
       set({ save: next });
       gained.forEach((b) => get().toast(b.label, true));
       get().playSfx('badge');
+      get().celebrate({
+        icon: '🏅',
+        title: gained.length > 1 ? `${gained.length} badges débloqués !` : `Badge : ${gained[0].label}`,
+        subtitle: gained[0].description,
+      });
     }
   },
 
@@ -574,7 +607,12 @@ export const useStore = create<Store>((set, get) => ({
     };
     persist(next);
     set({ save: next });
-    get().toast(`${c.name} signé — CA estimé ${signedRevenue.toLocaleString('fr-FR')} €`);
+    get().playSfx('success');
+    get().celebrate({
+      icon: '🤝',
+      title: `${c.name} signé !`,
+      subtitle: `CA estimé : ${signedRevenue.toLocaleString('fr-FR')} €`,
+    });
   },
 
   openClientDialogue: (clientId, kind) => {
@@ -629,7 +667,16 @@ export const useStore = create<Store>((set, get) => ({
     set({ save: next });
     if (securityDelta) get().applyGauges({ security: securityDelta }, 'Cartes non éligibles classées en R&D');
     get().addXp(Math.round(pct), 'Qualification menée');
-    get().toast(`Qualification : ${pct}% de justesse`);
+    if (pct === 100) {
+      get().playSfx('fanfare');
+      get().celebrate({ icon: '🃏', title: 'Tri parfait !', subtitle: 'Toutes les cartes au bon endroit.' });
+    } else if (pct >= 80) {
+      get().playSfx('success');
+      get().celebrate({ icon: '👍', title: `Qualification : ${pct} %`, subtitle: 'Bon tri — voyez les cartes manquées.' });
+    } else {
+      get().playSfx('fail');
+      get().toast(`Qualification : ${pct} % de justesse`);
+    }
     get().checkBadges();
   },
 
@@ -663,7 +710,22 @@ export const useStore = create<Store>((set, get) => ({
     const secDelta = score.withinTolerance ? 8 : -10;
     get().applyGauges({ security: secDelta }, score.withinTolerance ? 'Assiette dans la tolérance' : 'Assiette hors tolérance');
     get().addXp(xpForBaseAccuracy(score.precision, c.profileDifficulty), 'Assiette construite');
-    get().playSfx('validate');
+    const pct = Math.round(score.precision * 100);
+    if (exact) {
+      get().playSfx('fanfare');
+      get().celebrate({ icon: '🎯', title: 'Assiette exacte !', subtitle: `${pct} % de précision — sans une erreur.` });
+    } else if (score.withinTolerance) {
+      get().playSfx('success');
+      get().celebrate({ icon: '✅', title: 'Assiette validée', subtitle: `${pct} % de précision, dans la tolérance.` });
+    } else {
+      get().playSfx('fail');
+      get().celebrate({
+        icon: '⚠️',
+        title: 'Assiette hors tolérance',
+        subtitle: `${pct} % de précision. Regardez les écarts poste par poste — c'est là que ça se joue.`,
+        tone: 'bad',
+      });
+    }
     get().checkBadges();
   },
 
@@ -815,8 +877,25 @@ export const useStore = create<Store>((set, get) => ({
     };
     persist(next);
     set({ save: next });
-    if (outcome === 'validated') get().addXp(balance.xp.auditPassed, 'Contrôle fiscal passé');
-    if (reassessed > 0) get().applyGauges({ security: -10, relation: -8 }, 'Redressement au contrôle');
+    if (outcome === 'validated') {
+      get().addXp(balance.xp.auditPassed, 'Contrôle fiscal passé');
+      get().playSfx('fanfare');
+      get().celebrate({
+        icon: '🛡️',
+        title: 'Contrôle passé sans rappel !',
+        subtitle: 'Votre dossier a tenu. C’est la preuve d’un travail sérieux.',
+      });
+    }
+    if (reassessed > 0) {
+      get().applyGauges({ security: -10, relation: -8 }, 'Redressement au contrôle');
+      get().playSfx('fail');
+      get().celebrate({
+        icon: '📉',
+        title: 'Redressement',
+        subtitle: `${reassessed.toLocaleString('fr-FR')} € rappelés. La preuve se constituait pendant les travaux.`,
+        tone: 'bad',
+      });
+    }
     get().checkBadges();
   },
 

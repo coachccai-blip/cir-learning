@@ -140,6 +140,8 @@ export const STR = {
     deviations: 'Écarts détectés',
     noDeviation: 'Aucun écart. Assiette exacte.',
     hintClaimed: 'déclaré par le client',
+    hintDefensible: 'Taux justifiable :',
+    hintMissingPiece: 'Pièce à récupérer en suivi de mission pour rendre ce taux opposable.',
   },
   justif: {
     title: 'Rédaction du justificatif technique',

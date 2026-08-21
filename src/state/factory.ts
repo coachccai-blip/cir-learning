@@ -23,6 +23,7 @@ export function initClientState(clientId: string): ClientState {
     piecesCollected: [],
     scores: { discovery: null, kickoff: null, qualification: null, base: null, justification: null },
     investigateDebt: 0,
+    followupDone: false,
     cardPlacements: {},
     assietteInput: null,
     playerCir: null,

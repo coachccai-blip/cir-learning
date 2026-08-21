@@ -33,7 +33,7 @@ function tone(
   osc.stop(ac.currentTime + start + duration + 0.05);
 }
 
-export type SoundName = 'badge' | 'validate' | 'ring' | 'alert';
+export type SoundName = 'badge' | 'validate' | 'ring' | 'alert' | 'success' | 'fail' | 'levelup' | 'click' | 'fanfare';
 
 /** Joue un son court. `volume` : 0-100 (0 = rien). */
 export function playSound(name: SoundName, volume: number): void {
@@ -60,6 +60,27 @@ export function playSound(name: SoundName, volume: number): void {
     case 'alert': // deux notes descendantes
       tone(ac, 520, 0, 0.14, v, 'triangle');
       tone(ac, 390, 0.13, 0.2, v, 'triangle');
+      break;
+    case 'success': // accord majeur bref et lumineux
+      tone(ac, 523, 0, 0.18, v * 0.9);
+      tone(ac, 659, 0.02, 0.2, v * 0.7);
+      tone(ac, 784, 0.04, 0.26, v * 0.6);
+      break;
+    case 'fail': // chute mineure, sans agressivité
+      tone(ac, 392, 0, 0.16, v * 0.8, 'triangle');
+      tone(ac, 311, 0.12, 0.22, v * 0.8, 'triangle');
+      tone(ac, 262, 0.24, 0.3, v * 0.6, 'triangle');
+      break;
+    case 'levelup': // gamme ascendante de montée en grade
+      [523, 659, 784, 1047].forEach((f, i) => tone(ac, f, i * 0.08, 0.22, v * 0.75));
+      break;
+    case 'click': // retour tactile discret sur un choix
+      tone(ac, 880, 0, 0.045, v * 0.35, 'triangle');
+      break;
+    case 'fanfare': // fin de saison
+      [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) =>
+        tone(ac, f, i * 0.11, 0.3, v * 0.7),
+      );
       break;
   }
 }

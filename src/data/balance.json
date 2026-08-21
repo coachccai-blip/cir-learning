@@ -1,5 +1,8 @@
 {
-  "actionPoints": { "day": 5, "night": 4 },
+  "actionPoints": {
+    "day": 10,
+    "night": 8
+  },
   "energy": {
     "start": 100,
     "nightFull": -12,
@@ -8,11 +11,23 @@
     "weekend": 10,
     "rest": 15,
     "debriefSuccess": 8,
-    "thresholds": { "fit": 80, "tired": 49, "exhausted": 24 },
+    "thresholds": {
+      "fit": 80,
+      "tired": 49,
+      "exhausted": 24
+    },
     "restfulNightBonus": 5
   },
-  "tolerance": { "discovery": 0.15, "onboarding": 0.05, "expert": 0.01 },
-  "hints": { "discovery": 99, "onboarding": 2, "expert": 0 },
+  "tolerance": {
+    "discovery": 0.15,
+    "onboarding": 0.05,
+    "expert": 0.01
+  },
+  "hints": {
+    "discovery": 99,
+    "onboarding": 2,
+    "expert": 0
+  },
   "eventChance": 0.33,
   "auditSecurityThreshold": 60,
   "defaultFeeRate": 0.2,
@@ -20,19 +35,47 @@
   "seasonDepositsTarget": 4,
   "nonEligibleProspectRatio": 0.25,
   "xp": {
-    "dialogueChoice": { "optimal": 40, "acceptable": 25, "tempting": 10, "poor": 0 },
-    "baseAccuracy": { "min": 100, "max": 300 },
+    "dialogueChoice": {
+      "optimal": 40,
+      "acceptable": 25,
+      "tempting": 10,
+      "poor": 0
+    },
+    "baseAccuracy": {
+      "min": 100,
+      "max": 300
+    },
     "deposit": 500,
     "auditPassed": 800,
     "codexRead": 5,
     "cardCorrect": 15
   },
   "grades": [
-    { "id": "stagiaire", "label": "Stagiaire", "xp": 0 },
-    { "id": "junior", "label": "Consultant Junior", "xp": 800 },
-    { "id": "consultant", "label": "Consultant", "xp": 2200 },
-    { "id": "senior", "label": "Consultant Senior", "xp": 4500 },
-    { "id": "manager", "label": "Manager", "xp": 8000 }
+    {
+      "id": "stagiaire",
+      "label": "Stagiaire",
+      "xp": 0
+    },
+    {
+      "id": "junior",
+      "label": "Consultant Junior",
+      "xp": 800
+    },
+    {
+      "id": "consultant",
+      "label": "Consultant",
+      "xp": 2200
+    },
+    {
+      "id": "senior",
+      "label": "Consultant Senior",
+      "xp": 4500
+    },
+    {
+      "id": "manager",
+      "label": "Manager",
+      "xp": 8000
+    }
   ],
   "promise": {
     "inRange": 15,

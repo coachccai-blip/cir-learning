@@ -48,6 +48,7 @@ export function migrateSave(data: unknown): SaveGame | null {
       impact: h.impact ?? 0,
       rule: h.rule ?? '',
     })),
+    portfolio: (s.portfolio ?? []).map((c) => ({ ...c, followupDone: c.followupDone ?? false })),
     prospects: (s.prospects ?? []).map((p) => {
       const gender = p.gender ?? genderForName(p.contactName ?? '');
       return {
