@@ -8,6 +8,17 @@ const FIRST_NAMES = [
   'Claire', 'Antoine', 'Fatou', 'Julien', 'Inès', 'Mathieu', 'Léa', 'Romain',
   'Awa', 'Thomas', 'Nadia', 'Pierre', 'Chloé', 'Yanis', 'Margaux', 'Olivier',
 ];
+const FIRST_NAME_GENDER: Record<string, 'F' | 'M'> = {
+  Claire: 'F', Antoine: 'M', Fatou: 'F', Julien: 'M', Inès: 'F', Mathieu: 'M',
+  Léa: 'F', Romain: 'M', Awa: 'F', Thomas: 'M', Nadia: 'F', Pierre: 'M',
+  Chloé: 'F', Yanis: 'M', Margaux: 'F', Olivier: 'M',
+};
+
+export function genderForName(fullName: string): 'F' | 'M' {
+  const first = fullName.split(' ')[0];
+  return FIRST_NAME_GENDER[first] ?? 'M';
+}
+
 const LAST_NAMES = [
   'Marchal', 'Nguyen', 'Diallo', 'Petit', 'Fontaine', 'Garcia', 'Lemoine',
   'Bourgeois', 'Robin', 'Chevalier', 'Masson', 'Barbier', 'Costa', 'Renard',
@@ -27,16 +38,20 @@ export function generateProspect(
   const tpl = pick(rng, pool.length > 0 ? pool : templates);
   const company = pick(rng, tpl.companyPool);
   const contactName = `${pick(rng, FIRST_NAMES)} ${pick(rng, LAST_NAMES)}`;
+  const gender = genderForName(contactName);
   return {
     id: `pr_${index}_${Math.floor(rng() * 1e6)}`,
     company,
     sector: pick(rng, tpl.sectorPool),
     contactName,
+    gender,
     size: randInt(rng, tpl.sizeRange[0], tpl.sizeRange[1]),
     eligibility: tpl.eligibilityProfile,
     hook: pick(rng, tpl.hooks),
     estimatedCir: Math.round(randInt(rng, tpl.estimatedCirRange[0], tpl.estimatedCirRange[1]) / 1000) * 1000,
     avatarSeed: `${company}-${contactName}`,
+    // Portrait générique révélé à la signature (4 visuels par genre).
+    portraitId: `prospect-${gender === 'F' ? 'f' : 'm'}-0${randInt(rng, 1, 4)}`,
     status: 'NEW',
   };
 }

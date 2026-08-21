@@ -121,6 +121,20 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
     « CIR-Quest-Personnages-Prompts.xlsx »). Si l'image existe, elle remplace
     l'avatar SVG (repli automatique) ; l'anneau d'humeur est superposé aux deux.
 
+## Prospects anonymes et closing (demande utilisateur)
+
+27. **Silhouette anonyme au téléphone** : les prospects apparaissent en
+    silhouette H/F (`AnonymousAvatar`) tant qu'ils ne sont pas signés — on ne
+    voit pas son interlocuteur au téléphone. Le genre est dérivé du prénom
+    généré.
+28. **Closing complété** (§16) : l'issue de l'appel dépend du choix final
+    (flags `prospect_sign` / `prospect_maybe` / `prospect_decline`). Signé →
+    mission conseil au portefeuille (CA via `resolveGenericMission`, pénalités
+    si non éligible) avec un **portrait générique révélé** parmi 8 visuels
+    (`prospect-f-01…04`, `prospect-m-01…04`), attribué par genre + seed.
+    Refus propre d'un non-éligible → compte pour le badge « Non, c'est non ».
+    L'Excel des personnages passe à 23 entrées (15 nommés + 8 génériques).
+
 ## Points à valider (rappel des risques §21)
 
 - **R1/R3** : relecture métier des règles fiscales et des cas d'or par un

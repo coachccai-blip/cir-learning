@@ -340,12 +340,18 @@ export interface GeneratedProspect {
   company: string;
   sector: Sector;
   contactName: string;
+  /** Genre de l'interlocuteur — pilote la silhouette anonyme au téléphone. */
+  gender: 'F' | 'M';
   size: number;
   eligibility: EligibilityProfile;
   hook: string;
   estimatedCir: number;
   avatarSeed: string;
+  /** Portrait générique attribué s'il devient client (prospect-f-01 … prospect-m-04). */
+  portraitId: string;
   status: 'NEW' | 'SIGNED' | 'DECLINED' | 'LOST';
+  /** CA encaissé si la mission conseil a été signée. */
+  revenue?: number;
 }
 
 // ---------- Sauvegarde / état ----------

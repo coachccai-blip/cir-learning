@@ -26,7 +26,7 @@ import { energyState, gradeForXp, maxClients, xpForBaseAccuracy, toleranceForMod
 import { scoreAssiette } from '../engine/cir/scoring';
 import { computeBreakdown } from '../engine/cir/calculator';
 import { newBadges } from '../engine/badges';
-import { evaluatePromise, generateProspect } from '../engine/prospects';
+import { evaluatePromise, generateProspect, resolveGenericMission } from '../engine/prospects';
 import { rngFromSeed } from '../engine/rng';
 import {
   DEFAULT_OPTIONS,
@@ -164,6 +164,7 @@ interface Actions {
   }) => void;
 
   generateProspects: (n: number) => void;
+  resolveProspectCall: (prospectId: string, flags: string[]) => void;
   signClient: (clientId: string) => void;
   openClientDialogue: (clientId: string, kind: 'discovery' | 'kickoff' | 'followup' | 'closing') => void;
 
@@ -472,11 +473,9 @@ export const useStore = create<Store>((set, get) => ({
       if (settlement.churn) get().playSfx('alert');
     }
 
-    // Prospect : signature ou refus
+    // Prospect : signature (→ client conseil avec portrait) ou refus (§16).
     if (result.kind === 'prospect' && result.prospectId) {
-      if (result.declined) {
-        get().toast('Prospect écarté — bien vu.');
-      }
+      get().resolveProspectCall(result.prospectId, result.flags);
     }
     get().checkBadges();
   },
@@ -505,6 +504,57 @@ export const useStore = create<Store>((set, get) => ({
     const next = { ...save, prospects: [...save.prospects, ...fresh] };
     persist(next);
     set({ save: next });
+  },
+
+  resolveProspectCall: (prospectId, flags) => {
+    const save = get().save;
+    if (!save) return;
+    const p = save.prospects.find((p) => p.id === prospectId);
+    if (!p || p.status !== 'NEW') return;
+
+    const forceSign = flags.includes('prospect_sign');
+    const maybe = flags.includes('prospect_maybe');
+    const willSign = forceSign || (maybe && p.eligibility !== 'NOT_ELIGIBLE');
+
+    if (willSign) {
+      const outcome = resolveGenericMission(p);
+      const next: SaveGame = {
+        ...save,
+        prospects: save.prospects.map((x) =>
+          x.id === prospectId ? { ...x, status: 'SIGNED' as const, revenue: outcome.revenue } : x,
+        ),
+        revenue: { ...save.revenue, signed: save.revenue.signed + outcome.revenue },
+        stats: { ...save.stats, prospectsSigned: save.stats.prospectsSigned + 1 },
+      };
+      persist(next);
+      set({ save: next });
+      get().applyGauges(
+        { relation: outcome.relation, security: outcome.security, profitability: outcome.profitability },
+        outcome.toxic
+          ? `Mission toxique signée : ${p.company} n'a pas de R&D réelle`
+          : `Mission conseil signée : ${p.company}`,
+      );
+      get().toast(
+        outcome.toxic
+          ? `${p.company} signé… mais rien d'éligible. Cette mission va vous coûter.`
+          : `🤝 ${p.company} signé — ${p.contactName} rejoint votre portefeuille (+${outcome.revenue.toLocaleString('fr-FR')} € CA)`,
+      );
+      get().playSfx('validate');
+    } else {
+      const goodRefusal = p.eligibility === 'NOT_ELIGIBLE' && !flags.includes('prospect_decline_rude');
+      const next: SaveGame = {
+        ...save,
+        prospects: save.prospects.map((x) => (x.id === prospectId ? { ...x, status: 'DECLINED' as const } : x)),
+        stats: {
+          ...save.stats,
+          prospectsDeclined: save.stats.prospectsDeclined + 1,
+          refusedMissions: save.stats.refusedMissions + (goodRefusal ? 1 : 0),
+        },
+      };
+      persist(next);
+      set({ save: next });
+      get().toast(goodRefusal ? 'Prospect non éligible écarté — bien vu.' : `${p.company} : pas de suite.`);
+    }
   },
 
   signClient: (clientId) => {

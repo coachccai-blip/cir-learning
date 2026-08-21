@@ -5,6 +5,7 @@ import { scenarioById } from '../data/scenarios/index';
 import { CLIENTS } from '../data/clients';
 import { codexById } from '../data/codex';
 import { Avatar } from '../avatars/Avatar';
+import { AnonymousAvatar } from '../avatars/AnonymousAvatar';
 import {
   advance,
   displayOrder,
@@ -170,6 +171,7 @@ export function DialogueScreen() {
 
   const speaker = node?.speaker ?? '';
   const avatarSeed = client?.contact.avatarSeed ?? speaker;
+  const prospect = ctx.prospectId ? save?.prospects.find((p) => p.id === ctx.prospectId) : undefined;
   const codexUnlock = feedback?.feedback.codexUnlock ? codexById(feedback.feedback.codexUnlock) : null;
   const finished = session.currentNodeId === null && feedback === null;
 
@@ -193,9 +195,13 @@ export function DialogueScreen() {
       <div className="dialogue-wrap">
         <div className="panel speaker-card">
           <div className="avatar">
-            <Avatar seed={avatarSeed} expression={expression} mood={client ? mood : undefined} />
+            {ctx.kind === 'prospect' && prospect ? (
+              <AnonymousAvatar gender={prospect.gender} phone />
+            ) : (
+              <Avatar seed={avatarSeed} expression={expression} mood={client ? mood : undefined} />
+            )}
           </div>
-          <strong>{speaker}</strong>
+          <strong>{ctx.kind === 'prospect' && prospect ? `${prospect.contactName} — ${prospect.company}` : speaker}</strong>
           {client && (
             <div
               className="muted"
