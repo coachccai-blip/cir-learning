@@ -561,3 +561,31 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
 92. **La narration de dossier ne répète plus le nom du client.** L'écran
     d'assiette affichait « Ovalis Nutrition — Ovalis Nutrition cherche à… » ;
     le préfixe ne s'ajoute plus quand la narration commence déjà par le nom.
+
+## Le retour du consultant : ce qui change en deuxième saison
+
+93. **La deuxième saison ne rejoue pas l'arrivée du nouveau.** Le tutoriel
+    d'accueil est remplacé par une scène de rentrée dans le bureau de la
+    directrice de BU : elle confie un portefeuille à quelqu'un qui a déjà
+    déposé une campagne, annonce qu'un des quatre dossiers ne devrait pas être
+    signé, et demande un objectif chiffré — le même piège de surpromesse qu'un
+    client tendrait, posé cette fois en interne.
+94. **Le joueur revient avec une saison au compteur.** Il commençait « Stagiaire
+    à 0 XP » en Expert, ce qui contredisait tout le reste. L'échelle de grades a
+    été recalibrée sur les gains réels d'une saison (six niveaux au lieu de
+    cinq) et la seconde démarre à « Consultant confirmé » — avec encore un
+    grade à gagner d'ici l'épilogue, mesuré sur une partie complète.
+95. **Deux boîtes mail.** Le cabinet souhaitait la bienvenue et donnait des
+    conseils de premier rendez-vous à un consultant de deuxième année. Chaque
+    saison a désormais ses messages : accueil et méthode d'un côté ; taux trop
+    ronds, agréments qui expirent, relecture d'un dossier junior et préparation
+    du contradictoire de l'autre. Deux messages restent communs.
+96. **Bug corrigé au passage : la moitié des mails n'apparaissait jamais.**
+    Leurs fenêtres de diffusion couvraient vingt-trois semaines, héritées d'un
+    calendrier plus long ; la saison en compte six depuis la réduction à une
+    heure de jeu. Cinq messages sur huit étaient donc injouables. Les fenêtres
+    sont recalées, et un test vérifie que chaque semaine de chaque saison
+    délivre au moins un message.
+97. **Chapeaux d'écran et quiz d'entrée propres à la saison.** « Alimentez le
+    portefeuille » ne décrit pas la posture de la seconde ; le quiz d'entrée
+    n'est plus présenté comme un point de départ mais comme une reprise.

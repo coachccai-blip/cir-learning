@@ -38,7 +38,7 @@ export function DayScreen() {
   const [openMail, setOpenMail] = useState<string | null>(null);
   if (!save) return null;
 
-  const mails = mailsForCycle(save.cycle);
+  const mails = mailsForCycle(save.cycle, save.mode);
   const unreadMails = mails.filter((m) => !save.mailsRead.includes(m.id)).length;
 
   function doClientAction(cs: ClientState) {
@@ -98,7 +98,7 @@ export function DayScreen() {
       <div className="row" style={{ marginBottom: 8 }}>
         <div>
           <h1>{STR.day.title}</h1>
-          <p className="muted">{STR.day.subtitle}</p>
+          <p className="muted lede">{STR.season[save.mode].daySubtitle}</p>
         </div>
         <span className="spacer" />
         <button className="btn btn-ghost" onClick={() => go('codex')}>

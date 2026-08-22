@@ -54,7 +54,7 @@ export function NightScreen() {
       <div className="row" style={{ marginBottom: 8 }}>
         <div>
           <h1>{STR.night.title}</h1>
-          <p className="muted">{STR.night.subtitle}</p>
+          <p className="muted lede">{STR.season[save.mode].nightSubtitle}</p>
         </div>
         <span className="spacer" />
         <button className="btn btn-ghost" onClick={() => go('codex')}>

@@ -6,6 +6,7 @@ import { shuffleForDisplay } from '../engine/rng';
 
 export function QuizScreen() {
   const phase = useStore((s) => s.quizPhase);
+  const mode = useStore((s) => s.save?.mode ?? 'onboarding');
   const seed = useStore((s) => s.save?.seed ?? 'x');
   const commitQuiz = useStore((s) => s.commitQuiz);
   // Deux jeux jumeaux : mêmes notions, cas différents. Reposer les mêmes
@@ -32,8 +33,12 @@ export function QuizScreen() {
     <div className="home" style={{ alignItems: 'flex-start', overflowY: 'auto' }}>
       <div className="container" style={{ width: 'min(760px,100%)', color: '#fff' }}>
         <div className="center" style={{ marginBottom: 20 }}>
-          <h1 style={{ color: '#fff' }}>{phase === 'pre' ? STR.quiz.titlePre : STR.quiz.titlePost}</h1>
-          <p style={{ opacity: 0.82 }}>{phase === 'pre' ? STR.quiz.introPre : STR.quiz.introPost}</p>
+          <h1 style={{ color: '#fff' }}>
+            {phase === 'pre' ? STR.season[mode].quizTitle : STR.quiz.titlePost}
+          </h1>
+          <p style={{ opacity: 0.9 }}>
+            {phase === 'pre' ? STR.season[mode].quizIntro : STR.quiz.introPost}
+          </p>
         </div>
 
         <div className="stack">

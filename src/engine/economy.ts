@@ -57,7 +57,8 @@ export function maxClients(xp: number): number {
   if (id === 'stagiaire') return 1;
   if (id === 'junior') return 2;
   if (id === 'consultant') return 2;
-  return 3;
+  if (id === 'confirme') return 3;
+  return 4;
 }
 
 export function xpForBaseAccuracy(precision: number, difficulty: 1 | 2 | 3): number {

@@ -59,22 +59,27 @@
     {
       "id": "junior",
       "label": "Consultant Junior",
-      "xp": 800
+      "xp": 700
     },
     {
       "id": "consultant",
       "label": "Consultant",
-      "xp": 2200
+      "xp": 1600
+    },
+    {
+      "id": "confirme",
+      "label": "Consultant confirmé",
+      "xp": 2600
     },
     {
       "id": "senior",
       "label": "Consultant Senior",
-      "xp": 4500
+      "xp": 3800
     },
     {
       "id": "manager",
       "label": "Manager",
-      "xp": 8000
+      "xp": 5200
     }
   ],
   "promise": {
@@ -175,5 +180,9 @@
   },
   "audit": {
     "remedyRelief": 0.4
+  },
+  "startingXp": {
+    "onboarding": 0,
+    "expert": 2600
   }
 }

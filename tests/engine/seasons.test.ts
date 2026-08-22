@@ -6,7 +6,10 @@ import { EXPERT_CASES } from '../../src/data/cases-expert';
 import { EXPERT_CLIENTS } from '../../src/data/clients-expert';
 import { EXPERT_CARDSETS } from '../../src/data/cards-expert';
 import { CASE_TWISTS, twistsForCase } from '../../src/data/case-twists';
-import { SCENARIOS } from '../../src/data/scenarios/index';
+import { SCENARIOS, scenarioById } from '../../src/data/scenarios/index';
+import { MAILS, mailsForCycle } from '../../src/data/mails';
+import { SEASON_LENGTH } from '../../src/data/calendar';
+import { createNewGame } from '../../src/state/factory';
 import { portraitUrl } from '../../src/avatars/portraits';
 import { applyTwist, jitterAmounts, varyCase } from '../../src/engine/casevar';
 import {
@@ -17,6 +20,7 @@ import {
   toleranceForStep,
   type Poste,
 } from '../../src/engine/progression';
+import { gradeForXp, nextGrade } from '../../src/engine/economy';
 import {
   completeSeason,
   EMPTY_PROGRESS,
@@ -431,5 +435,76 @@ describe('Séance contradictoire', () => {
     expect(r.findings[0].defended).toBe(true);
     expect(r.findings[0].mitigated).toBe(false);
     expect(r.reassessedAmount).toBe(0);
+  });
+});
+
+
+// ---------------------------------------------------------------------------
+// Le récit de la deuxième saison
+// ---------------------------------------------------------------------------
+
+describe('Une deuxième saison qui ne rejoue pas la première', () => {
+  it('ouvre sur une scène de reprise, pas sur le tutoriel d’arrivée', () => {
+    const opening = scenarioById('sc_exp_opening');
+    expect(opening.type).toBe('INTERNAL');
+    expect(opening.id).not.toBe('sc_tutorial');
+    // La scène est confiée à la direction de BU, pas à la manager d'accueil.
+    expect(opening.nodes.every((n) => n.speaker.includes('Sophie Meyer'))).toBe(true);
+  });
+
+  it('fait revenir le joueur avec une saison au compteur', () => {
+    const first = createNewGame('onboarding', '2026-01-01T00:00:00.000Z', 'g');
+    const second = createNewGame('expert', '2026-01-01T00:00:00.000Z', 'g');
+    expect(first.xp).toBe(0);
+    expect(second.xp).toBeGreaterThan(first.xp);
+    expect(gradeForXp(second.xp).id).not.toBe('stagiaire');
+  });
+
+  it('donne un grade encore à gagner en deuxième saison', () => {
+    const start = createNewGame('expert', '2026-01-01T00:00:00.000Z', 'g').xp;
+    expect(nextGrade(start), 'plus rien à débloquer').not.toBeNull();
+  });
+
+  it('n’ouvre jamais la deuxième saison sans avoir terminé la première', () => {
+    expect(isUnlocked('expert', EMPTY_PROGRESS)).toBe(false);
+    // Terminer l'Expert sans l'Onboarding ne doit pas suffire : l'ordre compte.
+    const oddball = completeSeason(EMPTY_PROGRESS, 'expert', 90);
+    expect(isUnlocked('expert', oddball)).toBe(false);
+    expect(journeyComplete(oddball)).toBe(false);
+  });
+});
+
+describe('Boîte mail par saison', () => {
+  it('tient dans les six semaines de la saison', () => {
+    for (const m of MAILS) {
+      expect(m.fromCycle, m.id).toBeGreaterThanOrEqual(1);
+      expect(m.toCycle, m.id).toBeLessThanOrEqual(SEASON_LENGTH);
+      expect(m.fromCycle, m.id).toBeLessThanOrEqual(m.toCycle);
+    }
+  });
+
+  it('délivre au moins un message chaque semaine, dans les deux saisons', () => {
+    for (const mode of MODES) {
+      for (let c = 1; c <= SEASON_LENGTH; c++) {
+        expect(mailsForCycle(c, mode).length, `${mode} semaine ${c}`).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('ne souhaite pas la bienvenue à un consultant de deuxième saison', () => {
+    const expertInbox = Array.from({ length: SEASON_LENGTH }, (_, i) => mailsForCycle(i + 1, 'expert')).flat();
+    const ids = expertInbox.map((m) => m.id);
+    expect(ids).not.toContain('mail_bienvenue');
+    expect(ids).not.toContain('mail_methodo');
+    expect(expertInbox.some((m) => m.id.startsWith('mail_exp_'))).toBe(true);
+  });
+
+  it('n’envoie pas les messages de deuxième saison au nouveau venu', () => {
+    const rookieInbox = Array.from({ length: SEASON_LENGTH }, (_, i) => mailsForCycle(i + 1, 'onboarding')).flat();
+    expect(rookieInbox.every((m) => !m.id.startsWith('mail_exp_'))).toBe(true);
+  });
+
+  it('garde des identifiants uniques et des fiches codex existantes', () => {
+    expect(new Set(MAILS.map((m) => m.id)).size).toBe(MAILS.length);
   });
 });

@@ -329,9 +329,11 @@ export const useStore = create<Store>((set, get) => ({
     set({ view: 'day' });
     get().generateProspects(3);
     // Le tutoriel présente le cabinet et le métier : il n'a pas de sens en
-    // deuxième saison, où le joueur est censé être en poste depuis un an.
-    if (!save.tutorialDone && save.mode !== 'expert') {
-      get().startDialogue({ scenarioId: 'sc_tutorial', kind: 'tutorial', returnTo: 'day' });
+    // deuxième saison. Celle-ci ouvre sur une autre scène — la directrice de BU
+    // confie un portefeuille à quelqu'un qui a déjà déposé une campagne.
+    if (!save.tutorialDone) {
+      const scenarioId = save.mode === 'expert' ? 'sc_exp_opening' : 'sc_tutorial';
+      get().startDialogue({ scenarioId, kind: 'tutorial', returnTo: 'day' });
     }
   },
 

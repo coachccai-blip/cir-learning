@@ -719,7 +719,184 @@ export const EXPERT_FOLLOWUP: Scenario = {
   outcome: FIELD_OUTCOME,
 };
 
+
+// --- Ouverture de la deuxième saison --------------------------------------
+
+/**
+ * Le tutoriel n'a plus lieu d'être : le joueur a mené une saison entière. Cette
+ * scène le remet en selle autrement — elle rappelle ce qui change quand on
+ * cesse d'apprendre le métier pour devoir le tenir devant quelqu'un qui le
+ * conteste.
+ */
+export const EXPERT_OPENING: Scenario = {
+  id: 'sc_exp_opening',
+  type: 'INTERNAL',
+  title: 'Rentrée — le bureau de Sophie Meyer',
+  context:
+    'Une saison derrière vous, vos dossiers déposés. Sophie Meyer vous reçoit sans préambule : elle a des dossiers à confier, et ce ne sont pas ceux qu’on donne à un débutant.',
+  objectives: [
+    'Comprendre ce qui change en deuxième saison',
+    'Accepter un portefeuille plus dur',
+    'Ne pas rejouer le commercial de première année',
+  ],
+  entryNode: 'n1',
+  nodes: [
+    {
+      id: 'n1',
+      speaker: 'Sophie Meyer (directrice de BU)',
+      expression: 'neutre',
+      text: 'Votre première saison est derrière vous. Cette année, je vous confie les dossiers que je ne donne pas aux nouveaux. Vous savez pourquoi ?',
+      choices: [
+        choice(
+          'optimal',
+          'synthese',
+          'Parce qu’ils ne se montent pas : ils se défendent, ligne par ligne.',
+          { relation: 4, security: 8, trust: 4 },
+          {
+            what: 'Vous nommez ce qui change.',
+            why: 'Un dossier facile se monte ; un dossier dur se défend devant quelqu’un qui le conteste, pièce en main.',
+            rule: 'La deuxième saison ne teste plus le montage, mais la défense.',
+          },
+          'n2',
+        ),
+        choice(
+          'acceptable',
+          'preuve',
+          'Parce qu’ils demandent des pièces qu’un débutant n’ose pas réclamer.',
+          { relation: 2, security: 7 },
+          {
+            what: 'Vous voyez l’enjeu de la collecte.',
+            why: 'Juste, mais ce n’est qu’une partie : il faudra aussi tenir la ligne en séance.',
+            rule: 'Réclamer une pièce est un geste qui s’apprend.',
+          },
+          'n2',
+        ),
+        choice(
+          'tempting',
+          'commercial',
+          'Parce que j’ai fait du chiffre l’an dernier et que ça se voit.',
+          { relation: 3, security: -8, profitability: 2 },
+          {
+            what: 'Vous lisez la promotion comme une récompense commerciale.',
+            why: 'On vous confie des dossiers durs pour votre rigueur, pas pour votre volume : le malentendu se paiera au contrôle.',
+            rule: 'Un portefeuille difficile n’est pas une prime au chiffre.',
+          },
+          'n2',
+        ),
+        choice(
+          'poor',
+          'fermete',
+          'Franchement non. Je prends ce qu’on me donne et je le monte.',
+          { relation: -6, security: -4 },
+          {
+            what: 'Vous refusez de vous situer.',
+            why: 'Prendre un dossier sans savoir pourquoi il vous échoit, c’est découvrir sa difficulté au pire moment.',
+            rule: 'On mesure la difficulté d’un dossier avant de l’accepter.',
+          },
+          'n2',
+        ),
+      ],
+    },
+    {
+      id: 'n2',
+      speaker: 'Sophie Meyer (directrice de BU)',
+      expression: 'ferme',
+      text: 'Quatre dossiers. Je vous préviens : il y en a un que je n’aurais pas signé. À vous de me dire lequel, et de me dire non.',
+      choices: [
+        choice(
+          'optimal',
+          'fermete',
+          'Entendu. Je vous dirai non par écrit, avec le motif d’éligibilité.',
+          { relation: 3, security: 12, trust: 5 },
+          {
+            what: 'Vous acceptez de refuser, et vous le tracez.',
+            why: 'Un refus motivé par écrit protège le cabinet et vaut argument commercial : le client comprend ce qu’il achète.',
+            rule: 'Un refus se motive et se garde par écrit.',
+            codexUnlock: 'cdx_dire_non',
+          },
+          'n3',
+        ),
+        choice(
+          'acceptable',
+          'technique',
+          'D’accord. J’instruis les quatre avant de trancher lequel écarter.',
+          { relation: 2, security: 9 },
+          {
+            what: 'Vous instruisez avant de trancher.',
+            why: 'Prudent et juste, mais vous dépenserez du temps sur un dossier que vous écarterez.',
+            rule: 'Instruire avant de conclure, dans les deux sens.',
+          },
+          'n3',
+        ),
+        choice(
+          'tempting',
+          'commercial',
+          'Quatre facturés, c’est mieux que trois. Je trouverai un angle.',
+          { relation: 4, security: -14, profitability: 3 },
+          {
+            what: 'Vous cherchez à sauver le dossier de trop.',
+            why: '« Trouver un angle » sur un dossier sans R&D, c’est écrire soi-même le redressement de l’an prochain.',
+            rule: 'On ne fabrique pas d’éligibilité par l’angle de présentation.',
+          },
+          'n3',
+        ),
+        choice(
+          'poor',
+          'empathie',
+          'Si vous avez signé, c’est qu’il y avait une raison. Je le monte.',
+          { relation: 1, security: -10, trust: -3 },
+          {
+            what: 'Vous vous en remettez à la signature.',
+            why: 'Elle vient de vous dire qu’elle n’aurait pas signé : c’est le test, et vous venez de le manquer.',
+            rule: 'La signature d’un supérieur ne vaut pas qualification.',
+          },
+          'n3',
+        ),
+      ],
+    },
+    {
+      // Couperet : elle demande un engagement chiffré, comme un client le ferait.
+      id: 'n3',
+      speaker: 'Sophie Meyer (directrice de BU)',
+      expression: 'neutre',
+      text: 'Dernier point. Le comité me demande votre objectif de saison. Vous me donnez un chiffre maintenant ?',
+      choices: [
+        choice(
+          'optimal',
+          'synthese',
+          'Une fourchette aujourd’hui, un chiffre ferme après les kick-offs.',
+          { relation: 3, security: 10, profitability: 2, trust: 4 },
+          {
+            what: 'Vous appliquez en interne ce que vous exigez en clientèle.',
+            why: 'Un consultant qui surpromet à son comité finira par surpromettre à son client : la discipline vaut des deux côtés du bureau.',
+            rule: 'La prudence d’estimation ne s’arrête pas à la porte du cabinet.',
+            codexUnlock: 'cdx_estimer',
+          },
+          null,
+        ),
+        choice(
+          'tempting',
+          'commercial',
+          'Je m’engage tout de suite, et je ferai le nécessaire pour y arriver.',
+          { relation: 5, security: -14, profitability: 4 },
+          {
+            what: 'Vous vous engagez avant d’avoir instruit.',
+            why: '« Faire le nécessaire » pour tenir un chiffre annoncé trop tôt, c’est exactement ce qui gonfle une assiette.',
+            rule: 'Un engagement chiffré sans dossier instruit devient une pression sur l’assiette.',
+          },
+          null,
+        ),
+      ],
+    },
+  ],
+  outcome: {
+    scoreThresholds: { excellent: 78, good: 58 },
+    unlocks: { excellent: [], good: [], poor: [] },
+  },
+};
+
 export const EXPERT_SCENARIOS: Scenario[] = [
+  EXPERT_OPENING,
   EXPERT_DISCOVERY,
   EXPERT_REFUSAL,
   EXPERT_KICKOFF,

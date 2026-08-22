@@ -45,7 +45,6 @@ export function initClientState(
 export function createNewGame(mode: GameMode, createdAt: string, seedOverride?: string): SaveGame {
   const seed = seedOverride ?? makeSeed();
   const rng = rngFromSeed(seed);
-  // Le mode expert démarre avec un portefeuille plus large.
   void rng;
   return {
     schemaVersion: 1,
@@ -57,7 +56,9 @@ export function createNewGame(mode: GameMode, createdAt: string, seedOverride?: 
     actionPoints: balance.actionPoints.day,
     energy: balance.energy.start,
     gauges: { relation: 50, security: 50, profitability: 50 },
-    xp: 0,
+    // La deuxième saison ne repart pas stagiaire : le joueur revient avec une
+    // saison au compteur, et son grade le dit dès le premier écran.
+    xp: (balance.startingXp as Record<string, number>)[mode] ?? 0,
     revenue: { signed: 0, collected: 0 },
     portfolio: [],
     prospects: [],

@@ -54,6 +54,27 @@ export const STR = {
       'Reverrouille la saison Expert et efface les meilleurs scores. Utile pour refaire jouer le parcours complet à quelqu’un d’autre.',
     resetDone: 'Parcours réinitialisé : la saison Expert est de nouveau verrouillée.',
   },
+  /**
+   * Chapeaux d'écran propres à chaque saison. Le même sous-titre pour les deux
+   * effaçait la différence de posture : on n'ouvre pas la deuxième saison en
+   * « alimentant son portefeuille », on ouvre en cadrant des dossiers durs.
+   */
+  season: {
+    onboarding: {
+      daySubtitle: 'Alimentez le portefeuille et entretenez la relation.',
+      nightSubtitle: 'Transformez la matière collectée en dossier défendable.',
+      quizTitle: 'Avant de commencer : où en êtes-vous ?',
+      quizIntro:
+        '5 questions rapides. Aucune bonne réponse attendue — c’est un point de départ pour mesurer votre progression.',
+    },
+    expert: {
+      daySubtitle: 'Des dossiers denses et des interlocuteurs qui embellissent : cadrez avant de promettre.',
+      nightSubtitle: 'Montez des assiettes qui tiendront devant un vérificateur qui relance.',
+      quizTitle: 'Reprise de saison : où en êtes-vous ?',
+      quizIntro:
+        'Les mêmes 5 questions qu’à votre arrivée, un an plus tard. Ce qui reste acquis se verra tout de suite.',
+    },
+  },
   hud: {
     day: 'Relation client',
     night: 'Technique',
@@ -75,7 +96,6 @@ export const STR = {
   },
   day: {
     title: 'Phase Relation client',
-    subtitle: 'Alimentez le portefeuille et entretenez la relation.',
     agenda: 'Agenda de la semaine',
     crm: 'Portefeuille & prospects',
     prospects: 'Prospects',
@@ -108,7 +128,6 @@ export const STR = {
   },
   night: {
     title: 'Phase Technique',
-    subtitle: 'Transformez la matière collectée en dossier défendable.',
     dossiers: 'Dossiers ouverts',
     noDossiers: 'Aucun dossier à monter pour l’instant. Signez des clients en phase Relation client.',
     tipDiscovery: (name: string) =>
@@ -156,9 +175,7 @@ export const STR = {
     stopReading: 'Arrêter la lecture',
   },
   quiz: {
-    titlePre: 'Avant de commencer : où en êtes-vous ?',
     titlePost: 'Ce que vous avez appris',
-    introPre: '5 questions rapides. Aucune bonne réponse attendue — c’est un point de départ pour mesurer votre progression.',
     introPost: 'Les mêmes 5 questions qu’au départ. Comparons.',
     question: 'Question',
     validate: 'Valider mes réponses',
