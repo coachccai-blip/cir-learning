@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { pickVoice, pitchFor, scoreForGender } from '../../src/app/speech';
-import { genderForSpeaker } from '../../src/data/voices';
+import { genderOfVoice, pickVoice, pitchFor, rateFor, scoreForGender } from '../../src/app/speech';
+import { displayedSpeaker, genderForSpeaker, isGenericSpeaker } from '../../src/data/voices';
 import { CLIENTS } from '../../src/data/clients';
+import { EXPERT_CLIENTS } from '../../src/data/clients-expert';
 import { SCENARIOS } from '../../src/data/scenarios/index';
 
 // Voix telles qu'on les rencontre réellement : macOS, Windows, Chrome Android.
@@ -72,5 +73,85 @@ describe('Genre des interlocuteurs', () => {
   it('tout locuteur du contenu obtient une voix, sans exception', () => {
     const speakers = new Set(SCENARIOS.flatMap((s) => s.nodes.map((n) => n.speaker)));
     for (const sp of speakers) expect(['F', 'M']).toContain(genderForSpeaker(sp));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Le défaut signalé : des personnages masculins lus par une voix féminine.
+// ---------------------------------------------------------------------------
+
+describe('Quand le système n’offre pas la bonne voix', () => {
+  // Cas très courant : une seule voix française installée, et elle est féminine.
+  const ONLY_FEMALE = [{ name: 'Microsoft Hortense Desktop - French', lang: 'fr-FR' }];
+  const ONLY_NEUTRAL = [{ name: 'Google français', lang: 'fr-FR' }];
+
+  it('reconnaît le genre porté par les noms de voix courants', () => {
+    expect(genderOfVoice({ name: 'Microsoft Paul - French (France)' })).toBe('M');
+    expect(genderOfVoice({ name: 'Microsoft Hortense Desktop - French' })).toBe('F');
+    expect(genderOfVoice({ name: 'Amélie' })).toBe('F');
+    expect(genderOfVoice({ name: 'Thomas' })).toBe('M');
+    expect(genderOfVoice({ name: 'Google français' })).toBeNull();
+    // Piège classique : « female » contient « male ».
+    expect(genderOfVoice({ name: 'French Female' })).toBe('F');
+  });
+
+  it('écarte franchement la hauteur quand la seule voix est du genre opposé', () => {
+    const v = pickVoice(ONLY_FEMALE, 'M')!;
+    const neutral = pickVoice(ONLY_NEUTRAL, 'M')!;
+    // Une voix féminine à peine assombrie reste une voix féminine : l'écart
+    // doit être plus marqué que sur une voix neutre.
+    expect(pitchFor('M', v)).toBeLessThan(pitchFor('M', neutral));
+    expect(pitchFor('M', v)).toBeLessThan(0.7);
+    expect(rateFor('M', v)).toBeLessThan(rateFor('M', neutral));
+  });
+
+  it('ne touche ni à la hauteur ni au débit quand la voix est la bonne', () => {
+    const v = pickVoice([{ name: 'Thomas', lang: 'fr-FR' }], 'M')!;
+    expect(pitchFor('M', v)).toBe(1);
+    expect(rateFor('M', v)).toBe(rateFor('F', v));
+  });
+
+  it('laisse le joueur imposer une voix depuis les options', () => {
+    const pool = [
+      { name: 'Google français', lang: 'fr-FR' },
+      { name: 'Microsoft Paul - French (France)', lang: 'fr-FR' },
+    ];
+    expect(pickVoice(pool, 'F', 'Microsoft Paul - French (France)')?.name).toBe(
+      'Microsoft Paul - French (France)',
+    );
+    // Un nom inconnu ne casse rien : on retombe sur le choix automatique.
+    expect(pickVoice(pool, 'M', 'Voix inexistante')?.name).toBe('Microsoft Paul - French (France)');
+  });
+});
+
+describe('Genre de lecture de chaque personnage', () => {
+  const ALL = [...CLIENTS, ...EXPERT_CLIENTS];
+
+  it('lit chaque client avec la voix de son genre quand la scène le nomme', () => {
+    for (const c of ALL) {
+      for (const scId of Object.values(c.scenarios)) {
+        const sc = SCENARIOS.find((s) => s.id === scId);
+        if (!sc) continue;
+        for (const n of sc.nodes) {
+          // Un nœud qui donne la parole à quelqu'un d'autre porte son propre
+          // portrait : il n'emprunte pas le genre du client.
+          if (n.avatarSeed) continue;
+          if (n.speaker !== c.contact.name && !isGenericSpeaker(n.speaker)) continue;
+          expect(
+            genderForSpeaker(n.speaker, c.contact.gender),
+            `${sc.id}/${n.speaker} chez ${c.contact.name}`,
+          ).toBe(c.contact.gender);
+        }
+      }
+    }
+  });
+
+  it('nomme l’interlocuteur réel derrière les libellés génériques', () => {
+    expect(displayedSpeaker('Le client', 'Marc Dupuis')).toBe('Marc Dupuis');
+    expect(displayedSpeaker('Le dirigeant', 'Nadia Cherif')).toBe('Nadia Cherif');
+    // Un personnage nommé garde son nom, même si un client est en contexte.
+    expect(displayedSpeaker('Tom Aubert', 'Nadia Cherif')).toBe('Tom Aubert');
+    // Et sans contexte, le libellé générique reste tel quel.
+    expect(displayedSpeaker('Le client', undefined)).toBe('Le client');
   });
 });

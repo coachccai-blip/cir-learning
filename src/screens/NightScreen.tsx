@@ -1,4 +1,5 @@
 import { STR } from '../i18n/fr';
+import { ManagerAssist } from '../components/ManagerAssist';
 import { Icon } from '../ui/Icon';
 import { useStore } from '../state/store';
 import { GaugesBar } from '../components/Gauges';
@@ -57,13 +58,13 @@ export function NightScreen() {
           <p className="muted lede">{STR.season[save.mode].nightSubtitle}</p>
         </div>
         <span className="spacer" />
-        <button className="btn btn-ghost" onClick={() => go('codex')}>
+        <button className="btn btn-ghost" data-sfx="nav" onClick={() => go('codex')}>
           <Icon name="book" size={17} /> {STR.menu.codex}
         </button>
         <button className="btn btn-sm" onClick={overtime} disabled={save.overtimeUsedThisNight}>
           <Icon name="clock" size={15} /> {STR.activities.overtime}
         </button>
-        <button className="btn btn-brand" onClick={() => go('bilan')}>
+        <button className="btn btn-brand" data-sfx="nav" onClick={() => go('bilan')}>
           <Icon name="arrowRight" size={17} /> {STR.hud.toBilan}
         </button>
       </div>
@@ -71,6 +72,8 @@ export function NightScreen() {
       <div className="panel" style={{ marginBottom: 20 }}>
         <GaugesBar gauges={save.gauges} deltas={lastDeltas} />
       </div>
+
+      <ManagerAssist text={STR.manager.brief.night} />
 
       <div className="panel-title">
         <Icon name="doc" size={19} />
@@ -132,7 +135,12 @@ export function NightScreen() {
               </div>
               <div className="list-actions">
               {a ? (
-                <button className="btn btn-primary" onClick={() => openMinigame(cs)} disabled={save.actionPoints < a.cost}>
+                <button
+                  className="btn btn-primary"
+                  data-sfx="open"
+                  onClick={() => openMinigame(cs)}
+                  disabled={save.actionPoints < a.cost}
+                >
                   <Icon name="play" size={15} /> {a.label} ({a.cost})
                 </button>
               ) : (

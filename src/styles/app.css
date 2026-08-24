@@ -1720,3 +1720,43 @@
   cursor: pointer;
   outline: none;
 }
+
+/* ---------- Accompagnement de la manager (phase Technique) ---------- */
+
+.manager-assist {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-4);
+  border-left: 3px solid var(--gauge-relation);
+  margin-top: var(--sp-4);
+}
+.manager-avatar {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 auto;
+}
+.manager-body {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.manager-name {
+  font-family: var(--font-title);
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+.manager-text {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  max-width: 76ch;
+}
+.manager-assist .speak-btn {
+  flex: 0 0 auto;
+  align-self: center;
+}
+
+@media (max-width: 560px) {
+  .manager-assist .speak-btn {
+    align-self: flex-start;
+  }
+}

@@ -90,13 +90,13 @@ export function HomeScreen() {
             <Icon name="history" size={17} /> {STR.menu.freeMode}
           </button>
           <div className="home-menu-row">
-            <button className="btn" onClick={() => go('codex')}>
+            <button className="btn" data-sfx="nav" onClick={() => go('codex')}>
               <Icon name="book" size={17} /> {STR.menu.codex}
             </button>
-            <button className="btn" onClick={() => go('leaderboard')}>
+            <button className="btn" data-sfx="nav" onClick={() => go('leaderboard')}>
               <Icon name="trophy" size={17} /> {STR.menu.leaderboard}
             </button>
-            <button className="btn" onClick={() => go('options')}>
+            <button className="btn" data-sfx="nav" onClick={() => go('options')}>
               <Icon name="sliders" size={17} /> {STR.menu.options}
             </button>
           </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Icon } from '../ui/Icon';
 import { STR } from '../i18n/fr';
 import { onVoicesReady, speak, speechAvailable, stopSpeaking, type Gender } from '../app/speech';
+import { useStore } from '../state/store';
 
 /**
  * Écoute une réplique au lieu de la lire. Le bouton ne s'affiche que si le
@@ -11,6 +12,8 @@ import { onVoicesReady, speak, speechAvailable, stopSpeaking, type Gender } from
 export function SpeakButton({ text, gender }: { text: string; gender: Gender }) {
   const [available, setAvailable] = useState(speechAvailable);
   const [speaking, setSpeaking] = useState(false);
+  // Voix imposée par le joueur pour ce genre, s'il en a choisi une.
+  const preferred = useStore((s) => (gender === 'F' ? s.options.voiceF : s.options.voiceM));
 
   // Chrome charge ses voix de façon asynchrone : la première liste est vide.
   useEffect(() => onVoicesReady(() => setAvailable(speechAvailable())), []);
@@ -30,7 +33,7 @@ export function SpeakButton({ text, gender }: { text: string; gender: Gender }) 
       return;
     }
     setSpeaking(true);
-    speak(text, gender, () => setSpeaking(false));
+    speak(text, gender, () => setSpeaking(false), preferred);
   };
 
   return (

@@ -126,7 +126,8 @@ export function BilanScreen() {
       </div>
 
       <div className="row" style={{ marginTop: 20, justifyContent: 'flex-end' }}>
-        <button className="btn btn-primary" onClick={advanceCycle}>
+        {/* Le cycle repart en phase Relation client : la bascule s'entend. */}
+        <button className="btn btn-primary" data-sfx="phase-relation" onClick={advanceCycle}>
           {isLast ? STR.audit.title : STR.bilan.next} <Icon name="arrowRight" size={17} />
         </button>
       </div>

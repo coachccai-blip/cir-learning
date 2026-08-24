@@ -364,6 +364,37 @@ export const STR = {
     example: 'Exemple',
     empty: 'Aucune fiche ne correspond.',
   },
+  /**
+   * La manager accompagne la phase Technique : ces écrans sont les plus denses
+   * du jeu et les seuls sans interlocuteur. Elle rappelle la consigne, et la
+   * lit à voix haute.
+   */
+  manager: {
+    name: 'Amélie Roux',
+    role: 'votre manager',
+    brief: {
+      night:
+        'Voilà vos dossiers ouverts. Prenez-les dans l’ordre : on trie les travaux, on monte l’assiette, on rédige le justificatif, et seulement ensuite on restitue au client. Chaque étape s’appuie sur la précédente — sauter le tri, c’est chiffrer à l’aveugle.',
+      qualification:
+        'On trie les travaux un par un. La question n’est jamais « est-ce technique ? » mais « qu’est-ce qu’on ne savait pas faire au départ ? ». Un verrou et une incertitude : c’est de la recherche. Un produit nouveau sans verrou : c’est de l’innovation, pas du CIR. Le reste, c’est du développement courant. Dans le doute, mettez à investiguer : cela vous coûtera un point d’action, jamais un redressement.',
+      base:
+        'On construit l’assiette. Voici les réflexes, dans l’ordre où je les vérifie moi-même quand je relis un dossier.',
+      justif:
+        'Le justificatif se lit par quelqu’un qui n’était pas là. Pour chaque bloc, choisissez la formulation qui tiendrait devant un vérificateur : ce qu’on cherchait, ce qui bloquait, ce qu’on a essayé, ce qu’on a obtenu. Les superlatifs ne prouvent rien ; les faits datés, si.',
+    },
+  },
+  voices: {
+    title: 'Voix de lecture',
+    help:
+      'Selon le système, une seule voix française est parfois installée : tous les personnages se ressemblent alors. Choisissez ici la voix de chaque genre.',
+    female: 'Voix féminine',
+    male: 'Voix masculine',
+    auto: 'Automatique',
+    test: 'Écouter',
+    sampleF: 'Bonjour, je suis votre manager. On regarde ce dossier ensemble ?',
+    sampleM: 'Bonjour, je dirige cette entreprise. Vous vouliez parler de nos travaux ?',
+    none: 'Aucune voix française n’est installée sur ce système : la lecture à haute voix est indisponible.',
+  },
   options: {
     title: 'Options',
     volume: 'Volume',

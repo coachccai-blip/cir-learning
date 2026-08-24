@@ -15,12 +15,21 @@ export interface Options {
   volume: number;
   reduceMotion: boolean;
   textSize: 'normal' | 'large' | 'xlarge';
+  /**
+   * Voix de lecture choisies par le joueur, par nom exact. Vide = choix
+   * automatique. Sur beaucoup de systèmes une seule voix française est
+   * installée, et la déduction de genre par le nom ne peut rien y faire :
+   * ce réglage est la porte de sortie.
+   */
+  voiceF?: string;
+  voiceM?: string;
 }
 
 // Le son est actif par défaut, à un niveau discret : le jeu répond désormais à
 // chaque interaction, et un joueur qui n'ouvre jamais les options n'entendrait
 // rien du tout. Le curseur reste à zéro en un geste.
 export const DEFAULT_OPTIONS: Options = { volume: 35, reduceMotion: false, textSize: 'normal' };
+
 
 function safeParse<T>(raw: string | null, fallback: T): T {
   if (!raw) return fallback;

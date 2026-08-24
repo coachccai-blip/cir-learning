@@ -1,9 +1,11 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { persistSave } from '../state/persistence';
 import type { Options } from '../state/persistence';
 import type { SaveGame } from '../engine/types';
+import { frenchVoices, onVoicesReady, speak, type Gender } from '../app/speech';
+import { Icon } from '../ui/Icon';
 
 export function OptionsScreen() {
   const go = useStore((s) => s.go);
@@ -16,6 +18,50 @@ export function OptionsScreen() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const sizes: Options['textSize'][] = ['normal', 'large', 'xlarge'];
+
+  // Les voix arrivent de façon asynchrone dans Chrome : la première liste est
+  // souvent vide, il faut réécouter.
+  const [voices, setVoices] = useState(() => frenchVoices().map((v) => v.name));
+  useEffect(() => onVoicesReady(() => setVoices(frenchVoices().map((v) => v.name))), []);
+
+  function voiceRow(gender: Gender) {
+    const key = gender === 'F' ? 'voiceF' : 'voiceM';
+    const current = options[key] ?? '';
+    return (
+      <div className="row" key={key}>
+        <strong style={{ width: 200 }}>
+          {gender === 'F' ? STR.voices.female : STR.voices.male}
+        </strong>
+        <select
+          value={current}
+          onChange={(e) => setOptions({ [key]: e.target.value || undefined } as Partial<Options>)}
+          style={{
+            padding: '8px 10px',
+            borderRadius: 'var(--radius-sm)',
+            border: '1px solid var(--border-strong)',
+            background: 'var(--bg-elevated)',
+            color: 'var(--text)',
+            maxWidth: 320,
+          }}
+        >
+          <option value="">{STR.voices.auto}</option>
+          {voices.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
+        <button
+          className="btn btn-sm"
+          onClick={() =>
+            speak(gender === 'F' ? STR.voices.sampleF : STR.voices.sampleM, gender, undefined, options[key])
+          }
+        >
+          <Icon name="speaker" size={15} /> {STR.voices.test}
+        </button>
+      </div>
+    );
+  }
 
   function exportSave() {
     if (!save) return;
@@ -91,6 +137,27 @@ export function OptionsScreen() {
         <p className="muted" style={{ fontSize: '0.85rem', margin: 0 }}>
           {STR.options.volumeHint}
         </p>
+      </div>
+
+      {/* Une seule voix française installée, et tous les personnages se
+          ressemblent : la déduction par le nom ne peut alors rien. Ce réglage
+          est la porte de sortie. */}
+      <div className="panel stack" style={{ marginTop: 16 }}>
+        <strong>{STR.voices.title}</strong>
+        <p className="muted" style={{ fontSize: '0.85rem', margin: 0 }}>
+          {STR.voices.help}
+        </p>
+        {voices.length === 0 ? (
+          <div className="note note-locked">
+            <Icon name="info" size={16} />
+            <span>{STR.voices.none}</span>
+          </div>
+        ) : (
+          <>
+            {voiceRow('F')}
+            {voiceRow('M')}
+          </>
+        )}
       </div>
 
       <div className="panel stack" style={{ marginTop: 16 }}>

@@ -8,7 +8,7 @@ import { Avatar } from '../avatars/Avatar';
 import { AnonymousAvatar } from '../avatars/AnonymousAvatar';
 import { SpeakButton } from '../components/SpeakButton';
 import { Icon } from '../ui/Icon';
-import { genderForSpeaker } from '../data/voices';
+import { displayedSpeaker, genderForSpeaker } from '../data/voices';
 import {
   advance,
   displayOrder,
@@ -38,7 +38,9 @@ export function DialogueScreen() {
     () => (ctx ? (ctx.inlineScenario ?? scenarioById(ctx.scenarioId)) : null),
     [ctx],
   );
-  const client = findClient(ctx?.clientId);
+  // `aboutClientId` désigne un client dont on parle sans agir sur son dossier
+  // (événements) : il fournit le portrait, le nom et la voix, rien de plus.
+  const client = findClient(ctx?.clientId ?? ctx?.aboutClientId);
   const clientState = save?.portfolio.find((p) => p.clientId === ctx?.clientId);
 
   const [session, setSession] = useState<DialogueSession | null>(null);
@@ -179,12 +181,19 @@ export function DialogueScreen() {
     if (score >= 80) toast(`${STR.dialogue.scoreLabel} : ${score}/100`);
   }
 
-  const speaker = shownNode?.speaker ?? '';
-  const avatarSeed = shownNode?.avatarSeed ?? client?.contact.avatarSeed ?? speaker;
+  const rawSpeaker = shownNode?.speaker ?? '';
+  // Un nœud qui donne la parole à quelqu'un d'autre (le technicien qui
+  // contredit sa direction) garde son propre nom et son propre portrait.
+  const speaker = shownNode?.avatarSeed
+    ? rawSpeaker
+    : displayedSpeaker(rawSpeaker, client?.contact.name);
+  const avatarSeed = shownNode?.avatarSeed ?? client?.contact.avatarSeed ?? rawSpeaker;
   const prospect = ctx.prospectId ? save?.prospects.find((p) => p.id === ctx.prospectId) : undefined;
   // Voix de lecture : celle du client ou du prospect en face, sinon celle que
   // la table des PNJ attribue au locuteur.
-  const voiceGender = genderForSpeaker(speaker, prospect?.gender ?? client?.contact.gender ?? 'M');
+  // Le genre se lit sur le libellé d'origine : « Amélie Roux (manager) » est
+  // dans la table, « Nadia Cherif » n'y est pas et emprunte celui du client.
+  const voiceGender = genderForSpeaker(rawSpeaker, prospect?.gender ?? client?.contact.gender ?? 'M');
   const codexUnlock = feedback?.feedback.codexUnlock ? codexById(feedback.feedback.codexUnlock) : null;
   const finished = session.currentNodeId === null && feedback === null;
 

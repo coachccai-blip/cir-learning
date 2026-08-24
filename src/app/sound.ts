@@ -48,7 +48,18 @@ export type SoundName =
   | 'tapPrimary'
   | 'toggle'
   | 'back'
-  | 'deny';
+  | 'deny'
+  // Actions qui méritent leur propre signature : on doit les reconnaître
+  // sans regarder l'écran.
+  | 'phaseTech'
+  | 'phaseRelation'
+  | 'cardPlace'
+  | 'cardOk'
+  | 'cardBad'
+  | 'open'
+  | 'close'
+  | 'nav'
+  | 'coin';
 
 /** Joue un son court. `volume` : 0-100 (0 = rien). */
 export function playSound(name: SoundName, volume: number): void {
@@ -110,6 +121,44 @@ export function playSound(name: SoundName, volume: number): void {
       break;
     case 'deny': // action indisponible : sourd, jamais strident
       tone(ac, 180, 0, 0.07, v * 0.3, 'triangle');
+      break;
+    case 'phaseTech': // bascule vers la phase Technique : on descend au calme
+      tone(ac, 523, 0, 0.13, v * 0.5, 'sine');
+      tone(ac, 392, 0.1, 0.16, v * 0.5, 'sine');
+      tone(ac, 262, 0.21, 0.3, v * 0.45, 'triangle');
+      break;
+    case 'phaseRelation': // retour au bureau : on remonte, plus clair
+      tone(ac, 330, 0, 0.12, v * 0.45, 'triangle');
+      tone(ac, 494, 0.1, 0.14, v * 0.5, 'sine');
+      tone(ac, 659, 0.2, 0.26, v * 0.5, 'sine');
+      break;
+    case 'cardPlace': // une carte tombe dans une colonne : sec, feutré
+      tone(ac, 300, 0, 0.05, v * 0.3, 'triangle');
+      tone(ac, 200, 0.035, 0.07, v * 0.22, 'sine');
+      break;
+    case 'cardOk': // bien classée : deux notes montantes, brèves
+      tone(ac, 784, 0, 0.08, v * 0.42);
+      tone(ac, 1047, 0.07, 0.12, v * 0.36);
+      break;
+    case 'cardBad': // mal classée : deux notes descendantes, sourdes
+      tone(ac, 415, 0, 0.09, v * 0.4, 'triangle');
+      tone(ac, 311, 0.08, 0.15, v * 0.36, 'triangle');
+      break;
+    case 'open': // un panneau, un dossier, une fiche s'ouvre
+      tone(ac, 440, 0, 0.05, v * 0.26, 'sine');
+      tone(ac, 660, 0.04, 0.08, v * 0.22, 'sine');
+      break;
+    case 'close': // et se referme
+      tone(ac, 660, 0, 0.05, v * 0.22, 'sine');
+      tone(ac, 440, 0.04, 0.08, v * 0.24, 'sine');
+      break;
+    case 'nav': // changement d'écran sans conséquence de jeu
+      tone(ac, 587, 0, 0.045, v * 0.26, 'triangle');
+      tone(ac, 880, 0.03, 0.06, v * 0.18, 'sine');
+      break;
+    case 'coin': // du chiffre d'affaires entre
+      tone(ac, 988, 0, 0.07, v * 0.4);
+      tone(ac, 1319, 0.06, 0.14, v * 0.34);
       break;
     case 'fanfare': // fin de saison
       [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) =>

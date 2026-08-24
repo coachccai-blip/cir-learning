@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { STR } from '../i18n/fr';
+import { ManagerAssist } from '../components/ManagerAssist';
 import { Icon } from '../ui/Icon';
 import { useStore } from '../state/store';
 import { clientById } from '../data/clients';
@@ -19,6 +20,7 @@ export function QualificationScreen() {
   const commit = useStore((s) => s.commitQualification);
   const go = useStore((s) => s.go);
   const markCodexRead = useStore((s) => s.markCodexRead);
+  const playSfx = useStore((s) => s.playSfx);
   const [placements, setPlacements] = useState<Record<string, CardVerdict>>({});
   const [feedbackId, setFeedbackId] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -33,6 +35,12 @@ export function QualificationScreen() {
   function place(cardId: string, col: CardVerdict) {
     setPlacements((p) => ({ ...p, [cardId]: col }));
     setFeedbackId(cardId);
+    // Le verdict s'affiche aussitôt à l'écran : le son dit la même chose, en
+    // plus rapide. « À investiguer » n'est ni juste ni faux — c'est un report,
+    // il garde le bruit neutre de la carte qui tombe.
+    const card = cardset.cards.find((c) => c.id === cardId);
+    if (!card || col === 'INVESTIGATE') return;
+    playSfx(col === card.verdict ? 'cardOk' : 'cardBad');
   }
 
   const feedbackCard = feedbackId ? cardset.cards.find((c) => c.id === feedbackId) : null;
@@ -62,7 +70,7 @@ export function QualificationScreen() {
             {correctN} / {cardset.cards.length} cartes correctement classées, {invest} à investiguer.
           </p>
           <p className="muted">{STR.qualification.investigateNote}</p>
-          <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => go('night')}>
+          <button className="btn btn-primary" data-sfx="nav" style={{ marginTop: 12 }} onClick={() => go('night')}>
             {STR.common.back}
           </button>
         </div>
@@ -86,6 +94,8 @@ export function QualificationScreen() {
           {unplaced.length} {STR.qualification.remaining}
         </span>
       </div>
+
+      <ManagerAssist text={STR.manager.brief.qualification} />
 
       {feedbackCard && (
         <div className="feedback" style={{ marginTop: 12 }}>
@@ -123,7 +133,7 @@ export function QualificationScreen() {
             </div>
             <div className="card-actions">
               {COLS.map((col) => (
-                <button key={col.key} onClick={() => place(unplaced[0].id, col.key)}>
+                <button key={col.key} data-sfx="card" onClick={() => place(unplaced[0].id, col.key)}>
                   {col.label}
                 </button>
               ))}

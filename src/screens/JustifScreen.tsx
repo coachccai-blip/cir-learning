@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { STR } from '../i18n/fr';
+import { ManagerAssist } from '../components/ManagerAssist';
 import { Icon } from '../ui/Icon';
 import { useStore } from '../state/store';
 import { clientById } from '../data/clients';
@@ -76,9 +77,12 @@ export function JustifScreen() {
   return (
     <div className="container">
       <h1>{STR.justif.title}</h1>
-      <p className="muted">
+      <p className="muted lede">
         {c.name} — {STR.justif.intro}
       </p>
+
+      <ManagerAssist text={STR.manager.brief.justif} />
+
       <div className="stack" style={{ marginTop: 16 }}>
         {blocks.map((b) => (
           <div className="panel" key={b.id}>
@@ -112,7 +116,7 @@ export function JustifScreen() {
         <button className="btn" onClick={() => go('night')}>
           {STR.common.back}
         </button>
-        <button className="btn btn-primary" onClick={validate} disabled={!allChosen}>
+        <button className="btn btn-primary" data-sfx="validate" onClick={validate} disabled={!allChosen}>
           {STR.justif.validate}
         </button>
       </div>

@@ -6,6 +6,7 @@ import { caseForClient, stepForDossier } from '../state/dossier';
 import { computeBreakdown } from '../engine/cir/calculator';
 import { scoreAssiette } from '../engine/cir/scoring';
 import { Icon } from '../ui/Icon';
+import { ManagerAssist } from '../components/ManagerAssist';
 import ruleset from '../data/rules/ruleset-2026.json';
 import type { AssietteInput, Ruleset } from '../engine/types';
 
@@ -257,6 +258,15 @@ export function BaseScreen() {
           </div>
         )}
       </div>
+
+      {/* La manager lit la méthode réellement affichée : une seule source, et
+          le joueur peut écouter la consigne en travaillant sur le tableau. */}
+      <ManagerAssist
+        text={[
+          STR.manager.brief.base,
+          ...step.postes.map((poste) => `${STR.base.postes[poste]} : ${STR.base.methode[poste]}`),
+        ].join(' ')}
+      />
 
       <div className="panel-flat method-card" style={{ marginTop: 16 }}>
         <div className="panel-title">
@@ -534,7 +544,7 @@ export function BaseScreen() {
         <button className="btn" onClick={() => go('night')}>
           <Icon name="arrowLeft" size={17} /> {STR.common.back}
         </button>
-        <button className="btn btn-primary" onClick={validate}>
+        <button className="btn btn-primary" data-sfx="validate" onClick={validate}>
           <Icon name="check" size={17} /> {STR.base.validate}
         </button>
       </div>

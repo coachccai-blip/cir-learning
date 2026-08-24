@@ -92,6 +92,12 @@ export interface DialogueContext {
   returnTo: View;
   /** Scénario fourni inline (événements aléatoires, non présents dans SCENARIOS). */
   inlineScenario?: Scenario;
+  /**
+   * Client concerné par la scène, pour le portrait, le nom et la voix
+   * seulement — jamais pour l'état du dossier. Un événement parle d'un client
+   * sans être une action menée sur son dossier.
+   */
+  aboutClientId?: string;
 }
 
 /**
@@ -1022,10 +1028,24 @@ export const useStore = create<Store>((set, get) => ({
     );
     if (candidates.length === 0) return false;
     const ev = candidates[Math.floor(rng() * candidates.length)];
+    // Un événement « client » parle d'un dossier précis : on le désigne, pour
+    // que le portrait, le nom affiché et la voix soient les siens. Purement
+    // narratif — l'état du dossier n'est pas touché.
+    const about = ev.needsClient
+      ? save.portfolio.find(
+          (c) => c.dossierState !== 'LEAD' && c.dossierState !== 'QUALIFIED' && c.dossierState !== 'LOST',
+        )?.clientId
+      : undefined;
     const next = { ...save, firedEvents: [...save.firedEvents, ev.id] };
     persist(next);
     set({ save: next });
-    get().startDialogue({ scenarioId: ev.id, kind: 'event', returnTo: 'day', inlineScenario: eventToScenario(ev) });
+    get().startDialogue({
+      scenarioId: ev.id,
+      kind: 'event',
+      returnTo: 'day',
+      inlineScenario: eventToScenario(ev),
+      aboutClientId: about,
+    });
     return true;
   },
 

@@ -101,10 +101,10 @@ export function DayScreen() {
           <p className="muted lede">{STR.season[save.mode].daySubtitle}</p>
         </div>
         <span className="spacer" />
-        <button className="btn btn-ghost" onClick={() => go('codex')}>
+        <button className="btn btn-ghost" data-sfx="nav" onClick={() => go('codex')}>
           <Icon name="book" size={17} /> {STR.menu.codex}
         </button>
-        <button className="btn btn-brand" onClick={switchPhase}>
+        <button className="btn btn-brand" data-sfx="phase-tech" onClick={switchPhase}>
           <Icon name="technique" size={17} /> {STR.hud.toNight}
         </button>
       </div>
@@ -163,6 +163,7 @@ export function DayScreen() {
                 <div className="list-actions is-stacked">
                   <button
                     className="btn btn-sm"
+                    data-sfx="open"
                     onClick={() => {
                       useStore.setState({ activeClientId: cs.clientId });
                       go('client');
@@ -258,7 +259,12 @@ export function DayScreen() {
                 </div>
               </div>
               <div className="list-actions">
-                <button className="btn btn-sm btn-primary" onClick={() => callProspect(p.id)} disabled={save.actionPoints < 1}>
+                <button
+                  className="btn btn-sm btn-primary"
+                  data-sfx="call"
+                  onClick={() => callProspect(p.id)}
+                  disabled={save.actionPoints < 1}
+                >
                   <Icon name="phone" size={15} /> {STR.activities.prospection} (1)
                 </button>
               </div>

@@ -28,3 +28,20 @@ const SPEAKER_GENDER: Record<string, Gender> = {
 export function genderForSpeaker(speaker: string, contextGender: Gender = 'M'): Gender {
   return SPEAKER_GENDER[speaker] ?? contextGender;
 }
+
+/**
+ * Libellés d'interlocuteur employés par les scénarios partagés. Ils n'ont pas
+ * de genre propre : ils empruntent celui de la personne réellement en face.
+ * « Le dirigeant » affiché au-dessus du portrait d'une directrice était une
+ * incohérence à l'écran, alors que la voix, elle, était juste.
+ */
+const GENERIC_SPEAKERS = ['Le client', 'Le dirigeant', 'Le prospect', 'La cliente'];
+
+export function isGenericSpeaker(speaker: string): boolean {
+  return GENERIC_SPEAKERS.includes(speaker);
+}
+
+/** Nom à afficher : le vrai interlocuteur dès qu'on sait de qui il s'agit. */
+export function displayedSpeaker(speaker: string, realName?: string): string {
+  return realName && isGenericSpeaker(speaker) ? realName : speaker;
+}
