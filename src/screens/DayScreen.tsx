@@ -1,4 +1,5 @@
 import { STR } from '../i18n/fr';
+import { GraduationBanner, GraduationButton } from '../components/Graduation';
 import { Icon } from '../ui/Icon';
 import { useStore } from '../state/store';
 import { useState } from 'react';
@@ -91,7 +92,9 @@ export function DayScreen() {
   }
 
   const newProspects = save.prospects.filter((p) => p.status === 'NEW');
-  const signedProspects = save.prospects.filter((p) => p.status === 'SIGNED');
+  // Les pistes écrites signées ne sont pas des missions conseil : elles ont
+  // donné un rendez-vous, et se suivent désormais dans le portefeuille.
+  const signedProspects = save.prospects.filter((p) => p.status === 'SIGNED' && !p.scriptedClientId);
 
   return (
     <div className="container">
@@ -101,6 +104,7 @@ export function DayScreen() {
           <p className="muted lede">{STR.season[save.mode].daySubtitle}</p>
         </div>
         <span className="spacer" />
+        <GraduationButton />
         <button className="btn btn-ghost" data-sfx="nav" onClick={() => go('codex')}>
           <Icon name="book" size={17} /> {STR.menu.codex}
         </button>
@@ -108,6 +112,8 @@ export function DayScreen() {
           <Icon name="technique" size={17} /> {STR.hud.toNight}
         </button>
       </div>
+
+      <GraduationBanner />
 
       <div className="panel" style={{ marginBottom: 20 }}>
         <GaugesBar gauges={save.gauges} deltas={lastDeltas} />
@@ -119,6 +125,7 @@ export function DayScreen() {
             <Icon name="users" size={19} />
             <h3>{STR.day.crm}</h3>
           </div>
+          {save.portfolio.length === 0 && <p className="muted">{STR.day.noClients}</p>}
           {save.portfolio.map((cs) => {
             const c = clientById(cs.clientId);
             const action = clientAction(cs);

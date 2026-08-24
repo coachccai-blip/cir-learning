@@ -1,4 +1,5 @@
 import { STR } from '../i18n/fr';
+import { GraduationBanner, GraduationButton } from '../components/Graduation';
 import { ManagerAssist } from '../components/ManagerAssist';
 import { Icon } from '../ui/Icon';
 import { useStore } from '../state/store';
@@ -58,6 +59,7 @@ export function NightScreen() {
           <p className="muted lede">{STR.season[save.mode].nightSubtitle}</p>
         </div>
         <span className="spacer" />
+        <GraduationButton />
         <button className="btn btn-ghost" data-sfx="nav" onClick={() => go('codex')}>
           <Icon name="book" size={17} /> {STR.menu.codex}
         </button>
@@ -68,6 +70,8 @@ export function NightScreen() {
           <Icon name="arrowRight" size={17} /> {STR.hud.toBilan}
         </button>
       </div>
+
+      <GraduationBanner />
 
       <div className="panel" style={{ marginBottom: 20 }}>
         <GaugesBar gauges={save.gauges} deltas={lastDeltas} />

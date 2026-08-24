@@ -184,5 +184,7 @@
   "startingXp": {
     "onboarding": 0,
     "expert": 2600
-  }
+  },
+  "missionsToGraduate": 2,
+  "openingClients": 2
 }

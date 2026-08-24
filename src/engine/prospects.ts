@@ -3,6 +3,7 @@
 import balance from '../data/balance.json';
 import type { GeneratedProspect, ProspectTemplate } from './types';
 import { CALL_POOL } from '../data/scenarios/calls';
+import { PROSPECT_PORTRAITS } from '../data/portraits';
 import { hashString, pick, randInt, rngFromSeed } from './rng';
 
 const FIRST_NAMES = [
@@ -57,8 +58,9 @@ export function generateProspect(
     hook: pick(rng, tpl.hooks),
     estimatedCir: Math.round(randInt(rng, tpl.estimatedCirRange[0], tpl.estimatedCirRange[1]) / 1000) * 1000,
     avatarSeed: `${company}-${contactName}`,
-    // Portrait générique révélé à la signature (4 visuels par genre).
-    portraitId: `prospect-${gender === 'F' ? 'f' : 'm'}-0${randInt(rng, 1, 4)}`,
+    // Portrait révélé à la signature. Toujours une vraie photo : un prospect
+    // dont le visage serait dessiné ne peut pas entrer au portefeuille.
+    portraitId: pick(rng, PROSPECT_PORTRAITS[gender]),
     // Situation d'appel cohérente avec le profil d'éligibilité. Rotation
     // (et non tirage pur) : deux prospects consécutifs ne tombent jamais sur
     // la même situation, le joueur voit un maximum de cas de figure.

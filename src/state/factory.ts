@@ -82,6 +82,7 @@ export function createNewGame(mode: GameMode, createdAt: string, seedOverride?: 
     overtimeUsedThisNight: false,
     restUsedThisDay: false,
     tutorialDone: false,
+    graduationAcknowledged: false,
     finished: false,
     firedEvents: [],
     quizPre: [],

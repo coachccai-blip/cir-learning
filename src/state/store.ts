@@ -30,6 +30,7 @@ import { evaluatePromise, generateProspect, resolveGenericMission } from '../eng
 import { buildClientFromProspect, prospectBecomesClient } from '../engine/clientgen';
 import { neglectedClients, resolveMilestone } from '../engine/milestones';
 import { stepFor, stepForClient } from '../engine/progression';
+import { arrivingProspect, openingProspects } from '../engine/roster';
 import { completeSeason, EMPTY_PROGRESS, type Progress } from '../engine/journey';
 import { varyCase } from '../engine/casevar';
 import { twistsForCase } from '../data/case-twists';
@@ -229,6 +230,8 @@ interface Actions {
   completeSeason: (mode: GameMode, score: number) => void;
   /** Remet le parcours à zéro (usage formateur, depuis les options). */
   resetJourney: () => void;
+  /** Le joueur a vu la sortie proposée après deux missions et poursuit. */
+  acknowledgeGraduation: () => void;
 }
 
 export type Store = UIState & Actions;
@@ -278,11 +281,13 @@ export const useStore = create<Store>((set, get) => ({
     // Toute saison est jouable d'emblée : l'ordre du parcours est un conseil
     // affiché à la sélection, pas une porte fermée.
     const save = createNewGame(mode, new Date(0).toISOString(), seedOverride);
-    // Le portefeuille s'ouvre sur les leads du premier cycle ; les autres
-    // arrivent au fil des semaines. Il y aura toujours plus de dossiers que de
-    // points d'action : choisir qui l'on sert fait partie du jeu.
-    const opening = rosterFor(mode).filter((c) => c.leadCycle <= 1);
-    save.portfolio = opening.map((c) => initClientState(c.id));
+    // Le portefeuille démarre vide : on n'hérite pas d'un portefeuille, on le
+    // construit au téléphone. Les dossiers du parcours attendent dans le
+    // vivier de prospection, et il faut décrocher un rendez-vous pour les
+    // ouvrir. Deux pour commencer — ceux que le parcours demande de mener à
+    // leur terme ; les suivants n'arrivent qu'après, pour qui continue.
+    save.portfolio = [];
+    save.prospects = openingProspects(rosterFor(mode), save.seed, balance.openingClients);
     loadGeneratedClients([]);
     applyCaseVariations(save.seed);
     persist(save);
@@ -631,6 +636,33 @@ export const useStore = create<Store>((set, get) => ({
     const forceSign = flags.includes('prospect_sign');
     const maybe = flags.includes('prospect_maybe');
     const willSign = forceSign || (maybe && p.eligibility !== 'NOT_ELIGIBLE');
+
+    // Une piste écrite ne se signe pas au téléphone : un appel bien mené
+    // décroche un rendez-vous de découverte, et c'est cet entretien qui fait
+    // le client. Le dossier entre donc au portefeuille à l'état de lead.
+    if (willSign && p.scriptedClientId) {
+      const clientId = p.scriptedClientId;
+      const already = save.portfolio.some((cs) => cs.clientId === clientId);
+      const next: SaveGame = {
+        ...save,
+        prospects: save.prospects.map((x) =>
+          x.id === prospectId ? { ...x, status: 'SIGNED' as const, revenue: 0 } : x,
+        ),
+        portfolio: already ? save.portfolio : [...save.portfolio, initClientState(clientId)],
+      };
+      persist(next);
+      set({ save: next });
+      get().applyGauges({ relation: 4 }, `Rendez-vous décroché : ${p.company}`);
+      get().toast(STR.prospects.meetingWon(p.company, p.contactName));
+      get().celebrate({
+        icon: '📅',
+        title: STR.prospects.meetingTitle(p.company),
+        subtitle: STR.prospects.meetingSubtitle,
+        tone: 'good',
+      });
+      get().playSfx('fanfare');
+      return;
+    }
 
     if (willSign) {
       const outcome = resolveGenericMission(p);
@@ -982,13 +1014,29 @@ export const useStore = create<Store>((set, get) => ({
         },
       ],
     };
-    // Arrivée des leads du catalogue à leur cycle : le portefeuille dépasse
-    // toujours ce que le budget d'actions permet de servir.
-    const arriving = rosterFor(save.mode).filter(
-      (c) => c.leadCycle <= nextCycle && !next.portfolio.some((cs) => cs.clientId === c.id),
+    // Une piste écrite ratée n'est pas perdue : on rappelle la semaine
+    // suivante. Sans cela, un appel mal mené condamnerait définitivement un
+    // dossier écrit — et, à deux pistes ouvertes, la saison avec lui.
+    const revived = next.prospects.filter((p) => p.scriptedClientId && p.status === 'DECLINED');
+    if (revived.length > 0) {
+      next.prospects = next.prospects.map((p) =>
+        p.scriptedClientId && p.status === 'DECLINED' ? { ...p, status: 'NEW' as const } : p,
+      );
+    }
+
+    // Une piste de plus par semaine à partir de la troisième, et une seule :
+    // le joueur qui s'arrête à deux missions ne voit jamais arriver un dossier
+    // qu'il n'ouvrira pas, et celui qui continue garde de quoi faire.
+    const newcomer = arrivingProspect(
+      rosterFor(save.mode),
+      save.seed,
+      nextCycle,
+      balance.openingClients,
+      next.prospects.map((p) => p.scriptedClientId ?? ''),
     );
-    if (arriving.length > 0) {
-      next.portfolio = [...next.portfolio, ...arriving.map((c) => initClientState(c.id))];
+    const arriving = newcomer ? [newcomer] : [];
+    if (newcomer) {
+      next.prospects = [...next.prospects, newcomer];
     }
 
     persist(next);
@@ -1004,7 +1052,8 @@ export const useStore = create<Store>((set, get) => ({
       set({ view: 'audit', auditMode: 'interim', transition: null });
     }
     for (const r of reports) get().toast(r);
-    for (const c of arriving) get().toast(STR.prospects.newLead(c.name, c.sectorLabel));
+    for (const p of arriving) get().toast(STR.prospects.newCall(p.company, p.hook));
+    for (const p of revived) get().toast(STR.prospects.callBack(p.company));
     // Nouveaux prospects
     get().generateProspects(2);
     // Événement aléatoire (33 %/cycle) — écrase la vue par un dialogue si tiré.
@@ -1131,6 +1180,14 @@ export const useStore = create<Store>((set, get) => ({
   resetJourney: () => {
     persistProgress(EMPTY_PROGRESS);
     set({ progress: EMPTY_PROGRESS });
+  },
+
+  acknowledgeGraduation: () => {
+    const save = get().save;
+    if (!save || save.graduationAcknowledged) return;
+    const next = { ...save, graduationAcknowledged: true };
+    persist(next);
+    set({ save: next });
   },
 }));
 

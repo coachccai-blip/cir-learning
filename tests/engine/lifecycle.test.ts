@@ -149,6 +149,18 @@ describe('Une saison conduit chaque client jusqu’au bout', () => {
         });
       }
 
+      // Le portefeuille démarre vide : les dossiers s'ouvrent au téléphone.
+      // Ici, on vérifie l'enchaînement des états et non l'acquisition, alors on
+      // ouvre d'un coup tout le vivier de la saison.
+      const { rosterFor } = await import('../../src/data/clients');
+      const { initClientState } = await import('../../src/state/factory');
+      useStore.setState({
+        save: {
+          ...useStore.getState().save!,
+          portfolio: rosterFor(mode).map((c) => initClientState(c.id)),
+        },
+      });
+
       // Chaque client est mené jusqu'au bilan, sans budget d'actions : on
       // vérifie l'enchaînement des états, pas l'économie de la saison.
       for (const start of useStore.getState().save!.portfolio) {

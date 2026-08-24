@@ -733,10 +733,10 @@ export const EXPERT_OPENING: Scenario = {
   type: 'INTERNAL',
   title: 'Rentrée — le bureau de Sophie Meyer',
   context:
-    'Une saison derrière vous, vos dossiers déposés. Sophie Meyer vous reçoit sans préambule : elle a des dossiers à confier, et ce ne sont pas ceux qu’on donne à un débutant.',
+    'Une saison derrière vous, vos dossiers déposés. Sophie Meyer vous reçoit sans préambule : elle a des comptes à ouvrir cette année, et ce ne sont pas ceux qu’on confie à un débutant. À vous de décrocher.',
   objectives: [
     'Comprendre ce qui change en deuxième saison',
-    'Accepter un portefeuille plus dur',
+    'Aller chercher un portefeuille plus dur',
     'Ne pas rejouer le commercial de première année',
   ],
   entryNode: 'n1',
@@ -745,7 +745,7 @@ export const EXPERT_OPENING: Scenario = {
       id: 'n1',
       speaker: 'Sophie Meyer (directrice de BU)',
       expression: 'neutre',
-      text: 'Votre première saison est derrière vous. Cette année, je vous confie les dossiers que je ne donne pas aux nouveaux. Vous savez pourquoi ?',
+      text: 'Votre première saison est derrière vous. Cette année, je vous mets sur les comptes que je ne confie pas aux nouveaux — à vous d’aller les chercher. Vous savez pourquoi ?',
       choices: [
         choice(
           'optimal',

@@ -101,6 +101,8 @@ export const STR = {
     prospects: 'Prospects',
     clients: 'Clients signés',
     noProspects: 'Aucun prospect. Faites de la prospection téléphonique ou du réseautage.',
+    noClients:
+      'Portefeuille vide : ici, personne ne vous confie de client. Appelez les pistes ci-contre pour décrocher un rendez-vous de découverte.',
     handledInTech: 'À traiter en phase Technique',
     inbox: 'Boîte de réception',
     unread: (n: number) => `${n} non lu${n > 1 ? 's' : ''}`,
@@ -125,6 +127,15 @@ export const STR = {
     newClientSubtitle: 'Une mission de fond à instruire : kick-off, qualification, assiette, justificatif.',
     newLead: (company: string, sector: string) =>
       `Nouveau lead au CRM : ${company} (${sector}). À qualifier en rendez-vous découverte.`,
+    callBack: (company: string) =>
+      `${company} : la porte n’est pas fermée, on peut rappeler cette semaine.`,
+    newCall: (company: string, sector: string) =>
+      `Nouvelle piste à appeler : ${company} (${sector}).`,
+    meetingWon: (company: string, contact: string) =>
+      `Rendez-vous décroché : ${contact} vous reçoit chez ${company}. Le dossier entre au CRM.`,
+    meetingTitle: (company: string) => `Rendez-vous obtenu chez ${company}`,
+    meetingSubtitle:
+      'Un appel bien mené n’est pas une signature : c’est un rendez-vous de découverte à préparer.',
   },
   night: {
     title: 'Phase Technique',
@@ -369,6 +380,19 @@ export const STR = {
    * du jeu et les seuls sans interlocuteur. Elle rappelle la consigne, et la
    * lit à voix haute.
    */
+  /**
+   * Sortie proposée après deux missions menées au bilan : le joueur a vu tout
+   * l'enchaînement du métier. On lui ouvre la porte, on ne la lui impose pas.
+   */
+  graduation: {
+    title: 'Bravo ! Vous connaissez dans les grandes lignes l’activité de CIR Corp',
+    body:
+      'Deux missions conduites du premier appel jusqu’au bilan : vous avez parcouru toute la chaîne du métier — décrocher, cadrer, qualifier, chiffrer, rédiger, restituer, et défendre. Vous pouvez vous arrêter ici et recevoir votre bilan de saison, ou poursuivre : d’autres pistes arrivent chaque semaine.',
+    quit: 'Terminer la saison',
+    keepPlaying: 'Continuer à jouer',
+    progress: (done: number, total: number) =>
+      `${done} / ${total} mission${total > 1 ? 's' : ''} menée${done > 1 ? 's' : ''} au bilan`,
+  },
   manager: {
     name: 'Amélie Roux',
     role: 'votre manager',

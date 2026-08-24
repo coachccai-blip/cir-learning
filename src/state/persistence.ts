@@ -61,6 +61,7 @@ export function migrateSave(data: unknown): SaveGame | null {
     mailsRead: s.mailsRead ?? [],
     gaugeHistory: s.gaugeHistory ?? [],
     generatedClients: s.generatedClients ?? [],
+    graduationAcknowledged: s.graduationAcknowledged ?? false,
     history: (s.history ?? []).map((h) => ({
       ...h,
       text: h.text ?? '',

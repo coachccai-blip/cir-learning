@@ -365,6 +365,11 @@ export interface GeneratedProspect {
   portraitId: string;
   /** Situation d'appel tirée pour ce prospect (barrage, objection, referral…). */
   callScenarioId: string;
+  /**
+   * Client écrit derrière cette fiche, s'il y en a un. Décrocher un rendez-vous
+   * avec lui ouvre son dossier rédigé à la main plutôt qu'un dossier généré.
+   */
+  scriptedClientId?: string;
   status: 'NEW' | 'SIGNED' | 'DECLINED' | 'LOST';
   /** CA encaissé si la mission conseil a été signée. */
   revenue?: number;
@@ -496,6 +501,11 @@ export interface SaveGame {
   overtimeUsedThisNight: boolean;
   restUsedThisDay: boolean;
   tutorialDone: boolean;
+  /**
+   * Le joueur a vu la proposition de sortie après ses deux premières missions
+   * et a choisi de continuer : on ne la lui repropose plus en grand.
+   */
+  graduationAcknowledged: boolean;
   finished: boolean;
   /** Événements aléatoires déjà déclenchés (pas de répétition). */
   firedEvents: string[];

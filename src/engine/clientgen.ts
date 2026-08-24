@@ -19,6 +19,7 @@ import {
   DECOY_BRICKS, GRANT_BRICKS, SECTOR_KITS, TEAM_FIRST_NAMES_F, TEAM_FIRST_NAMES_M,
   TEAM_LAST_NAMES,
 } from '../data/dossier-kit';
+import { hasRealPortrait } from '../data/portraits';
 
 export type { GeneratedClientBundle };
 
@@ -47,6 +48,10 @@ export function prospectBecomesClient(
 ): boolean {
   if (p.eligibility === 'NOT_ELIGIBLE') return false;
   if (p.estimatedCir < settings.minEstimatedCir) return false;
+  // Un client du portefeuille a un visage. Faute d'une vraie photo, on
+  // retomberait sur l'avatar dessiné : la fiche se lit alors comme un
+  // remplissage, pas comme une rencontre.
+  if (!hasRealPortrait(p.portraitId)) return false;
   return rngFromSeed(`${seed}:convert:${p.id}`)() < settings.conversionRatio;
 }
 
@@ -181,7 +186,8 @@ export function buildClientFromProspect(
       gender: p.gender,
       role: contactRole,
       archetype: pick(rng, ARCHETYPES),
-      avatarSeed: p.avatarSeed,
+      // Le visage promis au téléphone est celui qui entre au portefeuille.
+      avatarSeed: p.portraitId,
       initialMood: randInt(rng, 55, 75),
       initialTrust: randInt(rng, 45, 60),
     },

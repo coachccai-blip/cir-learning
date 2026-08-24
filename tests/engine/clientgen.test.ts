@@ -7,6 +7,7 @@ import { scenarioById } from '../../src/data/scenarios/index';
 import ruleset from '../../src/data/rules/ruleset-2026.json';
 import balance from '../../src/data/balance.json';
 import { TEAM_FIRST_NAMES_F, TEAM_FIRST_NAMES_M } from '../../src/data/dossier-kit';
+import { hasRealPortrait } from '../../src/data/portraits';
 import type { GeneratedProspect, Ruleset } from '../../src/engine/types';
 
 const RULESET = ruleset as Ruleset;
@@ -19,6 +20,30 @@ const prospects = Array.from({ length: 200 }, (_, i) =>
 const convertible = prospects.filter((p) => prospectBecomesClient(p, SEED, SETTINGS));
 
 describe('Conversion d’un prospect signé en client du portefeuille', () => {
+  it('n’attribue que de vrais visages aux prospects', () => {
+    for (const p of prospects) {
+      expect(hasRealPortrait(p.portraitId), `${p.company} sans portrait`).toBe(true);
+    }
+  });
+
+  it('refuse un prospect dont le visage serait dessiné', () => {
+    // Un client sans photo retomberait sur l'avatar généré : le portefeuille se
+    // lirait comme un remplissage. On préfère ne pas ouvrir le dossier.
+    const faceless = convertible.map((p) => ({ ...p, portraitId: 'visage-inexistant' }));
+    expect(faceless.length).toBeGreaterThan(0);
+    for (const p of faceless) {
+      expect(prospectBecomesClient(p, SEED, SETTINGS)).toBe(false);
+    }
+  });
+
+  it('donne au client le visage annoncé au téléphone', () => {
+    for (const p of convertible.slice(0, 10)) {
+      const bundle = buildClientFromProspect(p, SEED, RULESET, SETTINGS, 2026);
+      expect(bundle.client.contact.avatarSeed).toBe(p.portraitId);
+      expect(hasRealPortrait(bundle.client.contact.avatarSeed)).toBe(true);
+    }
+  });
+
   it('n’ouvre jamais de dossier sur un prospect non éligible', () => {
     for (const p of prospects.filter((p) => p.eligibility === 'NOT_ELIGIBLE')) {
       expect(prospectBecomesClient(p, SEED, SETTINGS)).toBe(false);

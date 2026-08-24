@@ -1760,3 +1760,29 @@
     align-self: flex-start;
   }
 }
+
+/* ---------- Sortie proposée après deux missions ---------- */
+
+.graduation-card {
+  margin-bottom: var(--sp-5);
+  border-left: 4px solid var(--pos);
+  background:
+    linear-gradient(120deg, var(--pos-surface), transparent 60%),
+    var(--bg-panel);
+  animation: panel-in 320ms ease-out both;
+}
+.graduation-card .panel-title .icon {
+  color: var(--pos);
+}
+.graduation-card h2 {
+  font-size: clamp(1.1rem, 2.4vw, 1.4rem);
+}
+
+:root[data-reduce-motion] .graduation-card {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .graduation-card {
+    animation: none;
+  }
+}
