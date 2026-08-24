@@ -9,6 +9,8 @@ import { GENERIC_DISCOVERY, GENERIC_KICKOFF, GENERIC_FOLLOWUP, GENERIC_CLOSING }
 import { TUTORIAL } from './misc';
 import { CALL_SCENARIOS } from './calls';
 import { EXPERT_SCENARIOS } from './expert';
+import { FOLLOWUP_SCENARIOS } from './followups';
+import { CLOSING_SCENARIOS } from './closings';
 
 export const SCENARIOS: Scenario[] = [
   TUTORIAL,
@@ -28,6 +30,8 @@ export const SCENARIOS: Scenario[] = [
   GENERIC_KICKOFF,
   GENERIC_FOLLOWUP,
   GENERIC_CLOSING,
+  ...FOLLOWUP_SCENARIOS,
+  ...CLOSING_SCENARIOS,
   ...CALL_SCENARIOS,
   ...EXPERT_SCENARIOS,
 ];
