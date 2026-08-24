@@ -30,7 +30,7 @@ import { evaluatePromise, generateProspect, resolveGenericMission } from '../eng
 import { buildClientFromProspect, prospectBecomesClient } from '../engine/clientgen';
 import { neglectedClients, resolveMilestone } from '../engine/milestones';
 import { stepFor, stepForClient } from '../engine/progression';
-import { completeSeason, EMPTY_PROGRESS, isUnlocked, type Progress } from '../engine/journey';
+import { completeSeason, EMPTY_PROGRESS, type Progress } from '../engine/journey';
 import { varyCase } from '../engine/casevar';
 import { twistsForCase } from '../data/case-twists';
 import { caseForClient } from './dossier';
@@ -269,8 +269,8 @@ export const useStore = create<Store>((set, get) => ({
   go: (view) => set({ view }),
 
   newGame: (mode, seedOverride) => {
-    // Le parcours est ordonné : la deuxième saison suppose la première jouée.
-    if (!isUnlocked(mode, get().progress)) return;
+    // Toute saison est jouable d'emblée : l'ordre du parcours est un conseil
+    // affiché à la sélection, pas une porte fermée.
     const save = createNewGame(mode, new Date(0).toISOString(), seedOverride);
     // Le portefeuille s'ouvre sur les leads du premier cycle ; les autres
     // arrivent au fil des semaines. Il y aura toujours plus de dossiers que de

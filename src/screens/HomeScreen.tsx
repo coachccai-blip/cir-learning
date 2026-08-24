@@ -1,7 +1,7 @@
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { ALL_PORTRAITS } from '../avatars/portraits';
-import { isUnlocked, journeyComplete, JOURNEY } from '../engine/journey';
+import { journeyComplete, JOURNEY } from '../engine/journey';
 import { Icon } from '../ui/Icon';
 
 /**
@@ -105,14 +105,10 @@ export function HomeScreen() {
         <div className="home-journey" aria-label={STR.journey.title}>
           {JOURNEY.map((m, i) => {
             const done = progress.completed.includes(m);
-            const locked = !isUnlocked(m, progress);
             return (
-              <span
-                key={m}
-                className={`journey-pill${done ? ' is-done' : ''}${locked ? ' is-locked' : ''}`}
-              >
+              <span key={m} className={`journey-pill${done ? ' is-done' : ''}`}>
                 <span className="journey-pill-mark">
-                  {done ? <Icon name="check" size={13} /> : locked ? <Icon name="lock" size={13} /> : i + 1}
+                  {done ? <Icon name="check" size={13} /> : i + 1}
                 </span>
                 {STR.modes[m].label}
               </span>

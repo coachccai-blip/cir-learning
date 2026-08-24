@@ -11,7 +11,11 @@
 
 import type { GameMode } from './types';
 
-/** Ordre imposé : on ne saute pas la première saison. */
+/**
+ * Ordre conseillé, pas imposé. La deuxième saison suppose les réflexes de la
+ * première, mais un consultant déjà en poste doit pouvoir y aller directement :
+ * on l'en informe, on ne lui barre pas la route.
+ */
 export const JOURNEY: GameMode[] = ['onboarding', 'expert'];
 
 export interface Progress {
@@ -23,15 +27,20 @@ export interface Progress {
 
 export const EMPTY_PROGRESS: Progress = { completed: [], best: {} };
 
-/** Saison précédente dans le parcours, ou null pour la première. */
-export function requiredBefore(mode: GameMode): GameMode | null {
+/** Saison conseillée avant celle-ci, ou null pour la première. */
+export function advisedBefore(mode: GameMode): GameMode | null {
   const i = JOURNEY.indexOf(mode);
   return i > 0 ? JOURNEY[i - 1] : null;
 }
 
-export function isUnlocked(mode: GameMode, progress: Progress): boolean {
-  const required = requiredBefore(mode);
-  return required === null || progress.completed.includes(required);
+/**
+ * Le joueur a-t-il déjà mené la saison conseillée en amont ? Sert à afficher
+ * une recommandation, jamais à interdire un départ : toutes les saisons sont
+ * jouables dès la première partie.
+ */
+export function followsAdvice(mode: GameMode, progress: Progress): boolean {
+  const advised = advisedBefore(mode);
+  return advised === null || progress.completed.includes(advised);
 }
 
 /** La saison suivant celle qui vient d'être terminée, si elle existe. */

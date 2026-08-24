@@ -24,11 +24,11 @@ import { gradeForXp, nextGrade } from '../../src/engine/economy';
 import {
   completeSeason,
   EMPTY_PROGRESS,
-  isUnlocked,
+  followsAdvice,
   JOURNEY,
   journeyComplete,
   nextSeason,
-  requiredBefore,
+  advisedBefore,
 } from '../../src/engine/journey';
 import { buildAuditFindings, resolveAudit } from '../../src/engine/audit';
 import { computeBreakdown } from '../../src/engine/cir/calculator';
@@ -344,16 +344,18 @@ describe('Portefeuille de la saison Expert', () => {
 // ---------------------------------------------------------------------------
 
 describe('Parcours Onboarding → Expert', () => {
-  it('ouvre la première saison et verrouille la seconde', () => {
-    expect(isUnlocked('onboarding', EMPTY_PROGRESS)).toBe(true);
-    expect(isUnlocked('expert', EMPTY_PROGRESS)).toBe(false);
-    expect(requiredBefore('onboarding')).toBeNull();
-    expect(requiredBefore('expert')).toBe('onboarding');
+  // L'ordre est un conseil, pas une porte fermée : un consultant déjà en poste
+  // doit pouvoir entrer directement par la seconde saison.
+  it('conseille la première saison avant la seconde, sans l’imposer', () => {
+    expect(advisedBefore('onboarding')).toBeNull();
+    expect(advisedBefore('expert')).toBe('onboarding');
+    expect(followsAdvice('onboarding', EMPTY_PROGRESS)).toBe(true);
+    expect(followsAdvice('expert', EMPTY_PROGRESS)).toBe(false);
   });
 
-  it('déverrouille la seconde une fois la première terminée', () => {
+  it('cesse de conseiller une fois la première saison terminée', () => {
     const p = completeSeason(EMPTY_PROGRESS, 'onboarding', 72);
-    expect(isUnlocked('expert', p)).toBe(true);
+    expect(followsAdvice('expert', p)).toBe(true);
     expect(nextSeason('onboarding')).toBe('expert');
     expect(nextSeason('expert')).toBeNull();
   });
@@ -465,12 +467,14 @@ describe('Une deuxième saison qui ne rejoue pas la première', () => {
     expect(nextGrade(start), 'plus rien à débloquer').not.toBeNull();
   });
 
-  it('n’ouvre jamais la deuxième saison sans avoir terminé la première', () => {
-    expect(isUnlocked('expert', EMPTY_PROGRESS)).toBe(false);
-    // Terminer l'Expert sans l'Onboarding ne doit pas suffire : l'ordre compte.
-    const oddball = completeSeason(EMPTY_PROGRESS, 'expert', 90);
-    expect(isUnlocked('expert', oddball)).toBe(false);
-    expect(journeyComplete(oddball)).toBe(false);
+  it('laisse commencer par la deuxième saison, en le signalant', () => {
+    expect(followsAdvice('expert', EMPTY_PROGRESS)).toBe(false);
+    // Une saison Expert menée seule compte bel et bien, mais ne clôt pas le
+    // parcours : il reste la première à faire.
+    const straightToExpert = completeSeason(EMPTY_PROGRESS, 'expert', 90);
+    expect(straightToExpert.completed).toEqual(['expert']);
+    expect(journeyComplete(straightToExpert)).toBe(false);
+    expect(followsAdvice('expert', straightToExpert)).toBe(false);
   });
 });
 

@@ -589,3 +589,31 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
 97. **Chapeaux d'écran et quiz d'entrée propres à la saison.** « Alimentez le
     portefeuille » ne décrit pas la posture de la seconde ; le quiz d'entrée
     n'est plus présenté comme un point de départ mais comme une reprise.
+
+## Recommander plutôt qu'interdire, et corriger le quiz d'entrée
+
+98. **La deuxième saison n'est plus verrouillée, elle est conseillée.** Fermer
+    l'Expert écartait un cas réel : un consultant déjà en poste à qui l'on fait
+    découvrir l'outil n'a pas à rejouer une saison d'apprentissage pour y
+    accéder. La carte de saison porte désormais une recommandation explicite —
+    « jouez d'abord l'Onboarding, cette saison-ci suppose ses réflexes acquis »
+    — et le départ reste ouvert. `isUnlocked` devient `followsAdvice`, la garde
+    du magasin disparaît, et le vocabulaire suit partout : plus de cadenas à
+    l'accueil, plus de saison masquée en mode libre.
+99. **Le quiz de positionnement corrige avant de laisser entrer.** Il mesurait
+    sans rien enseigner : le joueur validait cinq réponses et se retrouvait en
+    partie sans savoir lesquelles étaient fausses. Un écran de correction
+    s'intercale — score, réponse donnée, bonne réponse, et la règle qui
+    tranche — avant le bouton d'entrée. Le même écran sert au quiz de sortie,
+    juste avant le bilan de saison.
+100. **Arbitrage assumé sur la mesure.** Donner les bonnes réponses à l'entrée
+     amorce légèrement le quiz de sortie. C'est accepté : les deux séries sont
+     jumelles et non identiques — mêmes notions, cas différents — de sorte que
+     la sortie mesure un transfert plutôt que le souvenir d'un item. Et un quiz
+     de positionnement qui n'explique rien n'est pas un outil pédagogique.
+101. **Bug corrigé au passage : la vignette de l'accueil était peinte par-dessus
+     le contenu.** `.home::after` couvre toute la scène pour assombrir les
+     bords ; les écrans qui réutilisent ce fond — sélection de saison, quiz,
+     écran de fin — n'ayant pas de contexte d'empilement propre, leurs panneaux
+     recevaient ce dégradé et perdaient du contraste. Le contenu passe
+     au-dessus.

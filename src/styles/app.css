@@ -293,6 +293,15 @@
   pointer-events: none;
   background: radial-gradient(82% 74% at 50% 48%, transparent 48%, rgba(0, 12, 22, 0.5) 100%);
 }
+/* La vignette de l'accueil (`.home::after`) est peinte au-dessus du contenu :
+   sur les écrans qui réutilisent ce fond — sélection de saison, quiz, fin de
+   partie — elle voilait les panneaux d'un dégradé et mangeait le contraste du
+   texte. Le contenu passe au-dessus. */
+.home > .container {
+  position: relative;
+  z-index: 2;
+}
+
 .home-bubbles {
   position: absolute;
   inset: 0;
@@ -1696,4 +1705,18 @@
 .list-actions {
   align-self: center;
   padding-left: var(--sp-3);
+}
+
+/* Carte de sélection de saison. Sans alignement explicite, le navigateur
+   centre verticalement le contenu d'un bouton : les deux cartes, de hauteurs
+   différentes, ne commençaient pas à la même ligne. */
+.season-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 2px;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
 }

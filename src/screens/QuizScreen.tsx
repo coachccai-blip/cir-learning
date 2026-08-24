@@ -3,6 +3,7 @@ import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { QUIZ, QUIZ_POST } from '../data/quiz';
 import { shuffleForDisplay } from '../engine/rng';
+import { Icon } from '../ui/Icon';
 
 export function QuizScreen() {
   const phase = useStore((s) => s.quizPhase);
@@ -13,6 +14,12 @@ export function QuizScreen() {
   // questions mesurerait la mémoire, pas ce que le joueur a appris.
   const questions = phase === 'pre' ? QUIZ : QUIZ_POST;
   const [answers, setAnswers] = useState<number[]>(() => questions.map(() => -1));
+  /**
+   * Le quiz de positionnement renvoyait le joueur en partie sans lui dire ce
+   * qu'il avait manqué : on mesurait sans rien enseigner. La correction
+   * s'affiche maintenant avant d'entrer, explication comprise.
+   */
+  const [reviewing, setReviewing] = useState(false);
 
   // Ordre d'affichage mélangé : la bonne réponse n'est jamais toujours en A.
   // On conserve l'index d'origine pour que le score reste comparable pre/post.
@@ -28,6 +35,75 @@ export function QuizScreen() {
   );
 
   const allAnswered = answers.every((a) => a >= 0);
+  const score = questions.reduce((n, q, i) => n + (answers[i] === q.correct ? 1 : 0), 0);
+
+  function review() {
+    setReviewing(true);
+    window.scrollTo({ top: 0 });
+  }
+
+  if (reviewing) {
+    return (
+      <div className="home" style={{ alignItems: 'flex-start', overflowY: 'auto' }}>
+        <div className="container" style={{ width: 'min(760px,100%)', color: '#fff' }}>
+          <div className="center" style={{ marginBottom: 20 }}>
+            <h1 style={{ color: '#fff' }}>{STR.quiz.reviewTitle}</h1>
+            <p style={{ opacity: 0.9 }}>{STR.quiz.reviewIntro(score, questions.length)}</p>
+          </div>
+
+          <div className="stack">
+            {questions.map((q, qi) => {
+              const given = answers[qi];
+              const right = given === q.correct;
+              return (
+                <div className="panel" key={q.id} style={{ color: 'var(--text)' }}>
+                  <div className="panel-title">
+                    <Icon name={right ? 'check' : 'cross'} size={19} className={right ? 'ink-ok' : 'ink-bad'} />
+                    <h3>{q.question}</h3>
+                  </div>
+
+                  <ul className="verdict-list">
+                    <li className={right ? 'verdict-ok' : 'verdict-bad'}>
+                      <Icon name={right ? 'check' : 'cross'} size={16} />
+                      <span>
+                        <strong>{STR.quiz.your}</strong> —{' '}
+                        {given >= 0 ? q.options[given] : STR.quiz.noAnswer}
+                      </span>
+                    </li>
+                    {!right && (
+                      <li className="verdict-ok">
+                        <Icon name="check" size={16} />
+                        <span>
+                          <strong>{STR.quiz.correct}</strong> — {q.options[q.correct]}
+                        </span>
+                      </li>
+                    )}
+                  </ul>
+
+                  <div className="note note-info" style={{ marginTop: 10 }}>
+                    <Icon name="bulb" size={16} />
+                    <span>
+                      <strong>{STR.quiz.explanation}</strong> — {q.explanation}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="row center" style={{ justifyContent: 'center', marginTop: 20, gap: 12 }}>
+            <button className="btn" onClick={() => setReviewing(false)}>
+              <Icon name="arrowLeft" size={17} /> {STR.quiz.reviewAgain}
+            </button>
+            <button className="btn btn-primary" onClick={() => commitQuiz(phase, answers)}>
+              <Icon name="play" size={17} />{' '}
+              {phase === 'pre' ? STR.quiz.startSeason : STR.quiz.seeResults}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="home" style={{ alignItems: 'flex-start', overflowY: 'auto' }}>
@@ -80,12 +156,8 @@ export function QuizScreen() {
               {STR.quiz.skip}
             </button>
           )}
-          <button
-            className="btn btn-primary"
-            disabled={!allAnswered}
-            onClick={() => commitQuiz(phase, answers)}
-          >
-            {phase === 'pre' ? STR.quiz.validate : STR.quiz.seeResults}
+          <button className="btn btn-primary" disabled={!allAnswered} onClick={review}>
+            <Icon name="check" size={17} /> {STR.quiz.validate}
           </button>
         </div>
       </div>

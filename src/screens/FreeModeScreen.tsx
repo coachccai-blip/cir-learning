@@ -1,6 +1,6 @@
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
-import { isUnlocked, JOURNEY } from '../engine/journey';
+import { JOURNEY } from '../engine/journey';
 
 /**
  * Rejouer. Learn CIR est un parcours complet : pas de défi quotidien, pas de
@@ -11,7 +11,6 @@ import { isUnlocked, JOURNEY } from '../engine/journey';
 export function FreeModeScreen() {
   const go = useStore((s) => s.go);
   const newGame = useStore((s) => s.newGame);
-  const progress = useStore((s) => s.progress);
 
   return (
     <div className="container">
@@ -27,7 +26,7 @@ export function FreeModeScreen() {
         <p className="muted">{STR.freeMode.seasonDesc}</p>
         <p className="muted" style={{ marginTop: 8 }}>{STR.freeMode.replayNote}</p>
         <div className="row" style={{ marginTop: 12, gap: 10, flexWrap: 'wrap' }}>
-          {JOURNEY.filter((m) => isUnlocked(m, progress)).map((m) => (
+          {JOURNEY.map((m) => (
             <button key={m} className="btn btn-primary" onClick={() => newGame(m)}>
               {STR.modes[m].label}
             </button>

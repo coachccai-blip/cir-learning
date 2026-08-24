@@ -19,10 +19,10 @@ export const STR = {
   modeSelect: {
     title: 'Votre parcours en deux saisons',
     subtitle:
-      'La première saison apprend le métier. La seconde vérifie que vous le tenez vraiment — autres clients, autres pièges.',
+      'La première saison apprend le métier, la seconde vérifie que vous le tenez vraiment — autres clients, autres pièges. Les deux sont ouvertes : l’ordre est un conseil.',
     start: 'Démarrer la saison',
-    locked: (required: string) => `Terminez la saison ${required} pour ouvrir celle-ci.`,
-    lockedTag: 'Verrouillé',
+    advised: (season: string) =>
+      `Recommandé : jouez d’abord la saison ${season}. Cette saison-ci suppose ses réflexes acquis — mais rien ne vous empêche de commencer par elle.`,
     doneTag: 'Terminée',
     bestScore: (n: number) => `Meilleur score : ${n} / 100`,
     seasonTag: (n: number) => `Saison ${n}`,
@@ -51,8 +51,8 @@ export const STR = {
     startNext: (label: string) => `Enchaîner sur la saison ${label}`,
     resetTitle: 'Réinitialiser le parcours',
     resetHelp:
-      'Reverrouille la saison Expert et efface les meilleurs scores. Utile pour refaire jouer le parcours complet à quelqu’un d’autre.',
-    resetDone: 'Parcours réinitialisé : la saison Expert est de nouveau verrouillée.',
+      'Efface les saisons terminées et les meilleurs scores. Utile pour refaire jouer le parcours complet à quelqu’un d’autre.',
+    resetDone: 'Parcours réinitialisé : aucune saison n’est plus marquée comme terminée.',
   },
   /**
    * Chapeaux d'écran propres à chaque saison. Le même sous-titre pour les deux
@@ -180,6 +180,14 @@ export const STR = {
     question: 'Question',
     validate: 'Valider mes réponses',
     seeResults: 'Voir ma progression',
+    // Correction commentée, affichée avant d'entrer dans la partie.
+    reviewTitle: 'Correction',
+    reviewIntro: (score: number, total: number) =>
+      `${score} bonne${score > 1 ? 's' : ''} réponse${score > 1 ? 's' : ''} sur ${total}. Voici ce que dit la règle, question par question — vous retrouverez chacune de ces notions en jeu.`,
+    noAnswer: 'Sans réponse',
+    explanation: 'La règle',
+    startSeason: 'Commencer la saison',
+    reviewAgain: 'Revoir mes réponses',
     your: 'Votre réponse',
     correct: 'Bonne réponse',
     before: 'Au départ',
