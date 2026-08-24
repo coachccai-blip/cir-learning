@@ -12,6 +12,9 @@ import type {
 } from './types';
 import { isSubcontractEligible } from './cir/calculator';
 import { RELANCES, type FindingFamily } from '../data/audit-relances';
+import { AUDIT_QUESTIONS, type QuestionContext } from '../data/audit-questions';
+import { AUDIT_LESSONS, type AuditLesson, type AuditOutcome } from '../data/audit-lessons';
+import { hashString } from './rng';
 
 const RATE = 0.3; // approximation d'impact en crédit pour les montants de rappel affichés
 
@@ -21,6 +24,40 @@ export interface AuditOptions {
    * de le clore d'une seule question. Réservé à la deuxième saison.
    */
   contradictoire?: boolean;
+  /**
+   * Graine de la partie. Elle choisit la formulation de chaque question dans
+   * le vivier : sans elle, deux parties posent les mêmes questions mot pour
+   * mot, et le contrôle sonne comme un formulaire.
+   */
+  seed?: string;
+}
+
+/**
+ * Formulation retenue pour ce constat. Déterministe : la même partie rejouée à
+ * l'identique repose les mêmes questions, deux parties différentes non.
+ */
+export function questionFor(
+  family: FindingFamily,
+  findingId: string,
+  ctx: QuestionContext,
+  seed = '',
+): string {
+  const pool = AUDIT_QUESTIONS[family];
+  return pool[hashString(`${seed}:audit:${findingId}`) % pool.length](ctx);
+}
+
+/**
+ * Le mot de la fin. Le vérificateur ne parle pas de la même façon à un
+ * débutant et à un consultant de deuxième année : la saison choisit le
+ * registre, l'issue choisit le propos, la graine choisit la variante.
+ */
+export function auditLesson(
+  mode: 'onboarding' | 'expert',
+  outcome: AuditOutcome,
+  seed = '',
+): AuditLesson {
+  const pool = AUDIT_LESSONS[mode][outcome];
+  return pool[hashString(`${seed}:lesson:${mode}:${outcome}`) % pool.length];
 }
 
 export function buildAuditFindings(
@@ -45,7 +82,7 @@ export function buildAuditFindings(
         clientId: cs.clientId,
         label: `Travaux « ${card.title} » valorisés en R&D`,
         defensible: false,
-        question: `Vous avez retenu « ${card.title} » dans l'assiette R&D. Où sont l'état de l'art et le verrou technique de ces travaux ?`,
+        question: questionFor('card', `f_card_${card.id}`, { label: card.title }, opts.seed),
         goodAnswer: '',
         weakAnswers: [
           'C’était un projet important pour le client…',
@@ -67,7 +104,7 @@ export function buildAuditFindings(
           clientId: cs.clientId,
           label: `Poste supprimé retenu : ${d.label}`,
           defensible: false,
-          question: `Votre assiette intègre « ${d.label} ». Ce poste a été supprimé de l'assiette du CIR. Qu'avez-vous à dire ?`,
+          question: questionFor('decoy', `f_decoy_${d.id}`, { label: d.label, amount: d.amount }, opts.seed),
           goodAnswer: '',
           weakAnswers: [
             'Ce poste était éligible les années précédentes…',
@@ -88,7 +125,7 @@ export function buildAuditFindings(
           clientId: cs.clientId,
           label: `Sous-traitance non éligible : ${s.provider}`,
           defensible: false,
-          question: `Vous avez retenu la facture de ${s.provider}. Pouvez-vous produire son agrément MESR en cours de validité ?`,
+          question: questionFor('sub', `f_sub_${s.id}`, { label: s.provider, amount: s.amount }, opts.seed),
           goodAnswer: '',
           weakAnswers: [
             'Nous n’avons pas vérifié l’agrément au moment du dossier.',
@@ -109,7 +146,7 @@ export function buildAuditFindings(
           clientId: cs.clientId,
           label: `Financement public non déduit : ${g.source}`,
           defensible: false,
-          question: `${g.source} a versé ${g.amount.toLocaleString('fr-FR')} € sur ces travaux. Pourquoi cette somme n'apparaît-elle pas en déduction de l'assiette ?`,
+          question: questionFor('grant', `f_grant_${g.id}`, { label: g.source, amount: g.amount }, opts.seed),
           goodAnswer: '',
           weakAnswers: [
             'Le versement est arrivé en cours d’exercice…',
@@ -132,11 +169,12 @@ export function buildAuditFindings(
           clientId: cs.clientId,
           label: `Taux d'affectation de ${p.name} : ${Math.round(claimed * 100)} %`,
           defensible: false,
-          question: `${p.name} est valorisé à ${Math.round(claimed * 100)} % de temps R&D. ${
-            hasEvidence
-              ? 'Vos propres feuilles de temps indiquent un taux inférieur. Comment l’expliquez-vous ?'
-              : 'Sur quelles feuilles de temps vous appuyez-vous ?'
-          }`,
+          question: questionFor(
+            'pers',
+            `f_pers_${p.id}`,
+            { label: p.name, ratio: claimed, hasEvidence },
+            opts.seed,
+          ),
           goodAnswer: '',
           weakAnswers: [
             'C’est le taux que la direction nous a déclaré.',
@@ -159,8 +197,7 @@ export function buildAuditFindings(
       clientId: cs.clientId,
       label: 'Documentation de la démarche expérimentale',
       defensible: hasCr,
-      question:
-        'Votre dossier évoque une démarche expérimentale. Produisez-moi les comptes rendus d’essais et les hypothèses testées.',
+      question: questionFor('doc', 'f_doc', { label: cs.clientId }, opts.seed),
       goodAnswer: hasCr
         ? 'Voici les comptes rendus d’essais collectés en cours de mission, datés et signés, avec les hypothèses et les résultats négatifs conservés.'
         : '',

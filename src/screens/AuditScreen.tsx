@@ -6,7 +6,8 @@ import { caseForClient } from '../state/dossier';
 import { cardsetById } from '../data/cards';
 import { Avatar } from '../avatars/Avatar';
 import { Icon } from '../ui/Icon';
-import { buildAuditFindings, resolveAudit } from '../engine/audit';
+import { SpeakButton } from '../components/SpeakButton';
+import { auditLesson, buildAuditFindings, resolveAudit } from '../engine/audit';
 import { measuresLearning } from '../engine/journey';
 import { finalAuditDue, weakestDossier } from '../engine/auditgate';
 import { shuffleForDisplay } from '../engine/rng';
@@ -90,7 +91,10 @@ export function AuditScreen() {
   const cardset = cardsetById(c.cardsetId);
   // Deuxième saison : séance contradictoire, le vérificateur relance.
   const contradictoire = save.mode === 'expert' && !interim;
-  const allFindings = buildAuditFindings(target, theCase, cardset, RULESET, { contradictoire });
+  const allFindings = buildAuditFindings(target, theCase, cardset, RULESET, {
+    contradictoire,
+    seed: save.seed,
+  });
   const findings = interim ? allFindings.slice(0, 2) : allFindings;
 
   // Flashbacks : le vérificateur a « relu vos échanges » — il cite vos propres
@@ -109,6 +113,9 @@ export function AuditScreen() {
       mitigated,
       balance.audit.remedyRelief,
     );
+    // Le mot de la fin : ce que la séance a montré, dit dans le registre de la
+    // saison. Il n'a pas de sens sur une simple demande d'information.
+    const lesson = interim ? null : auditLesson(save.mode, result.outcome, save.seed);
     return (
       <div className="container">
         <h1>{interim ? STR.audit.interimResult : STR.audit.result}</h1>
@@ -140,6 +147,26 @@ export function AuditScreen() {
               </li>
             ))}
           </ul>
+          {!interim && lesson && (
+            <div className="audit-lesson">
+              <div className="audit-lesson-who">
+                <div className="avatar avatar-sm">
+                  <Avatar seed="verificateur-dgfip" />
+                </div>
+                <div>
+                  <strong>{STR.audit.verifier}</strong>
+                  <div className="muted">{STR.audit.verifierRole}</div>
+                </div>
+                <span className="spacer" />
+                <SpeakButton text={`${lesson.verdict} ${lesson.lesson}`} gender="M" />
+              </div>
+              <p>{lesson.verdict}</p>
+              <p className="audit-lesson-rule">
+                <Icon name="bulb" size={16} />
+                <span>{lesson.lesson}</span>
+              </p>
+            </div>
+          )}
           <button
             className="btn btn-primary"
             style={{ marginTop: 12 }}

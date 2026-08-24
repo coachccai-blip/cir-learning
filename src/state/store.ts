@@ -16,7 +16,6 @@ import type {
   GameMode,
   Gauges,
   GeneratedProspect,
-  LeaderboardEntry,
   Ruleset,
   SaveGame,
   Scenario,
@@ -41,12 +40,10 @@ import { rngFromSeed } from '../engine/rng';
 import {
   DEFAULT_OPTIONS,
   loadCodexRead,
-  loadLeaderboard,
   loadOptions,
   loadProgress,
   loadSave,
   persistCodexRead,
-  persistLeaderboard,
   persistOptions,
   persistProgress,
   persistSave,
@@ -73,9 +70,7 @@ export type View =
   | 'audit'
   | 'end'
   | 'codex'
-  | 'leaderboard'
   | 'options'
-  | 'freemode'
   | 'client'
   | 'quiz'
   | 'settlement';
@@ -129,7 +124,6 @@ interface UIState {
   view: View;
   save: SaveGame | null;
   options: Options;
-  leaderboard: LeaderboardEntry[];
   /** Avancement du parcours (saisons terminées) — hors sauvegarde de partie. */
   progress: Progress;
   codexReadPersistent: string[];
@@ -224,7 +218,6 @@ interface Actions {
   /** Referme la demande d'information et rend la main au joueur. */
   closeInterimAudit: () => void;
   commitQuiz: (phase: 'pre' | 'post', answers: number[]) => void;
-  saveLeaderboard: (pseudo: string, score: number, grade: string) => void;
   /** Marque la saison terminée : c'est ce qui déverrouille la suivante. */
   completeSeason: (mode: GameMode, score: number) => void;
   /** Remet le parcours à zéro (usage formateur, depuis les options). */
@@ -246,7 +239,6 @@ export const useStore = create<Store>((set, get) => ({
   view: 'home',
   save: null,
   options: DEFAULT_OPTIONS,
-  leaderboard: [],
   progress: EMPTY_PROGRESS,
   codexReadPersistent: [],
   toasts: [],
@@ -268,7 +260,6 @@ export const useStore = create<Store>((set, get) => ({
     set({
       save,
       options: loadOptions(),
-      leaderboard: loadLeaderboard(),
       progress: loadProgress(),
       codexReadPersistent: loadCodexRead(),
     });
@@ -1158,21 +1149,6 @@ export const useStore = create<Store>((set, get) => ({
     set({ auditMode: 'final', view: save?.phase === 'NIGHT' ? 'night' : 'day' });
   },
 
-  saveLeaderboard: (pseudo, score, grade) => {
-    const save = get().save;
-    if (!save) return;
-    const entry: LeaderboardEntry = {
-      pseudo: pseudo.slice(0, 24) || 'Anonyme',
-      mode: save.mode,
-      score,
-      grade,
-      date: save.createdAt,
-      badges: save.badges.length,
-    };
-    const lb = [...get().leaderboard, entry].sort((a, b) => b.score - a.score);
-    persistLeaderboard(lb);
-    set({ leaderboard: lb });
-  },
 
   completeSeason: (mode, score) => {
     const progress = completeSeason(get().progress, mode, score);

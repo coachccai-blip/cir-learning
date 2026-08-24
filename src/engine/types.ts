@@ -524,14 +524,6 @@ export interface SaveGame {
   generatedClients: GeneratedClientBundle[];
 }
 
-export interface LeaderboardEntry {
-  pseudo: string;
-  mode: GameMode;
-  score: number;
-  grade: string;
-  date: string;
-  badges: number;
-}
 
 // ---------- Contrôle fiscal ----------
 

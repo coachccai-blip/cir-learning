@@ -9,11 +9,9 @@ export const STR = {
   disclaimer:
     'Les cas, entreprises et montants sont fictifs. Ce jeu est un outil pédagogique et ne constitue en aucun cas un conseil fiscal. Les barèmes reflètent l’état du droit au 20 août 2026 (LF 2026 promulguée le 19 février 2026).',
   menu: {
-    newGame: 'Commencer le parcours',
+    newGame: 'Nouveau parcours',
     continue: 'Continuer',
-    freeMode: 'Rejouer une saison',
     codex: 'Codex',
-    leaderboard: 'Classement',
     options: 'Options',
   },
   modeSelect: {
@@ -334,9 +332,10 @@ export const STR = {
     relance: 'Le vérificateur relance',
     mitigated: 'rectifié en séance, rappel atténué',
     reread: 'Le vérificateur a relu vos échanges',
+    verifier: 'Le vérificateur',
+    verifierRole: 'Direction générale des finances publiques',
   },
   end: {
-    scoreSaved: 'Score enregistré au classement local.',
     learnedInGame: 'acquis pendant la partie',
     title: 'Fin de saison',
     grade: 'Grade de saison',
@@ -344,22 +343,9 @@ export const STR = {
     strengths: 'Points forts',
     improvements: 'Axes de progrès',
     badges: 'Badges obtenus',
-    pseudo: 'Votre pseudo (leaderboard local)',
-    save: 'Enregistrer au classement',
     replay: 'Rejouer',
     home: 'Retour à l’accueil',
     penalties: 'Pénalités',
-  },
-  leaderboard: {
-    title: 'Classement local',
-    empty: 'Aucun score enregistré pour ce mode.',
-    export: 'Exporter (JSON)',
-    import: 'Importer (JSON)',
-    filterMode: 'Mode',
-    rank: 'Rang',
-    pseudo: 'Pseudo',
-    score: 'Score',
-    gradeCol: 'Grade',
   },
   codex: {
     title: 'Codex',
@@ -451,13 +437,5 @@ export const STR = {
     promisePrecise: '(chiffre précis engagé)',
     promiseRange: '(fourchette annoncée)',
     pieces: 'Pièces collectées',
-  },
-  freeMode: {
-    title: 'Rejouer une saison',
-    season: 'Nouvelle saison, nouveau portefeuille',
-    seasonDesc: 'Les 24 semaines complètes, avec des clients et des prospects tirés différemment.',
-    replayNote:
-      'Learn CIR se joue d’une traite : une saison entière, du premier appel au contrôle fiscal. Rien à revenir chercher demain.',
-    locked: 'Terminez le chapitre 3 pour débloquer le mode libre.',
   },
 } as const;

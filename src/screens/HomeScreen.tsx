@@ -86,15 +86,9 @@ export function HomeScreen() {
               <Icon name="arrowRight" size={17} /> {STR.menu.continue} — {STR.hud.cycle} {save.cycle}
             </button>
           )}
-          <button className="btn" onClick={() => go('freemode')}>
-            <Icon name="history" size={17} /> {STR.menu.freeMode}
-          </button>
           <div className="home-menu-row">
             <button className="btn" data-sfx="nav" onClick={() => go('codex')}>
               <Icon name="book" size={17} /> {STR.menu.codex}
-            </button>
-            <button className="btn" data-sfx="nav" onClick={() => go('leaderboard')}>
-              <Icon name="trophy" size={17} /> {STR.menu.leaderboard}
             </button>
             <button className="btn" data-sfx="nav" onClick={() => go('options')}>
               <Icon name="sliders" size={17} /> {STR.menu.options}

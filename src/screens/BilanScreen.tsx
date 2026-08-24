@@ -6,6 +6,8 @@ import { Sparkline } from '../components/Sparkline';
 import { codexById } from '../data/codex';
 import { gradeForXp, nextGrade } from '../engine/economy';
 import { SEASON_LENGTH } from '../data/calendar';
+import { finalAuditDue } from '../engine/auditgate';
+import balance from '../data/balance.json';
 
 export function BilanScreen() {
   const save = useStore((s) => s.save);
@@ -18,6 +20,17 @@ export function BilanScreen() {
   const next = nextGrade(save.xp);
   const ms = nextMilestone(save.cycle + 1);
   const isLast = save.cycle >= SEASON_LENGTH;
+  // Le bouton annonçait « Contrôle fiscal » à toutes les fins de saison, même
+  // quand aucun contrôle n'était dû : il promettait une scène qui n'arrivait
+  // pas. Il dit maintenant où l'on va vraiment.
+  const endLabel = finalAuditDue(
+    save.mode,
+    save.gauges.security,
+    balance.auditSecurityThreshold,
+    save.portfolio,
+  )
+    ? STR.audit.title
+    : STR.end.title;
 
   return (
     <div className="container">
@@ -128,7 +141,7 @@ export function BilanScreen() {
       <div className="row" style={{ marginTop: 20, justifyContent: 'flex-end' }}>
         {/* Le cycle repart en phase Relation client : la bascule s'entend. */}
         <button className="btn btn-primary" data-sfx="phase-relation" onClick={advanceCycle}>
-          {isLast ? STR.audit.title : STR.bilan.next} <Icon name="arrowRight" size={17} />
+          {isLast ? endLabel : STR.bilan.next} <Icon name="arrowRight" size={17} />
         </button>
       </div>
     </div>

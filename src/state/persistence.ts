@@ -1,10 +1,9 @@
-import type { GameMode, LeaderboardEntry, SaveGame } from '../engine/types';
+import type { GameMode, SaveGame } from '../engine/types';
 import { EMPTY_PROGRESS, JOURNEY, type Progress } from '../engine/journey';
 import { genderForName } from '../engine/prospects';
 import { hashString } from '../engine/rng';
 
 const SAVE_KEY = 'cirquest.save.v1';
-const LB_KEY = 'cirquest.leaderboard.v1';
 const OPT_KEY = 'cirquest.options.v1';
 const CODEX_READ_KEY = 'cirquest.codexread.v1';
 const PROGRESS_KEY = 'cirquest.progress.v1';
@@ -96,18 +95,6 @@ export function loadSave(): SaveGame | null {
 export function persistSave(save: SaveGame | null): void {
   if (save === null) localStorage.removeItem(SAVE_KEY);
   else localStorage.setItem(SAVE_KEY, JSON.stringify(save));
-}
-
-export function loadLeaderboard(): LeaderboardEntry[] {
-  // Même bascule que pour les sauvegardes : les scores enregistrés en
-  // « Découverte » restent visibles, rattachés à Onboarding.
-  return safeParse<LeaderboardEntry[]>(localStorage.getItem(LB_KEY), []).map((e) =>
-    (e.mode as string) === 'discovery' ? { ...e, mode: 'onboarding' as const } : e,
-  );
-}
-
-export function persistLeaderboard(entries: LeaderboardEntry[]): void {
-  localStorage.setItem(LB_KEY, JSON.stringify(entries));
 }
 
 export function loadOptions(): Options {

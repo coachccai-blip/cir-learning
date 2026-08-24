@@ -1792,3 +1792,40 @@
     animation: none;
   }
 }
+
+/* ---------- Mot de la fin du vérificateur ---------- */
+/* Dernière scène du jeu : elle mérite d'être lue, pas survolée. Surface
+   neutre, la couleur ne sert qu'au liseré et au pictogramme. */
+.audit-lesson {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-left: 4px solid var(--info);
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+  color: var(--text);
+}
+.audit-lesson p {
+  margin: 10px 0 0;
+  line-height: 1.6;
+}
+.audit-lesson-who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.audit-lesson-who .avatar-sm {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+}
+.audit-lesson-rule {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-weight: 600;
+}
+.audit-lesson-rule .icon {
+  color: var(--info);
+  flex: 0 0 auto;
+  margin-top: 2px;
+}

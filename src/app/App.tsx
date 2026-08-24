@@ -14,9 +14,7 @@ import { BilanScreen } from '../screens/BilanScreen';
 import { AuditScreen } from '../screens/AuditScreen';
 import { EndScreen } from '../screens/EndScreen';
 import { CodexScreen } from '../screens/CodexScreen';
-import { LeaderboardScreen } from '../screens/LeaderboardScreen';
 import { OptionsScreen } from '../screens/OptionsScreen';
-import { FreeModeScreen } from '../screens/FreeModeScreen';
 import { ClientScreen } from '../screens/ClientScreen';
 import { QuizScreen } from '../screens/QuizScreen';
 import { SettlementScreen } from '../screens/SettlementScreen';
@@ -72,9 +70,7 @@ export function App() {
         {view === 'audit' && <AuditScreen />}
         {view === 'end' && <EndScreen />}
         {view === 'codex' && <CodexScreen />}
-        {view === 'leaderboard' && <LeaderboardScreen />}
         {view === 'options' && <OptionsScreen />}
-        {view === 'freemode' && <FreeModeScreen />}
         {view === 'client' && <ClientScreen />}
         {view === 'quiz' && <QuizScreen />}
         {view === 'settlement' && <SettlementScreen />}

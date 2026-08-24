@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { computeFinalScore } from '../engine/economy';
@@ -9,14 +9,11 @@ import { Icon } from '../ui/Icon';
 
 export function EndScreen() {
   const save = useStore((s) => s.save);
-  const saveLeaderboard = useStore((s) => s.saveLeaderboard);
   const resetSave = useStore((s) => s.resetSave);
   const go = useStore((s) => s.go);
   const newGame = useStore((s) => s.newGame);
   const progress = useStore((s) => s.progress);
   const markSeasonDone = useStore((s) => s.completeSeason);
-  const [pseudo, setPseudo] = useState('');
-  const [saved, setSaved] = useState(false);
 
   const reassessments = save
     ? save.portfolio.filter((c) => c.auditOutcome === 'partial' || c.auditOutcome === 'total').length
@@ -270,43 +267,7 @@ export function EndScreen() {
           </div>
         )}
 
-        <div className="panel" style={{ marginTop: 16, color: 'var(--text)' }}>
-          {!saved ? (
-            <>
-              <label htmlFor="pseudo">
-                <strong>{STR.end.pseudo}</strong>
-              </label>
-              <div className="row" style={{ marginTop: 8 }}>
-                <input
-                  id="pseudo"
-                  value={pseudo}
-                  onChange={(e) => setPseudo(e.target.value)}
-                  maxLength={24}
-                  style={{ padding: 10, borderRadius: 10, border: '1px solid var(--border-strong)', flex: 1 }}
-                />
-                <button
-                  className="btn btn-primary"
-                  onClick={() => {
-                    saveLeaderboard(pseudo, final.total, final.grade);
-                    setSaved(true);
-                  }}
-                >
-                  {STR.end.save}
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="note note-ok">
-              <Icon name="check" size={16} />
-              <span>{STR.end.scoreSaved}</span>
-            </div>
-          )}
-        </div>
-
         <div className="row center" style={{ justifyContent: 'center', marginTop: 20, gap: 12 }}>
-          <button className="btn" onClick={() => go('leaderboard')}>
-            <Icon name="trophy" size={17} /> {STR.menu.leaderboard}
-          </button>
           <button
             className="btn"
             onClick={() => {

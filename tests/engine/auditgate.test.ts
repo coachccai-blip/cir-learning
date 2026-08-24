@@ -101,3 +101,83 @@ describe('Fin de saison, écran par écran', () => {
     expect(await endSeason('expert', 10, false)).toBe('end');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Le vérificateur ne récite pas un formulaire.
+// ---------------------------------------------------------------------------
+
+describe('Vivier de questions du vérificateur', () => {
+  it('compte au moins vingt formulations, toutes distinctes', async () => {
+    const { AUDIT_QUESTIONS, AUDIT_QUESTION_COUNT } = await import('../../src/data/audit-questions');
+    expect(AUDIT_QUESTION_COUNT).toBeGreaterThanOrEqual(20);
+    const rendered = Object.values(AUDIT_QUESTIONS).flatMap((pool) =>
+      pool.map((q) => q({ label: 'Sujet', amount: 12000, ratio: 0.8, hasEvidence: true })),
+    );
+    expect(new Set(rendered).size, 'deux questions identiques dans le vivier').toBe(rendered.length);
+    // Chaque famille de constat a de quoi varier.
+    for (const [family, pool] of Object.entries(AUDIT_QUESTIONS)) {
+      expect(pool.length, `famille ${family} sans variante`).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('varie la formulation d’une partie à l’autre, et la répète à l’identique dans la même', async () => {
+    const { questionFor } = await import('../../src/engine/audit');
+    const ctx = { label: 'Cortexa' };
+    const a = questionFor('sub', 'f_sub_1', ctx, 'graine-a');
+    expect(questionFor('sub', 'f_sub_1', ctx, 'graine-a')).toBe(a);
+    // Sur assez de graines, le vivier est réellement parcouru.
+    const seen = new Set(
+      Array.from({ length: 40 }, (_, i) => questionFor('sub', 'f_sub_1', ctx, `g${i}`)),
+    );
+    expect(seen.size).toBeGreaterThan(1);
+  });
+
+  it('pose des questions différentes sur deux constats de la même famille', async () => {
+    const { questionFor } = await import('../../src/engine/audit');
+    const rendered = new Set(
+      Array.from({ length: 12 }, (_, i) =>
+        questionFor('card', `f_card_${i}`, { label: `Travaux ${i}` }, 'meme-partie'),
+      ),
+    );
+    expect(rendered.size).toBeGreaterThan(1);
+  });
+});
+
+describe('Le mot de la fin du vérificateur', () => {
+  it('ne dit pas la même chose en première et en deuxième saison', async () => {
+    const { auditLesson } = await import('../../src/engine/audit');
+    for (const outcome of ['validated', 'partial', 'total'] as const) {
+      for (const seed of ['s1', 's2', 's3', 's4']) {
+        const on = auditLesson('onboarding', outcome, seed);
+        const ex = auditLesson('expert', outcome, seed);
+        expect(on.verdict, `${outcome}/${seed}`).not.toBe(ex.verdict);
+        expect(on.lesson, `${outcome}/${seed}`).not.toBe(ex.lesson);
+      }
+    }
+  });
+
+  it('dit autre chose selon l’issue du contrôle', async () => {
+    const { auditLesson } = await import('../../src/engine/audit');
+    for (const mode of ['onboarding', 'expert'] as const) {
+      const verdicts = (['validated', 'partial', 'total'] as const).map(
+        (o) => auditLesson(mode, o, 'fixe').verdict,
+      );
+      expect(new Set(verdicts).size, mode).toBe(3);
+    }
+  });
+
+  it('varie d’une partie à l’autre, sans jamais rester vide', async () => {
+    const { auditLesson } = await import('../../src/engine/audit');
+    const seen = new Set(
+      Array.from({ length: 30 }, (_, i) => auditLesson('expert', 'partial', `g${i}`).lesson),
+    );
+    expect(seen.size).toBeGreaterThan(1);
+    for (const mode of ['onboarding', 'expert'] as const) {
+      for (const o of ['validated', 'partial', 'total'] as const) {
+        const l = auditLesson(mode, o, 'x');
+        expect(l.verdict.length).toBeGreaterThan(40);
+        expect(l.lesson.length).toBeGreaterThan(40);
+      }
+    }
+  });
+});
