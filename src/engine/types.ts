@@ -141,7 +141,6 @@ export interface GaugeEffects {
   profitability?: number;
   mood?: number;
   trust?: number;
-  energy?: number;
 }
 
 export interface PromiseSpec {
@@ -373,6 +372,12 @@ export interface GeneratedProspect {
   status: 'NEW' | 'SIGNED' | 'DECLINED' | 'LOST';
   /** CA encaissé si la mission conseil a été signée. */
   revenue?: number;
+  /**
+   * Client ouvert par cette signature, s'il y en a un. Une signature qui a
+   * donné un vrai dossier n'est pas une mission conseil : elle se suit au
+   * portefeuille, et la lister deux fois faisait mentir les deux listes.
+   */
+  becameClientId?: string;
 }
 
 // ---------- Sauvegarde / état ----------
@@ -455,7 +460,7 @@ export interface Gauges {
 }
 
 export interface DeltaLogEntry {
-  gauge: 'relation' | 'security' | 'profitability' | 'energy' | 'xp' | 'revenue';
+  gauge: 'relation' | 'security' | 'profitability' | 'xp' | 'revenue';
   delta: number;
   cause: string;
 }
@@ -474,7 +479,6 @@ export interface SaveGame {
   createdAt: string;
   cycle: number;
   phase: Phase;
-  energy: number;
   gauges: Gauges;
   xp: number;
   revenue: { signed: number; collected: number };
@@ -492,12 +496,10 @@ export interface SaveGame {
     verrousOk: number;
     refusedMissions: number;
     exactBases: number;
-    minEnergy: number;
     noJargonStreak: number;
     prospectsSigned: number;
     prospectsDeclined: number;
   };
-  restUsedThisDay: boolean;
   tutorialDone: boolean;
   /**
    * Le joueur a vu la proposition de sortie après ses deux premières missions

@@ -1,7 +1,7 @@
 import { STR } from '../i18n/fr';
 import { useStore, chapterForCycle, nextMilestone } from '../state/store';
 import { CYCLE_DATES } from '../data/calendar';
-import { energyState, ENERGY_STATE_LABEL, gradeForXp } from '../engine/economy';
+import { gradeForXp } from '../engine/economy';
 import { Icon } from '../ui/Icon';
 
 export function TopBar() {
@@ -12,7 +12,6 @@ export function TopBar() {
   const chapter = chapterForCycle(save.cycle, save.mode);
   const ms = nextMilestone(save.cycle);
   const grade = gradeForXp(save.xp);
-  const estate = energyState(save.energy);
   // Alerte « J-2 » : l'échéance tombe cette semaine ou la suivante.
   const deadlineSoon = ms !== null && ms.cycle - save.cycle <= 1 && ms.alert !== false;
 
@@ -37,16 +36,6 @@ export function TopBar() {
       </div>
 
       <div className="hud">
-        {/* Groupe 2 — la seule ressource qui se consomme : l'énergie. Elle ne
-            barre aucune action ; elle dit ce que la semaine a coûté. */}
-        <div className="hud-group">
-          <div className="hud-chip hud-primary">
-            <span className="hud-label">
-              <Icon name="bolt" size={14} /> {STR.hud.energy} · {ENERGY_STATE_LABEL[estate]}
-            </span>
-            <strong>{save.energy}</strong>
-          </div>
-        </div>
 
         {/* Groupe 3 — progression : discret */}
         <div className="hud-group hud-secondary">

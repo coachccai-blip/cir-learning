@@ -193,6 +193,19 @@ describe('Le vivier ne se répète pas', () => {
     expect(new Set(contacts).size, 'interlocuteurs en double').toBe(contacts.length);
   });
 
+  it('préfère servir moins de fiches que d’en resservir une déjà vue', async () => {
+    const { useStore } = await import('../../src/state/store');
+    const s = useStore.getState();
+    s.newGame('onboarding', 'vivier-epuise');
+    // Bien plus de demandes que le vivier ne compte d'entreprises : la liste
+    // doit se tarir, jamais se répéter.
+    for (let i = 0; i < 40; i++) useStore.getState().generateProspects(10);
+    const companies = useStore.getState().save!.prospects.map((p) => p.company);
+    expect(new Set(companies).size, 'une entreprise est revenue deux fois').toBe(companies.length);
+    // Le vivier s'est bien tari plutôt que de boucler indéfiniment.
+    expect(companies.length).toBeLessThan(400);
+  });
+
   it('évite aussi les noms des fiches déjà écartées', async () => {
     const { useStore } = await import('../../src/state/store');
     const s = useStore.getState();

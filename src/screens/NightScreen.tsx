@@ -19,7 +19,6 @@ function nightAction(cs: ClientState): { label: string; view: 'qualification' | 
 
 export function NightScreen() {
   const save = useStore((s) => s.save);
-  const spendEnergy = useStore((s) => s.spendEnergy);
   const go = useStore((s) => s.go);
   const lastDeltas = useStore((s) => s.lastDeltas);
   if (!save) return null;
@@ -31,9 +30,6 @@ export function NightScreen() {
   function openMinigame(cs: ClientState) {
     const a = nightAction(cs);
     if (!a) return;
-    // Monter un dossier fatigue, mais ne se refuse jamais : c'est au joueur de
-    // décider s'il enchaîne ou s'il garde de l'énergie pour la semaine.
-    spendEnergy(a.label);
     useStore.setState({ activeClientId: cs.clientId });
     go(a.view);
   }

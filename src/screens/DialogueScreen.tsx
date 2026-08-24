@@ -14,7 +14,6 @@ import {
   declinesMission,
   displayOrder,
   getNode,
-  maskedChoiceIndex,
   resolveChoice,
   sessionScore,
   startSession,
@@ -28,7 +27,6 @@ export function DialogueScreen() {
   const ctx = useStore((s) => s.dialogue);
   const save = useStore((s) => s.save);
   const applyGauges = useStore((s) => s.applyGauges);
-  const applyEnergy = useStore((s) => s.applyEnergy);
   const unlockCodex = useStore((s) => s.unlockCodex);
   const endDialogue = useStore((s) => s.endDialogue);
   const toast = useStore((s) => s.toast);
@@ -92,11 +90,6 @@ export function DialogueScreen() {
     return displayOrder(save.seed, scenario.id, node);
   }, [scenario, node, save]);
 
-  const maskedIdx = useMemo(() => {
-    if (!scenario || !node || !save) return -1;
-    return maskedChoiceIndex(save.seed, scenario.id, node.id, save.energy, node.choices.length);
-  }, [scenario, node, save]);
-
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (feedback) {
@@ -123,11 +116,10 @@ export function DialogueScreen() {
     : expressionForMood(mood);
 
   function pick(choice: DialogueChoice, idx: number) {
-    if (!save || !scenario || !session || feedback || idx === maskedIdx) return;
+    if (!save || !scenario || !session || feedback) return;
     const archetype = client?.contact.archetype ?? null;
-    const res = resolveChoice(choice, archetype, save.energy);
+    const res = resolveChoice(choice, archetype);
     applyGauges(res.gauges, choice.feedback.what);
-    if (choice.effects.energy) applyEnergy(choice.effects.energy, choice.feedback.what);
     setMood((m) => Math.max(0, Math.min(100, m + res.mood)));
     if (choice.flags) setFlags((f) => Array.from(new Set([...f, ...choice.flags!])));
     if (declinesMission(choice.flags ?? [])) setDeclined(true);
@@ -279,20 +271,12 @@ export function DialogueScreen() {
 
           {!feedback && !finished && node && (
             <div className="choices" role="group" aria-label="Vos réponses">
-              {order.map((choice, i) => {
-                const masked = i === maskedIdx;
-                return (
-                  <button
-                    key={choice.id}
-                    className={`choice${masked ? ' choice-masked' : ''}`}
-                    onClick={() => pick(choice, i)}
-                    disabled={masked}
-                  >
-                    <span className="choice-key">{i + 1}</span>
-                    <span>{masked ? `(${STR.dialogue.masked})` : choice.text}</span>
-                  </button>
-                );
-              })}
+              {order.map((choice, i) => (
+                <button key={choice.id} className="choice" onClick={() => pick(choice, i)}>
+                  <span className="choice-key">{i + 1}</span>
+                  <span>{choice.text}</span>
+                </button>
+              ))}
             </div>
           )}
 

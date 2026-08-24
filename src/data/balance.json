@@ -1,16 +1,4 @@
 {
-  "energy": {
-    "start": 100,
-    "perAction": -4,
-    "weekend": 22,
-    "rest": 15,
-    "debriefSuccess": 8,
-    "thresholds": {
-      "fit": 80,
-      "tired": 49,
-      "exhausted": 24
-    }
-  },
   "tolerance": {
     "onboarding": 0.05,
     "expert": 0.01
@@ -100,6 +88,7 @@
     "cardCount": 6,
     "maxActiveClients": 7
   },
+  "investigateCost": 2,
   "neglectGraceCycles": 2,
   "progression": {
     "onboarding": [

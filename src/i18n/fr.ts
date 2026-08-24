@@ -80,7 +80,6 @@ export const STR = {
     night: 'Technique',
     cycle: 'Semaine',
     chapter: (n: number) => `Ch.${n}`,
-    energy: 'Énergie',
     xp: 'XP',
     revenue: 'CA signé',
     nextDeadline: 'Prochaine échéance',
@@ -145,6 +144,8 @@ export const STR = {
     tipProposal: (name: string) =>
       `Conseil : demain, envoyez la proposition à ${name} pour ouvrir votre premier dossier.`,
     tipCodex: 'Profitez-en pour lire quelques fiches codex — ça rapporte de l’expérience.',
+    investigateReopened: (n: number) =>
+      `${n} carte${n > 1 ? 's' : ''} « à investiguer » rouverte${n > 1 ? 's' : ''} : du temps non facturable`,
     scoreQualif: (pct: number) => `Qualification ${pct} %`,
     scoreBase: (pct: number) => `Assiette ${pct} %`,
     scoreJustif: (n: number) => `Justificatif ${n}`,
@@ -159,8 +160,6 @@ export const STR = {
     followup: 'Suivi de mission',
     closing: 'Bilan de mission',
     networking: 'Réseautage / événement',
-    rest: 'Souffler',
-    restDone: 'Vous avez déjà soufflé aujourd’hui.',
     qualification: 'Qualification d’éligibilité',
     base: 'Construction de l’assiette',
     justification: 'Rédaction du justificatif',
@@ -174,7 +173,6 @@ export const STR = {
     finish: 'Terminer l’entretien',
     codexUnlocked: 'Fiche débloquée',
     scoreLabel: 'Score de l’entretien',
-    masked: 'vous n’y pensez pas…',
     optimalWas: 'Le meilleur choix aurait été',
     event: 'Imprévu',
     readAloud: 'Écouter la réplique',
@@ -213,7 +211,7 @@ export const STR = {
     validate: 'Valider le tri',
     remaining: 'cartes à classer',
     result: 'Résultat de la qualification',
-    investigateNote: '« À investiguer » n’est jamais faux : c’est une question reportée, à reprendre — et à payer en fatigue — la semaine suivante.',
+    investigateNote: '« À investiguer » n’est jamais faux : c’est une question reportée, qu’il faudra rouvrir la semaine suivante, sur du temps non facturable.',
   },
   base: {
     title: 'Construction de l’assiette',

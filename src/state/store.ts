@@ -22,7 +22,7 @@ import type {
   Scenario,
 } from '../engine/types';
 import { clamp } from '../engine/dialogue/mood';
-import { energyCostOfAction, gradeForXp, maxClients, xpForBaseAccuracy } from '../engine/economy';
+import { gradeForXp, maxClients, xpForBaseAccuracy } from '../engine/economy';
 import { scoreAssiette } from '../engine/cir/scoring';
 import { computeBreakdown } from '../engine/cir/calculator';
 import { newBadges } from '../engine/badges';
@@ -32,6 +32,7 @@ import { neglectedClients, resolveMilestone } from '../engine/milestones';
 import { stepFor, stepForClient } from '../engine/progression';
 import { arrivingProspect, openingProspects } from '../engine/roster';
 import { completeSeason, EMPTY_PROGRESS, measuresLearning, type Progress } from '../engine/journey';
+import { finalAuditDue } from '../engine/auditgate';
 import { varyCase } from '../engine/casevar';
 import { twistsForCase } from '../data/case-twists';
 import { caseForClient } from './dossier';
@@ -191,12 +192,10 @@ interface Actions {
 
   startDialogue: (ctx: DialogueContext) => void;
   applyGauges: (deltas: Partial<Gauges>, cause: string) => void;
-  applyEnergy: (delta: number, cause: string) => void;
   addXp: (amount: number, cause: string) => void;
   unlockCodex: (id: string) => void;
   markCodexRead: (id: string) => void;
 
-  spendEnergy: (cause: string) => void;
   checkBadges: () => void;
   endDialogue: (result: {
     clientId?: string;
@@ -389,17 +388,6 @@ export const useStore = create<Store>((set, get) => ({
     set({ save: next, lastDeltas: deltas });
   },
 
-  applyEnergy: (delta, cause) => {
-    const save = get().save;
-    if (!save) return;
-    const energy = clamp(save.energy + delta);
-    const stats = { ...save.stats, minEnergy: Math.min(save.stats.minEnergy, energy) };
-    const log = [...save.cycleLog, { gauge: 'energy' as const, delta, cause }];
-    const next = { ...save, energy, stats, cycleLog: log };
-    persist(next);
-    set({ save: next });
-  },
-
   addXp: (amount, cause) => {
     const save = get().save;
     if (!save) return;
@@ -443,12 +431,6 @@ export const useStore = create<Store>((set, get) => ({
     } else {
       set({ codexReadPersistent: persistent });
     }
-  },
-
-  // Une activité ne se paie plus en points d'action mais en fatigue : elle
-  // n'est jamais refusée, elle laisse une trace.
-  spendEnergy: (cause) => {
-    get().applyEnergy(energyCostOfAction(), cause);
   },
 
   endDialogue: (result) => {
@@ -630,6 +612,9 @@ export const useStore = create<Store>((set, get) => ({
         companies,
         contacts,
       });
+      // Vivier épuisé : on en sert moins plutôt que de resservir une entreprise
+      // déjà vue. Un doublon se lit comme un bug ; une liste plus courte, non.
+      if (!p) break;
       companies.push(p.company);
       contacts.push(p.contactName);
       fresh.push(p);
@@ -690,6 +675,7 @@ export const useStore = create<Store>((set, get) => ({
 
       let portfolio = save.portfolio;
       let generatedClients = save.generatedClients;
+      let openedClientId: string | undefined;
       if (becomesClient) {
         const bundle = buildClientFromProspect(
           p,
@@ -702,12 +688,15 @@ export const useStore = create<Store>((set, get) => ({
         generatedClients = [...save.generatedClients, bundle];
         // Le contrat est déjà signé au téléphone : le dossier démarre au kick-off.
         portfolio = [...save.portfolio, initClientState(bundle.client.id, 'SIGNED')];
+        openedClientId = bundle.client.id;
       }
 
       const next: SaveGame = {
         ...save,
         prospects: save.prospects.map((x) =>
-          x.id === prospectId ? { ...x, status: 'SIGNED' as const, revenue: outcome.revenue } : x,
+          x.id === prospectId
+            ? { ...x, status: 'SIGNED' as const, revenue: outcome.revenue, becameClientId: openedClientId }
+            : x,
         ),
         portfolio,
         generatedClients,
@@ -946,14 +935,13 @@ export const useStore = create<Store>((set, get) => ({
   advanceCycle: () => {
     const save = get().save;
     if (!save) return;
-    // La fatigue de la semaine a déjà été payée activité par activité. Restent
-    // le week-end, qui rend une partie de ce qu'elle a coûté, et les questions
-    // reportées : chaque carte laissée « à investiguer » se rouvre, et cela se
-    // paie. C'est ce qui empêche de tout reporter sans jamais trancher.
+    // Les questions reportées se rouvrent : chaque carte laissée « à
+    // investiguer » se repaie en temps non facturable la semaine suivante.
+    // C'est ce qui empêche de tout reporter sans jamais trancher.
     const debt = save.portfolio.reduce((n, cs) => n + cs.investigateDebt, 0);
-    const energy = clamp(
-      save.energy + balance.energy.weekend + debt * balance.energy.perAction,
-    );
+    if (debt > 0) {
+      get().applyGauges({ profitability: -debt * balance.investigateCost }, STR.night.investigateReopened(debt));
+    }
 
     // Échéance du cycle : chacune a une conséquence, aucune n'est décorative.
     const missed: string[] = [...save.missedDeadlines];
@@ -1005,11 +993,8 @@ export const useStore = create<Store>((set, get) => ({
       portfolio: portfolio.map((cs) => (cs.investigateDebt > 0 ? { ...cs, investigateDebt: 0 } : cs)),
       cycle: nextCycle,
       phase: 'DAY',
-      energy,
       cycleLog: [],
       missedDeadlines: missed,
-      restUsedThisDay: false,
-      stats: { ...save.stats, minEnergy: Math.min(save.stats.minEnergy, energy) },
       gaugeHistory: [
         ...save.gaugeHistory,
         {
@@ -1152,7 +1137,19 @@ export const useStore = create<Store>((set, get) => ({
     if (!save) return;
     const next = { ...save, finished: true };
     persist(next);
-    set({ save: next, view: 'audit', auditMode: 'final' });
+    // On n'ouvre l'écran de contrôle que si un contrôle est dû. Sinon le
+    // vérificateur se présentait à chaque fin de partie pour annoncer qu'il
+    // n'avait rien à dire — et l'absence de contrôle, qui est la récompense
+    // d'une saison bien tenue, passait pour une formalité de plus.
+    const due = finalAuditDue(
+      save.mode,
+      save.gauges.security,
+      balance.auditSecurityThreshold,
+      save.portfolio,
+    );
+    if (due) set({ save: next, view: 'audit', auditMode: 'final' });
+    else if (measuresLearning(save.mode)) set({ save: next, view: 'quiz', quizPhase: 'post' });
+    else set({ save: next, view: 'end' });
     get().checkBadges();
   },
 

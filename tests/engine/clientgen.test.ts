@@ -14,9 +14,11 @@ const RULESET = ruleset as Ruleset;
 const SETTINGS = balance.prospectToClient;
 const SEED = 'test-seed';
 
+// Sans contrainte de noms déjà pris, la génération sert toujours une fiche :
+// c'est le magasin qui tient la liste des raisons sociales déjà vues.
 const prospects = Array.from({ length: 200 }, (_, i) =>
   generateProspect(PROSPECT_TEMPLATES, SEED, i),
-);
+).filter((p): p is GeneratedProspect => p !== null);
 const convertible = prospects.filter((p) => prospectBecomesClient(p, SEED, SETTINGS));
 
 describe('Conversion d’un prospect signé en client du portefeuille', () => {

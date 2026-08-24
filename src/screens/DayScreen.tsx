@@ -11,7 +11,6 @@ import { mailsForCycle } from '../data/mails';
 import { codexById } from '../data/codex';
 import type { ClientState } from '../engine/types';
 import { nextClientAction, type ClientActionKind } from '../engine/activities';
-import BALANCE from '../data/balance.json';
 
 type DayAction = { label: string; kind: ClientActionKind };
 
@@ -23,8 +22,6 @@ function clientAction(cs: ClientState): DayAction | null {
 
 export function DayScreen() {
   const save = useStore((s) => s.save);
-  const spendEnergy = useStore((s) => s.spendEnergy);
-  const applyEnergy = useStore((s) => s.applyEnergy);
   const applyGauges = useStore((s) => s.applyGauges);
   const generateProspects = useStore((s) => s.generateProspects);
   const openClientDialogue = useStore((s) => s.openClientDialogue);
@@ -46,7 +43,6 @@ export function DayScreen() {
   function doClientAction(cs: ClientState) {
     const a = clientAction(cs);
     if (!a) return;
-    spendEnergy(a.label);
     if (a.kind === 'proposal') {
       signClient(cs.clientId);
     } else {
@@ -54,27 +50,13 @@ export function DayScreen() {
     }
   }
 
-  // Souffler ne coûte plus rien, mais ne se prend qu'une fois par jour : sans
-  // cette limite, l'énergie se remonterait à volonté et ne dirait plus rien.
-  function rest() {
-    if (save?.restUsedThisDay) {
-      toast(STR.activities.restDone);
-      return;
-    }
-    useStore.setState({ save: save ? { ...save, restUsedThisDay: true } : save });
-    applyEnergy(BALANCE.energy.rest, STR.activities.rest);
-    toast(`+${BALANCE.energy.rest} énergie`);
-  }
-
   function networking() {
-    spendEnergy(STR.activities.networking);
     generateProspects(3);
     applyGauges({ relation: 4 }, STR.activities.networking);
     toast('3 prospects tièdes ajoutés');
   }
 
   function callProspect(prospectId: string) {
-    spendEnergy(STR.activities.prospection);
     playSfx('ring');
     const p = save?.prospects.find((x) => x.id === prospectId);
     startDialogue({
@@ -93,9 +75,13 @@ export function DayScreen() {
   }
 
   const newProspects = save.prospects.filter((p) => p.status === 'NEW');
-  // Les pistes écrites signées ne sont pas des missions conseil : elles ont
-  // donné un rendez-vous, et se suivent désormais dans le portefeuille.
-  const signedProspects = save.prospects.filter((p) => p.status === 'SIGNED' && !p.scriptedClientId);
+  // Ne restent ici que les signatures qui n'ont pas ouvert de dossier. Une
+  // piste écrite a donné un rendez-vous, un prospect converti a donné un
+  // client : les deux se suivent au portefeuille, et les compter aussi comme
+  // « missions conseil » faisait mentir les deux listes à la fois.
+  const signedProspects = save.prospects.filter(
+    (p) => p.status === 'SIGNED' && !p.scriptedClientId && !p.becameClientId,
+  );
 
   return (
     <div className="container">
@@ -246,9 +232,6 @@ export function DayScreen() {
           <div className="row">
             <button className="btn btn-sm" onClick={networking}>
               <Icon name="users" size={15} /> {STR.activities.networking}
-            </button>
-            <button className="btn btn-sm" onClick={rest} disabled={save.restUsedThisDay}>
-              <Icon name="bolt" size={15} /> {STR.activities.rest}
             </button>
           </div>
           {newProspects.length === 0 && <p className="muted">{STR.day.noProspects}</p>}

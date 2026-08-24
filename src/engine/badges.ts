@@ -44,10 +44,13 @@ export const BADGES: BadgeDef[] = [
       ),
   },
   {
+    // L'énergie a disparu : le badge mesurait une jauge qui n'existe plus. Il
+    // récompense désormais ce que « tenir la distance » veut dire dans le
+    // métier — n'avoir manqué aucune échéance de la saison.
     id: 'nuit_blanche',
     label: 'Tenir la distance',
-    description: 'Terminer la saison sans jamais descendre sous 25 d’énergie.',
-    earned: (s) => s.finished && s.stats.minEnergy >= 25,
+    description: 'Terminer la saison sans manquer une seule échéance.',
+    earned: (s) => s.finished && s.missedDeadlines.length === 0,
   },
   {
     id: 'le_mot_juste',

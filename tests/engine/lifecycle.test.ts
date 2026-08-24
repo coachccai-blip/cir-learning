@@ -137,7 +137,7 @@ describe('Une saison conduit chaque client jusqu’au bout', () => {
           const choice = node.choices.find((c) => c.role === 'optimal') ?? node.choices[0];
           if (choice.flags) flags.push(...choice.flags);
           if (declinesMission(choice.flags ?? [])) declined = true;
-          session = advance(session, choice, resolveChoice(choice, null, 80).score);
+          session = advance(session, choice, resolveChoice(choice, null).score);
         }
         useStore.getState().endDialogue({
           clientId,

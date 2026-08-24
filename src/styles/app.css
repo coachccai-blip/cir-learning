@@ -103,23 +103,32 @@
 }
 
 /* ---------- Topbar / HUD ---------- */
+/* Le bandeau tient sur une ligne, quelle que soit la saison. Il passait à la
+   ligne en deuxième saison — grade plus long, chapitre plus long — et la barre
+   doublait de hauteur en poussant tout l'écran vers le bas. Rien ne se replie
+   désormais : les chips se compriment, et le titre de chapitre s'élide. */
 .topbar {
   background: var(--header-bg);
   color: var(--header-text);
   padding: 10px clamp(12px, 3vw, 28px);
   display: flex;
   align-items: center;
-  gap: var(--sp-4);
-  flex-wrap: wrap;
+  gap: clamp(10px, 1.8vw, 24px);
+  flex-wrap: nowrap;
   position: sticky;
   top: 0;
   z-index: 50;
   box-shadow: var(--shadow-md);
 }
+.topbar > * {
+  min-width: 0;
+}
 .topbar .brand {
   font-family: var(--font-title);
   font-weight: 800;
-  font-size: 1.15rem;
+  font-size: clamp(0.95rem, 0.5vw + 0.8rem, 1.15rem);
+  white-space: nowrap;
+  flex-shrink: 0;
   letter-spacing: 0.02em;
   display: flex;
   align-items: center;
@@ -134,21 +143,38 @@
 }
 .hud {
   display: flex;
-  gap: var(--sp-4);
+  gap: clamp(10px, 1.6vw, 22px);
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin-left: auto;
+  min-width: 0;
 }
 .hud-chip {
   display: flex;
   flex-direction: column;
   line-height: 1.15;
-  font-size: 0.76rem;
+  font-size: clamp(0.66rem, 0.58vw + 0.5rem, 0.76rem);
   opacity: 0.95;
+  min-width: 0;
+  white-space: nowrap;
 }
 .hud-chip strong {
-  font-size: 1rem;
+  font-size: clamp(0.84rem, 0.7vw + 0.6rem, 1rem);
   font-family: var(--font-title);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 760px) {
+  /* Sous cette largeur, comprimer davantage rendrait le bandeau illisible :
+     on rend le droit au repli. */
+  .topbar,
+  .hud {
+    flex-wrap: wrap;
+  }
+  .hud-chapter {
+    max-width: none;
+  }
 }
 
 /* ---------- Jauges ---------- */
@@ -513,11 +539,6 @@
   font-weight: 700;
   font-size: 0.85rem;
 }
-.choice-masked {
-  opacity: 0.4;
-  font-style: italic;
-  pointer-events: none;
-}
 
 /* ---------- Feedback ---------- */
 .feedback {
@@ -819,11 +840,13 @@
 /* ---------- HUD hiérarchisé ---------- */
 .hud-group {
   display: flex;
-  gap: var(--sp-4);
+  gap: clamp(10px, 1.4vw, 20px);
   align-items: center;
-  padding: 4px 12px;
+  padding: 4px clamp(8px, 1vw, 12px);
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.06);
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 .hud-time {
   background: transparent;
@@ -836,9 +859,17 @@
   opacity: 0.62;
   background: transparent;
 }
+/* Seul élément à longueur vraiment variable — « Bienvenue chez CIR Corp » ou
+   « Retour de saison » : c'est lui qui s'élide quand la place manque. */
 .hud-chapter {
   background: rgba(255, 255, 255, 0.14);
   color: #fff;
+  max-width: clamp(84px, 13vw, 260px);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 1;
 }
 .deadline-alert {
   background: rgba(195, 64, 36, 0.35);

@@ -53,7 +53,6 @@ export function createNewGame(mode: GameMode, createdAt: string, seedOverride?: 
     createdAt,
     cycle: 1,
     phase: 'DAY',
-    energy: balance.energy.start,
     gauges: { relation: 50, security: 50, profitability: 50 },
     // La deuxième saison ne repart pas stagiaire : le joueur revient avec une
     // saison au compteur, et son grade le dit dès le premier écran.
@@ -73,12 +72,10 @@ export function createNewGame(mode: GameMode, createdAt: string, seedOverride?: 
       verrousOk: 0,
       refusedMissions: 0,
       exactBases: 0,
-      minEnergy: balance.energy.start,
       noJargonStreak: 0,
       prospectsSigned: 0,
       prospectsDeclined: 0,
     },
-    restUsedThisDay: false,
     tutorialDone: false,
     graduationAcknowledged: false,
     finished: false,

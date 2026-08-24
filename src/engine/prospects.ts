@@ -46,21 +46,33 @@ export interface TakenNames {
 const NO_NAMES: TakenNames = { companies: [], contacts: [] };
 
 /**
- * Tire dans un vivier en évitant ce qui est déjà pris. Si tout est pris, on
- * rend le tirage libre plutôt que rien : mieux vaut un doublon lointain qu'une
- * fiche vide.
+ * Première combinaison prénom/nom encore libre, en balayant le produit complet
+ * à partir d'un point de départ tiré au sort. Deux cent vingt-quatre couples :
+ * le balayage aboutit toujours, et sans jamais repasser sur un nom déjà servi.
  */
-function pickFresh(rng: () => number, pool: readonly string[], taken: readonly string[]): string {
-  const free = pool.filter((x) => !taken.includes(x));
-  return pick(rng, free.length > 0 ? free : pool);
+function freshContact(rng: () => number, taken: readonly string[]): string {
+  const total = FIRST_NAMES.length * LAST_NAMES.length;
+  const start = Math.floor(rng() * total);
+  for (let k = 0; k < total; k++) {
+    const i = (start + k) % total;
+    const name = `${FIRST_NAMES[i % FIRST_NAMES.length]} ${LAST_NAMES[Math.floor(i / FIRST_NAMES.length)]}`;
+    if (!taken.includes(name)) return name;
+  }
+  return `${FIRST_NAMES[0]} ${LAST_NAMES[0]}`;
 }
 
+/**
+ * Fabrique un prospect, ou `null` si le vivier n'a plus une seule raison
+ * sociale neuve à servir. Une même entreprise ne réapparaît jamais dans une
+ * partie : deux fiches identiques à deux semaines d'écart se lisent comme un
+ * bug, et mieux vaut un vivier plus court qu'un vivier qui radote.
+ */
 export function generateProspect(
   templates: ProspectTemplate[],
   seed: string,
   index: number,
   taken: TakenNames = NO_NAMES,
-): GeneratedProspect {
+): GeneratedProspect | null {
   const rng = rngFromSeed(`${seed}:prospect:${index}`);
   // Équilibrage : 1 prospect sur 4 non éligible (§16).
   const forceNotEligible = rng() < balance.nonEligibleProspectRatio;
@@ -69,16 +81,18 @@ export function generateProspect(
     : templates.filter((t) => t.eligibilityProfile !== 'NOT_ELIGIBLE');
   const usable = eligibilityPool.length > 0 ? eligibilityPool : templates;
   // Un modèle dont toutes les raisons sociales sont prises ne peut plus rien
-  // servir de neuf : on lui préfère un modèle qui a encore de la matière.
+  // servir de neuf : on lui préfère un modèle qui a encore de la matière, et à
+  // défaut n'importe quel modèle qui en a encore.
   const withRoom = usable.filter((t) => t.companyPool.some((c) => !taken.companies.includes(c)));
-  const tpl = pick(rng, withRoom.length > 0 ? withRoom : usable);
-  const company = pickFresh(rng, tpl.companyPool, taken.companies);
-  let contactName = `${pick(rng, FIRST_NAMES)} ${pick(rng, LAST_NAMES)}`;
-  // Le couple prénom/nom offre plus de deux cents combinaisons : quelques
-  // tirages suffisent à en trouver une libre.
-  for (let tries = 0; tries < 12 && taken.contacts.includes(contactName); tries++) {
-    contactName = `${pick(rng, FIRST_NAMES)} ${pick(rng, LAST_NAMES)}`;
-  }
+  const anyRoom = templates.filter((t) => t.companyPool.some((c) => !taken.companies.includes(c)));
+  const candidates = withRoom.length > 0 ? withRoom : anyRoom;
+  if (candidates.length === 0) return null;
+  const tpl = pick(rng, candidates);
+  const company = pick(
+    rng,
+    tpl.companyPool.filter((c) => !taken.companies.includes(c)),
+  );
+  const contactName = freshContact(rng, taken.contacts);
   const gender = genderForName(contactName);
   return {
     id: `pr_${index}_${Math.floor(rng() * 1e6)}`,

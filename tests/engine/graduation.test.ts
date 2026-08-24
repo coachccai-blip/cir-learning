@@ -91,7 +91,7 @@ describe('Deux missions tiennent dans une saison', () => {
           const choice = node.choices.find((c) => c.role === 'optimal') ?? node.choices[0];
           if (choice.flags) flags.push(...choice.flags);
           if (declinesMission(choice.flags ?? [])) declined = true;
-          session = advance(session, choice, resolveChoice(choice, null, 80).score);
+          session = advance(session, choice, resolveChoice(choice, null).score);
         }
         useStore.getState().endDialogue({
           clientId, kind, score: sessionScore(session), flags, promise: null, declined,
@@ -113,13 +113,11 @@ describe('Deux missions tiennent dans une saison', () => {
           // Décrocher d'abord : sans client, rien d'autre n'est jouable.
           const lead = save.prospects.find((p) => p.status === 'NEW' && p.scriptedClientId);
           if (open.length < wanted && lead) {
-            useStore.getState().spendEnergy('Prospection téléphonique');
             useStore.getState().resolveProspectCall(lead.id, ['prospect_sign']);
             continue;
           }
           const target = open.map((c) => ({ c, a: nextClientAction(c) })).find((x) => x.a);
           if (!target) break;
-          useStore.getState().spendEnergy(target.a!.kind);
           if (target.a!.kind === 'proposal') useStore.getState().signClient(target.c.clientId);
           else play(target.a!.kind, target.c.clientId);
         }
@@ -132,7 +130,6 @@ describe('Deux missions tiennent dans une saison', () => {
           const save = useStore.getState().save!;
           const next = save.portfolio.find((c) => TECH[c.dossierState]);
           if (!next) break;
-          useStore.getState().spendEnergy('Montage');
           useStore.setState({
             save: {
               ...useStore.getState().save!,
@@ -158,16 +155,15 @@ describe('Deux missions tiennent dans une saison', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Plus de points d'action : rien ne se refuse jamais.
+// Ni points d'action ni énergie : rien ne se refuse jamais, dans les deux
+// saisons.
 // ---------------------------------------------------------------------------
 
 describe('Aucune activité n’est refusée', () => {
-  it('bascule en phase Technique quoi qu’il arrive, même à plat', async () => {
+  it('bascule en phase Technique quoi qu’il arrive', async () => {
     const { useStore } = await import('../../src/state/store');
     const s = useStore.getState();
     s.newGame('onboarding', 'sans-pa');
-    // Un joueur exténué garde la main : l'énergie dégrade, elle ne bloque pas.
-    useStore.setState({ save: { ...useStore.getState().save!, energy: 0 } });
     useStore.getState().switchPhase();
     expect(useStore.getState().save!.phase).toBe('NIGHT');
     useStore.getState().switchPhase();
@@ -183,7 +179,6 @@ describe('Aucune activité n’est refusée', () => {
     const all = useStore.getState().save!.prospects.filter((p) => p.status === 'NEW');
     expect(all.length).toBeGreaterThan(4);
     for (const p of all) {
-      useStore.getState().spendEnergy('Prospection téléphonique');
       useStore.getState().resolveProspectCall(p.id, ['prospect_decline']);
     }
     // Aucun appel n'est resté en attente faute de budget.
@@ -191,15 +186,36 @@ describe('Aucune activité n’est refusée', () => {
     expect(useStore.getState().save!.cycle).toBe(1);
   });
 
-  it('rend l’énergie au week-end sans jamais dépasser les bornes', async () => {
+  it('ne garde plus aucune ressource à dépenser dans la sauvegarde', async () => {
     const { useStore } = await import('../../src/state/store');
     const s = useStore.getState();
-    s.newGame('onboarding', 'weekend');
-    useStore.setState({ save: { ...useStore.getState().save!, energy: 30 } });
-    useStore.getState().switchPhase();
-    useStore.getState().advanceCycle();
-    const after = useStore.getState().save!.energy;
-    expect(after).toBeGreaterThan(30);
-    expect(after).toBeLessThanOrEqual(100);
+    for (const mode of ['onboarding', 'expert'] as const) {
+      s.newGame(mode, `sans-jauge-${mode}`);
+      const save = useStore.getState().save! as unknown as Record<string, unknown>;
+      // Ni PA ni énergie : plus rien ne se rationne d'une semaine à l'autre.
+      expect(save.actionPoints, mode).toBeUndefined();
+      expect(save.energy, mode).toBeUndefined();
+    }
+    // Et le magasin n'expose plus de quoi en dépenser.
+    const store = useStore.getState() as unknown as Record<string, unknown>;
+    expect(store.spendPA).toBeUndefined();
+    expect(store.spendEnergy).toBeUndefined();
+    expect(store.applyEnergy).toBeUndefined();
+  });
+
+  it('reprend une sauvegarde de l’ancien régime sans la bloquer', async () => {
+    const { migrateSave } = await import('../../src/state/persistence');
+    const { createNewGame } = await import('../../src/state/factory');
+    const legacy = {
+      ...createNewGame('onboarding', new Date(0).toISOString(), 'ancienne'),
+      // Une partie sauvegardée à zéro PA et à plat : elle ne doit rien traîner.
+      actionPoints: 0,
+      energy: 4,
+      overtimeUsedThisNight: true,
+    };
+    const migrated = migrateSave(legacy) as unknown as Record<string, unknown>;
+    expect(migrated).not.toBeNull();
+    expect(migrated.cycle).toBe(1);
+    expect(migrated.portfolio).toEqual([]);
   });
 });

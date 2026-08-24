@@ -1,36 +1,7 @@
-// Énergie, XP, grades, score final (§4, §5).
+// XP, grades, score final (§4, §5).
 
 import balance from '../data/balance.json';
 import type { GameMode, Gauges, SaveGame } from './types';
-
-export type EnergyState = 'fit' | 'normal' | 'tired' | 'exhausted';
-
-export function energyState(energy: number): EnergyState {
-  const t = balance.energy.thresholds;
-  if (energy >= t.fit) return 'fit';
-  if (energy <= t.exhausted) return 'exhausted';
-  if (energy <= t.tired) return 'tired';
-  return 'normal';
-}
-
-export const ENERGY_STATE_LABEL: Record<EnergyState, string> = {
-  fit: 'En forme',
-  normal: 'Normal',
-  tired: 'Fatigué',
-  exhausted: 'Épuisé',
-};
-
-/**
- * Fatigue laissée par une activité. Le jeu comptait des points d'action : le
- * joueur se retrouvait à mi-semaine avec un dossier commencé et rien pour le
- * finir, contraint d'attendre le cycle suivant. Plus de budget — on mène sa
- * semaine comme on veut, et l'énergie enregistre ce qu'elle a coûté. Elle ne
- * bloque jamais : elle dégrade (une option masquée quand on fatigue, des
- * effets amoindris quand on est épuisé).
- */
-export function energyCostOfAction(): number {
-  return balance.energy.perAction;
-}
 
 export function toleranceForMode(mode: GameMode): number {
   return balance.tolerance[mode];

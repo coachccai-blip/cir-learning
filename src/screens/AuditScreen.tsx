@@ -8,6 +8,7 @@ import { Avatar } from '../avatars/Avatar';
 import { Icon } from '../ui/Icon';
 import { buildAuditFindings, resolveAudit } from '../engine/audit';
 import { measuresLearning } from '../engine/journey';
+import { finalAuditDue, weakestDossier } from '../engine/auditgate';
 import { shuffleForDisplay } from '../engine/rng';
 import ruleset from '../data/rules/ruleset-2026.json';
 import balance from '../data/balance.json';
@@ -25,20 +26,16 @@ export function AuditScreen() {
   // et le joueur repart avec un cycle pour corriger les autres dossiers.
   const interim = auditMode === 'interim';
 
-  // Sélection du dossier contrôlé selon le mode.
+  // Sélection du dossier contrôlé selon le mode. La demande d'information de
+  // mi-saison porte toujours sur le dossier le plus faible ; le contrôle final,
+  // seulement s'il est dû (cf. `finalAuditDue`).
   const target = useMemo(() => {
     if (!save) return null;
-    const dossiers = save.portfolio.filter((c) => c.assietteInput !== null);
-    if (dossiers.length === 0) return null;
-    if (interim) {
-      return dossiers.slice().sort((a, b) => (a.scores.base ?? 1) - (b.scores.base ?? 1))[0];
-    }
-    if (save.mode === 'onboarding' && save.gauges.security >= balance.auditSecurityThreshold) {
-      // pas de contrôle si sécurité suffisante
+    if (interim) return weakestDossier(save.portfolio);
+    if (!finalAuditDue(save.mode, save.gauges.security, balance.auditSecurityThreshold, save.portfolio)) {
       return null;
     }
-    // le plus faible (précision d'assiette la plus basse)
-    return dossiers.slice().sort((a, b) => (a.scores.base ?? 1) - (b.scores.base ?? 1))[0];
+    return weakestDossier(save.portfolio);
   }, [save, interim]);
 
   const [idx, setIdx] = useState(0);
