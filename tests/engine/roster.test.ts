@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { prospectsForCycle, rosterOrder, scriptedProspect } from '../../src/engine/roster';
-import { rosterFor } from '../../src/data/clients';
+import { prospectsForCycle, scriptedProspect } from '../../src/engine/roster';
+import { roster } from '../../src/data/clients';
 import { hasRealPortrait } from '../../src/data/portraits';
 import type { ClientDef } from '../../src/engine/types';
 
@@ -13,80 +13,42 @@ import type { ClientDef } from '../../src/engine/types';
  * avec un vrai visage, et que le vivier ne se répète pas.
  */
 
-const ROSTER: ClientDef[] = rosterFor('onboarding');
+const ROSTER: ClientDef[] = roster();
 
-describe('Vivier de la première saison', () => {
+describe('Vivier de la saison', () => {
   it('sert exactement deux dossiers, toujours les mêmes, aux semaines 1 et 2', () => {
-    const s1 = prospectsForCycle('onboarding', ROSTER, 'graine', 1, 2, []);
+    const s1 = prospectsForCycle(ROSTER, 1, []);
     expect(s1.map((p) => p.company)).toEqual(['Maison Dupuis']);
-    const s2 = prospectsForCycle('onboarding', ROSTER, 'graine', 2, 2, ['cli_agri_dupuis']);
+    const s2 = prospectsForCycle(ROSTER, 2, ['cli_agri_dupuis']);
     expect(s2.map((p) => p.company)).toEqual(['Mecaprécis']);
   });
 
   it('ne sert plus rien ensuite : deux clients, pas trois', () => {
     const offered = ['cli_agri_dupuis', 'cli_indus_verdier'];
     for (const cycle of [3, 4, 5, 6]) {
-      expect(prospectsForCycle('onboarding', ROSTER, 'graine', cycle, 2, offered), `semaine ${cycle}`)
+      expect(prospectsForCycle(ROSTER, cycle, offered), `semaine ${cycle}`)
         .toEqual([]);
     }
   });
 
   it('ne dépend pas de la graine : le parcours d’entrée est écrit', () => {
     for (const seed of ['a', 'b', 'c']) {
-      expect(prospectsForCycle('onboarding', ROSTER, seed, 1, 2, [])[0].company).toBe('Maison Dupuis');
-      expect(prospectsForCycle('onboarding', ROSTER, seed, 2, 2, ['cli_agri_dupuis'])[0].company)
-        .toBe('Mecaprécis');
+      void seed;
+      expect(prospectsForCycle(ROSTER, 1, [])[0].company).toBe('Maison Dupuis');
+      expect(prospectsForCycle(ROSTER, 2, ['cli_agri_dupuis'])[0].company).toBe('Mecaprécis');
     }
   });
 
   it('ne repropose pas une fiche déjà servie', () => {
-    expect(prospectsForCycle('onboarding', ROSTER, 'graine', 1, 2, ['cli_agri_dupuis'])).toEqual([]);
-  });
-});
-
-describe('Vivier de la deuxième saison', () => {
-  const EXPERT: ClientDef[] = rosterFor('expert');
-
-  it('ouvre sur deux fiches tirées à la graine', () => {
-    const opening = prospectsForCycle('expert', EXPERT, 'graine', 1, 2, []);
-    expect(opening).toHaveLength(2);
-    expect(new Set(opening.map((p) => p.scriptedClientId)).size).toBe(2);
-  });
-
-  it('donne un ordre différent selon la graine, mais stable pour une même partie', () => {
-    const a = rosterOrder(EXPERT, 'a').map((c) => c.id);
-    const b = rosterOrder(EXPERT, 'b').map((c) => c.id);
-    expect(rosterOrder(EXPERT, 'a').map((c) => c.id)).toEqual(a);
-    expect(a).not.toEqual(b);
-    expect([...a].sort()).toEqual(EXPERT.map((c) => c.id).sort());
-  });
-
-  it('n’envoie aucune nouvelle fiche avant la troisième semaine', () => {
-    expect(prospectsForCycle('expert', EXPERT, 'graine', 2, 2, [])).toEqual([]);
-  });
-
-  it('sert ensuite une fiche par semaine, sans jamais repasser les mêmes', () => {
-    const offered = prospectsForCycle('expert', EXPERT, 'graine', 1, 2, []).map(
-      (p) => p.scriptedClientId!,
-    );
-    for (let cycle = 3; cycle < 3 + (EXPERT.length - 2); cycle++) {
-      const next = prospectsForCycle('expert', EXPERT, 'graine', cycle, 2, offered);
-      expect(next, `semaine ${cycle}`).toHaveLength(1);
-      expect(offered).not.toContain(next[0].scriptedClientId);
-      offered.push(next[0].scriptedClientId!);
-    }
-    expect(new Set(offered).size).toBe(EXPERT.length);
-    expect(prospectsForCycle('expert', EXPERT, 'graine', 20, 2, offered)).toEqual([]);
+    expect(prospectsForCycle(ROSTER, 1, ['cli_agri_dupuis'])).toEqual([]);
   });
 });
 
 describe('Fiche de prospection d’un client écrit', () => {
   it('porte le vrai visage du contact, jamais un avatar dessiné', () => {
-    for (const mode of ['onboarding', 'expert'] as const) {
-      for (const c of rosterFor(mode)) {
-        const p = scriptedProspect(c, 0);
-        expect(hasRealPortrait(p.portraitId), `${c.name} sans portrait`).toBe(true);
-      }
+    for (const c of roster()) {
+      const p = scriptedProspect(c, 0);
+      expect(hasRealPortrait(p.portraitId), `${c.name} sans portrait`).toBe(true);
     }
   });
 
@@ -132,7 +94,7 @@ describe('Un client n’entre au portefeuille que par le téléphone', () => {
     const s = useStore.getState();
     s.boot();
     s.setOptions({ volume: 0 });
-    s.newGame('onboarding', 'vide');
+    s.newGame('vide');
     const save = useStore.getState().save!;
     expect(save.portfolio).toEqual([]);
     expect(save.prospects.map((p) => p.company)).toEqual(['Maison Dupuis']);
@@ -141,7 +103,7 @@ describe('Un client n’entre au portefeuille que par le téléphone', () => {
   it('transforme un appel réussi en rendez-vous de découverte, pas en signature', async () => {
     const { useStore } = await import('../../src/state/store');
     const s = useStore.getState();
-    s.newGame('onboarding', 'vide');
+    s.newGame('vide');
     const target = useStore.getState().save!.prospects[0];
     useStore.getState().resolveProspectCall(target.id, ['prospect_sign']);
 
@@ -155,7 +117,7 @@ describe('Un client n’entre au portefeuille que par le téléphone', () => {
   it('n’ouvre jamais de dossier sur un prospect généré', async () => {
     const { useStore } = await import('../../src/state/store');
     const s = useStore.getState();
-    s.newGame('onboarding', 'generes');
+    s.newGame('generes');
     // On signe tout ce qui passe : aucune de ces signatures ne doit ouvrir de
     // dossier. Un client du portefeuille est toujours écrit à la main.
     for (let cycle = 0; cycle < 5; cycle++) {
@@ -173,7 +135,7 @@ describe('Un client n’entre au portefeuille que par le téléphone', () => {
     const { useStore } = await import('../../src/state/store');
     const { clientById } = await import('../../src/data/clients');
     const s = useStore.getState();
-    s.newGame('onboarding', 'visages');
+    s.newGame('visages');
     for (const p of useStore.getState().save!.prospects) {
       useStore.getState().resolveProspectCall(p.id, ['prospect_sign']);
     }
@@ -190,7 +152,7 @@ describe('Une piste écrite ratée se rappelle', () => {
   it('revient dans le vivier la semaine suivante', async () => {
     const { useStore } = await import('../../src/state/store');
     const s = useStore.getState();
-    s.newGame('onboarding', 'relance');
+    s.newGame('relance');
     const target = useStore.getState().save!.prospects[0];
     useStore.getState().resolveProspectCall(target.id, ['prospect_decline']);
     expect(useStore.getState().save!.prospects.find((p) => p.id === target.id)!.status).toBe(
@@ -207,7 +169,7 @@ describe('Une piste écrite ratée se rappelle', () => {
   it('ne ressuscite pas un prospect généré écarté', async () => {
     const { useStore } = await import('../../src/state/store');
     const s = useStore.getState();
-    s.newGame('onboarding', 'relance-gen');
+    s.newGame('relance-gen');
     useStore.getState().generateProspects(3);
     const gen = useStore.getState().save!.prospects.find((p) => !p.scriptedClientId)!;
     useStore.getState().resolveProspectCall(gen.id, ['prospect_decline']);
@@ -222,7 +184,7 @@ describe('Le vivier ne se répète pas', () => {
   it('ne sert jamais deux fois la même raison sociale ni le même interlocuteur', async () => {
     const { useStore } = await import('../../src/state/store');
     const s = useStore.getState();
-    s.newGame('onboarding', 'doublons');
+    s.newGame('doublons');
     // Sans budget d'actions, un joueur peut appeler et réseauter tout son
     // saoul : le vivier doit tenir la distance sans se répéter.
     for (let cycle = 0; cycle < 6; cycle++) useStore.getState().generateProspects(5);
@@ -237,7 +199,7 @@ describe('Le vivier ne se répète pas', () => {
   it('préfère servir moins de fiches que d’en resservir une déjà vue', async () => {
     const { useStore } = await import('../../src/state/store');
     const s = useStore.getState();
-    s.newGame('onboarding', 'vivier-epuise');
+    s.newGame('vivier-epuise');
     // Bien plus de demandes que le vivier ne compte d'entreprises : la liste
     // doit se tarir, jamais se répéter.
     for (let i = 0; i < 40; i++) useStore.getState().generateProspects(10);
@@ -250,7 +212,7 @@ describe('Le vivier ne se répète pas', () => {
   it('évite aussi les noms des fiches déjà écartées', async () => {
     const { useStore } = await import('../../src/state/store');
     const s = useStore.getState();
-    s.newGame('onboarding', 'ecartes');
+    s.newGame('ecartes');
     useStore.getState().generateProspects(4);
     // On écarte tout : les fiches restent affichées, leurs noms restent pris.
     for (const p of useStore.getState().save!.prospects.filter((x) => !x.scriptedClientId)) {
@@ -267,7 +229,7 @@ describe('Continuer à jouer ouvre le reste du catalogue', () => {
   it('sert les dossiers jamais proposés, une seule fois', async () => {
     const { useStore } = await import('../../src/state/store');
     const s = useStore.getState();
-    s.newGame('onboarding', 'suite');
+    s.newGame('suite');
     // Le calendrier d'entrée n'a servi que Maison Dupuis.
     const before = useStore.getState().save!.prospects.map((p) => p.scriptedClientId);
     expect(before).toEqual(['cli_agri_dupuis']);
@@ -290,7 +252,7 @@ describe('Continuer à jouer ouvre le reste du catalogue', () => {
   it('ne repropose pas un dossier déjà décroché', async () => {
     const { useStore } = await import('../../src/state/store');
     const s = useStore.getState();
-    s.newGame('onboarding', 'suite-2');
+    s.newGame('suite-2');
     const dupuis = useStore.getState().save!.prospects[0];
     useStore.getState().resolveProspectCall(dupuis.id, ['prospect_sign']);
     useStore.getState().acknowledgeGraduation();
@@ -305,7 +267,7 @@ describe('Le catalogue ouvert ignore ce qui est déjà pris', () => {
     const { useStore } = await import('../../src/state/store');
     const { initClientState } = await import('../../src/state/factory');
     const s = useStore.getState();
-    s.newGame('onboarding', 'deja-pris');
+    s.newGame('deja-pris');
     // Un dossier arrivé au portefeuille sans passer par le vivier : il ne doit
     // pas ressortir en piste à appeler.
     useStore.setState({

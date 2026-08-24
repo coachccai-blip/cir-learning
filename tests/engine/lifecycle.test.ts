@@ -52,9 +52,9 @@ describe('Refuser de gonfler n’est pas refuser la mission', () => {
         sc.type === 'DISCOVERY' &&
         sc.nodes.some((n) => n.choices.some((c) => declinesMission(c.flags ?? []))),
     ).map((sc) => sc.id);
-    // Une seule scène de découverte doit pouvoir clore la mission : celle qui
-    // est écrite pour ça.
-    expect(refusing).toEqual(['sc_exp_disc_refus']);
+    // Le dossier écrit pour être refusé vivait en deuxième saison. Sans elle,
+    // aucune découverte ne clôt la mission : bien menée, chacune qualifie.
+    expect(refusing).toEqual([]);
   });
 });
 
@@ -123,7 +123,7 @@ describe('Une saison conduit chaque client jusqu’au bout', () => {
       const s = useStore.getState();
       s.boot();
       s.setOptions({ volume: 0 });
-      s.newGame(mode, `cycle-${mode}`);
+      s.newGame(`cycle-${mode}`);
       useStore.getState().commitQuiz('pre', [0, 0, 0, 0, 0, 0]);
 
       /** Joue un entretien en prenant systématiquement le meilleur choix. */
@@ -152,12 +152,12 @@ describe('Une saison conduit chaque client jusqu’au bout', () => {
       // Le portefeuille démarre vide : les dossiers s'ouvrent au téléphone.
       // Ici, on vérifie l'enchaînement des états et non l'acquisition, alors on
       // ouvre d'un coup tout le vivier de la saison.
-      const { rosterFor } = await import('../../src/data/clients');
+      const { roster } = await import('../../src/data/clients');
       const { initClientState } = await import('../../src/state/factory');
       useStore.setState({
         save: {
           ...useStore.getState().save!,
-          portfolio: rosterFor(mode).map((c) => initClientState(c.id)),
+          portfolio: roster().map((c) => initClientState(c.id)),
         },
       });
 

@@ -70,7 +70,7 @@ describe('Deux missions tiennent dans une saison', () => {
       const s = useStore.getState();
       s.boot();
       s.setOptions({ volume: 0 });
-      s.newGame(mode, `grad-${mode}`);
+      s.newGame(`grad-${mode}`);
       useStore.getState().commitQuiz('pre', [0, 0, 0, 0, 0, 0]);
       useStore.getState().startFirstDay();
 
@@ -163,7 +163,7 @@ describe('Aucune activité n’est refusée', () => {
   it('bascule en phase Technique quoi qu’il arrive', async () => {
     const { useStore } = await import('../../src/state/store');
     const s = useStore.getState();
-    s.newGame('onboarding', 'sans-pa');
+    s.newGame('sans-pa');
     useStore.getState().switchPhase();
     expect(useStore.getState().save!.phase).toBe('NIGHT');
     useStore.getState().switchPhase();
@@ -174,7 +174,7 @@ describe('Aucune activité n’est refusée', () => {
   it('laisse appeler toutes les pistes du vivier dans la même journée', async () => {
     const { useStore } = await import('../../src/state/store');
     const s = useStore.getState();
-    s.newGame('onboarding', 'tout-appeler');
+    s.newGame('tout-appeler');
     useStore.getState().generateProspects(6);
     const all = useStore.getState().save!.prospects.filter((p) => p.status === 'NEW');
     expect(all.length).toBeGreaterThan(4);
@@ -190,7 +190,7 @@ describe('Aucune activité n’est refusée', () => {
     const { useStore } = await import('../../src/state/store');
     const s = useStore.getState();
     for (const mode of ['onboarding', 'expert'] as const) {
-      s.newGame(mode, `sans-jauge-${mode}`);
+      s.newGame(`sans-jauge-${mode}`);
       const save = useStore.getState().save! as unknown as Record<string, unknown>;
       // Ni PA ni énergie : plus rien ne se rationne d'une semaine à l'autre.
       expect(save.actionPoints, mode).toBeUndefined();
@@ -207,7 +207,7 @@ describe('Aucune activité n’est refusée', () => {
     const { migrateSave } = await import('../../src/state/persistence');
     const { createNewGame } = await import('../../src/state/factory');
     const legacy = {
-      ...createNewGame('onboarding', new Date(0).toISOString(), 'ancienne'),
+      ...createNewGame(new Date(0).toISOString(), 'ancienne'),
       // Une partie sauvegardée à zéro PA et à plat : elle ne doit rien traîner.
       actionPoints: 0,
       energy: 4,

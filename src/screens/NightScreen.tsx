@@ -39,7 +39,7 @@ export function NightScreen() {
       <div className="row" style={{ marginBottom: 8 }}>
         <div>
           <h1>{STR.night.title}</h1>
-          <p className="muted lede">{STR.season[save.mode].nightSubtitle}</p>
+          <p className="muted lede">{STR.season.nightSubtitle}</p>
         </div>
         <span className="spacer" />
         <GraduationButton />

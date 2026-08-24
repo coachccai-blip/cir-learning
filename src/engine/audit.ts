@@ -11,19 +11,13 @@ import type {
   Ruleset,
 } from './types';
 import { isSubcontractEligible } from './cir/calculator';
-import { RELANCES, type FindingFamily } from '../data/audit-relances';
-import { AUDIT_QUESTIONS, type QuestionContext } from '../data/audit-questions';
+import { AUDIT_QUESTIONS, type FindingFamily, type QuestionContext } from '../data/audit-questions';
 import { AUDIT_LESSONS, type AuditLesson, type AuditOutcome } from '../data/audit-lessons';
 import { hashString } from './rng';
 
 const RATE = 0.3; // approximation d'impact en crédit pour les montants de rappel affichés
 
 export interface AuditOptions {
-  /**
-   * Séance contradictoire : le vérificateur relance sur chaque constat au lieu
-   * de le clore d'une seule question. Réservé à la deuxième saison.
-   */
-  contradictoire?: boolean;
   /**
    * Graine de la partie. Elle choisit la formulation de chaque question dans
    * le vivier : sans elle, deux parties posent les mêmes questions mot pour
@@ -47,17 +41,12 @@ export function questionFor(
 }
 
 /**
- * Le mot de la fin. Le vérificateur ne parle pas de la même façon à un
- * débutant et à un consultant de deuxième année : la saison choisit le
- * registre, l'issue choisit le propos, la graine choisit la variante.
+ * Le mot de la fin : l'issue du contrôle choisit le propos, la graine choisit
+ * la variante.
  */
-export function auditLesson(
-  mode: 'onboarding' | 'expert',
-  outcome: AuditOutcome,
-  seed = '',
-): AuditLesson {
-  const pool = AUDIT_LESSONS[mode][outcome];
-  return pool[hashString(`${seed}:lesson:${mode}:${outcome}`) % pool.length];
+export function auditLesson(outcome: AuditOutcome, seed = ''): AuditLesson {
+  const pool = AUDIT_LESSONS[outcome];
+  return pool[hashString(`${seed}:lesson:${outcome}`) % pool.length];
 }
 
 export function buildAuditFindings(
@@ -69,9 +58,6 @@ export function buildAuditFindings(
 ): AuditFinding[] {
   const findings: AuditFinding[] = [];
   const input = cs.assietteInput;
-  /** Attache la relance de la famille de constat, en séance contradictoire. */
-  const relance = (family: FindingFamily) =>
-    opts.contradictoire ? { followUp: RELANCES[family] } : {};
 
   // 1. Cartes non éligibles valorisées en R&D
   for (const card of cardset.cards) {
@@ -90,7 +76,6 @@ export function buildAuditFindings(
           'Nous pensions que cela relevait de la R&D au sens large.',
         ],
         reassessment: Math.round(9000 * RATE),
-        ...relance('card'),
       });
     }
   }
@@ -112,7 +97,6 @@ export function buildAuditFindings(
             'C’est une erreur de reprise de l’historique.',
           ],
           reassessment: Math.round(d.amount * RATE),
-          ...relance('decoy'),
         });
       }
     }
@@ -133,7 +117,6 @@ export function buildAuditFindings(
             'La dépense correspond pourtant à de vrais travaux de recherche.',
           ],
           reassessment: Math.round(s.amount * RATE),
-          ...relance('sub'),
         });
       }
     }
@@ -154,7 +137,6 @@ export function buildAuditFindings(
             'Le client ne nous avait pas transmis la convention.',
           ],
           reassessment: Math.round(g.amount * g.rdAllocationRatio * RATE),
-          ...relance('grant'),
         });
       }
     }
@@ -182,7 +164,6 @@ export function buildAuditFindings(
             'Nous n’avons pas pu obtenir les feuilles de temps.',
           ],
           reassessment: Math.round(p.grossCost * (claimed - p.trueRdRatio) * 1.4 * RATE),
-          ...relance('pers'),
         });
       }
     }
@@ -207,7 +188,6 @@ export function buildAuditFindings(
         'Le chef de projet pourra vous l’expliquer oralement.',
       ],
       reassessment: 6000,
-      ...relance('doc'),
     });
   }
 
@@ -220,21 +200,13 @@ export function resolveAudit(
   justifScore: number,
   playerCir: number,
   feeRate: number,
-  /** Constats non défendus mais rectifiés spontanément en séance. */
-  mitigatedIds: string[] = [],
-  /** Part du rappel abandonnée sur un constat rectifié (0 = aucune remise). */
-  remedyRelief = 0,
 ): AuditResult {
-  const detail = findings.map((finding) => {
-    const defended = finding.defensible && defendedIds.includes(finding.id);
-    return { finding, defended, mitigated: !defended && mitigatedIds.includes(finding.id) };
-  });
-  // Reconnaître et rectifier n'efface pas le rappel : la bonne foi et la
-  // rectification spontanée en réduisent la portée, elles ne l'annulent pas.
+  const detail = findings.map((finding) => ({
+    finding,
+    defended: finding.defensible && defendedIds.includes(finding.id),
+  }));
   let reassessed = Math.round(
-    detail
-      .filter((d) => !d.defended)
-      .reduce((s, d) => s + d.finding.reassessment * (d.mitigated ? 1 - remedyRelief : 1), 0),
+    detail.filter((d) => !d.defended).reduce((s, d) => s + d.finding.reassessment, 0),
   );
   // Un justificatif solide limite la casse sur les points d'appréciation.
   if (justifScore >= 80) reassessed = Math.round(reassessed * 0.75);

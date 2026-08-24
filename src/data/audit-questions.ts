@@ -13,7 +13,8 @@
 // qui varie, c'est l'angle d'attaque : la pièce réclamée, la date, la méthode,
 // le raisonnement.
 
-import type { FindingFamily } from './audit-relances';
+/** Les six familles de constats que le vérificateur sait opposer. */
+export type FindingFamily = 'card' | 'decoy' | 'sub' | 'grant' | 'pers' | 'doc';
 
 export interface QuestionContext {
   /** Ce dont on parle : un travail, un poste, un prestataire, une personne. */

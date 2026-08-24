@@ -31,6 +31,13 @@ la lever explicitement avec l'utilisateur et mettre à jour le brief.
 - `npm run typecheck` — vérification de types
 - `npm run build` — build statique (sortie `dist/`)
 
+## Portée du jeu
+
+Learn CIR est **un jeu de découverte de l'activité CIR, en une seule saison**.
+Il n'y a ni mode de difficulté, ni parcours en plusieurs saisons : le mode
+Expert a été retiré le 24 août 2026 (cf. `docs/DECISIONS.md`, points 102-106).
+Toute reprise de cette idée doit passer par le brief avant le code.
+
 ## Avertissement in-game
 
 Les cas, entreprises et montants sont fictifs. Le jeu est un outil pédagogique et

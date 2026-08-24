@@ -11,7 +11,7 @@
 // donnée d'équilibrage (`balance.json`), pas une règle en dur.
 
 import balance from '../data/balance.json';
-import type { AssietteCase, GameMode, SaveGame } from './types';
+import type { AssietteCase, SaveGame } from './types';
 
 export type Poste = 'personnel' | 'amortization' | 'subcontracting' | 'grants' | 'decoys';
 
@@ -34,10 +34,10 @@ export interface ProgressionStep {
 
 type RawStep = { postes: string[]; tolerance: number };
 
-function curveFor(mode: GameMode): RawStep[] {
-  const curve = (balance.progression as Record<string, RawStep[]>)[mode];
-  if (!curve || curve.length === 0) throw new Error(`Courbe de progression absente pour le mode ${mode}`);
-  return curve;
+function curve(): RawStep[] {
+  const steps = balance.progression as RawStep[];
+  if (steps.length === 0) throw new Error('Courbe de progression absente');
+  return steps;
 }
 
 /**
@@ -45,11 +45,11 @@ function curveFor(mode: GameMode): RawStep[] {
  * dernière marche est conservée : une saison plus longue ne redevient jamais
  * plus facile.
  */
-export function stepFor(mode: GameMode, index: number): ProgressionStep {
-  const curve = curveFor(mode);
+export function stepFor(index: number): ProgressionStep {
+  const steps = curve();
   const i = Math.max(1, Math.round(index));
-  const raw = curve[Math.min(i, curve.length) - 1];
-  const prev = i > 1 ? curve[Math.min(i - 1, curve.length) - 1] : null;
+  const raw = steps[Math.min(i, steps.length) - 1];
+  const prev = i > 1 ? steps[Math.min(i - 1, steps.length) - 1] : null;
   const postes = raw.postes as Poste[];
   return {
     index: i,
@@ -60,8 +60,8 @@ export function stepFor(mode: GameMode, index: number): ProgressionStep {
 }
 
 /** Tolérance de précision applicable au n-ième dossier. */
-export function toleranceForStep(mode: GameMode, index: number): number {
-  return stepFor(mode, index).tolerance;
+export function toleranceForStep(index: number): number {
+  return stepFor(index).tolerance;
 }
 
 /**
@@ -89,9 +89,9 @@ export function restrictCase(c: AssietteCase, postes: readonly Poste[]): Assiett
  */
 export function stepForClient(save: SaveGame, clientId: string): ProgressionStep {
   const cs = save.portfolio.find((c) => c.clientId === clientId);
-  if (cs?.baseStep) return stepFor(save.mode, cs.baseStep);
+  if (cs?.baseStep) return stepFor(cs.baseStep);
   const done = save.portfolio.filter(
     (c) => c.assietteInput !== null && c.clientId !== clientId,
   ).length;
-  return stepFor(save.mode, done + 1);
+  return stepFor(done + 1);
 }

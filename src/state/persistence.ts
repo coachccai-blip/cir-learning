@@ -1,12 +1,10 @@
-import type { GameMode, SaveGame } from '../engine/types';
-import { EMPTY_PROGRESS, JOURNEY, type Progress } from '../engine/journey';
+import type { SaveGame } from '../engine/types';
 import { genderForName } from '../engine/prospects';
 import { hashString } from '../engine/rng';
 
 const SAVE_KEY = 'cirquest.save.v1';
 const OPT_KEY = 'cirquest.options.v1';
 const CODEX_READ_KEY = 'cirquest.codexread.v1';
-const PROGRESS_KEY = 'cirquest.progress.v1';
 
 export const CURRENT_SCHEMA = 1;
 
@@ -50,10 +48,6 @@ export function migrateSave(data: unknown): SaveGame | null {
   // ancienne ne doit jamais crasher le jeu.
   const filled: SaveGame = {
     ...(s as SaveGame),
-    // Le mode « Découverte » a été retiré : une partie en cours bascule sur
-    // Onboarding, le mode le plus proche, plutôt que de rester sur un mode
-    // dont plus aucun barème n'existe.
-    mode: (s.mode as string) === 'discovery' ? 'onboarding' : (s.mode ?? 'onboarding'),
     firedEvents: s.firedEvents ?? [],
     quizPre: s.quizPre ?? [],
     quizPost: s.quizPost ?? [],
@@ -113,18 +107,3 @@ export function persistCodexRead(ids: string[]): void {
   localStorage.setItem(CODEX_READ_KEY, JSON.stringify(ids));
 }
 
-/**
- * Avancement dans le parcours (saisons terminées). Il survit à une
- * réinitialisation de partie : c'est ce qui déverrouille la deuxième saison.
- */
-export function loadProgress(): Progress {
-  const raw = safeParse<Partial<Progress>>(localStorage.getItem(PROGRESS_KEY), {});
-  const completed = Array.isArray(raw.completed)
-    ? raw.completed.filter((m): m is GameMode => JOURNEY.includes(m as GameMode))
-    : [];
-  return { ...EMPTY_PROGRESS, completed, best: raw.best ?? {} };
-}
-
-export function persistProgress(progress: Progress): void {
-  localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
-}

@@ -1,10 +1,9 @@
-import { useEffect } from 'react';
+
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { computeFinalScore } from '../engine/economy';
 import { BADGES } from '../engine/badges';
 import { QUIZ, QUIZ_POST } from '../data/quiz';
-import { journeyComplete, nextSeason } from '../engine/journey';
 import { Icon } from '../ui/Icon';
 
 export function EndScreen() {
@@ -12,26 +11,16 @@ export function EndScreen() {
   const resetSave = useStore((s) => s.resetSave);
   const go = useStore((s) => s.go);
   const newGame = useStore((s) => s.newGame);
-  const progress = useStore((s) => s.progress);
-  const markSeasonDone = useStore((s) => s.completeSeason);
 
   const reassessments = save
     ? save.portfolio.filter((c) => c.auditOutcome === 'partial' || c.auditOutcome === 'total').length
     : 0;
   const auditPassed = save
     ? save.portfolio.some((c) => c.auditOutcome === 'validated') ||
-      (save.mode !== 'expert' && reassessments === 0)
+      reassessments === 0
     : false;
   const final = save ? computeFinalScore(save, auditPassed, reassessments) : null;
 
-  // Atteindre cet écran valide la saison : c'est ce qui ouvre la suivante.
-  // Déclaré avant tout retour conditionnel pour que l'ordre des hooks tienne.
-  const doneMode = save?.mode;
-  const doneScore = final?.total;
-  useEffect(() => {
-    if (doneMode && doneScore !== undefined) markSeasonDone(doneMode, doneScore);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [doneMode, doneScore]);
 
   if (!save || !final) return null;
 
@@ -44,9 +33,6 @@ export function EndScreen() {
   const hasQuiz = save.quizPre.length === QUIZ.length && save.quizPost.length === QUIZ_POST.length;
 
   // Débrief nominatif : les décisions qui ont le plus coûté (impact négatif cumulé).
-  const upcoming = nextSeason(save.mode);
-  const justUnlocked = upcoming !== null && !progress.completed.includes(upcoming);
-  const allDone = journeyComplete(progress);
 
   const costly = save.history
     .filter((h) => h.impact < 0 && h.text)
@@ -67,30 +53,6 @@ export function EndScreen() {
           </div>
           <p style={{ fontSize: '1.4rem' }}>{final.total} / 100</p>
         </div>
-
-        {(justUnlocked || allDone) && (
-          <div className="panel journey-banner" style={{ marginTop: 24, color: 'var(--text)' }}>
-            <div className="panel-title">
-              <Icon name={allDone ? 'flag' : 'unlock'} size={20} />
-              <h3>{allDone ? STR.journey.complete : STR.journey.unlocked(STR.modes[upcoming!].label)}</h3>
-            </div>
-            <p style={{ fontSize: '0.92rem' }}>
-              {allDone ? STR.journey.completeSub : STR.modes[upcoming!].desc}
-            </p>
-            {!allDone && upcoming && (
-              <button
-                className="btn btn-primary"
-                style={{ marginTop: 10 }}
-                onClick={() => {
-                  resetSave();
-                  newGame(upcoming);
-                }}
-              >
-                <Icon name="play" size={17} /> {STR.journey.startNext(STR.modes[upcoming].label)}
-              </button>
-            )}
-          </div>
-        )}
 
         <div className="panel" style={{ marginTop: 24, color: 'var(--text)' }}>
           <div className="panel-title">
@@ -272,7 +234,7 @@ export function EndScreen() {
             className="btn"
             onClick={() => {
               resetSave();
-              newGame(save.mode);
+              newGame();
             }}
           >
             <Icon name="history" size={17} /> {STR.end.replay}

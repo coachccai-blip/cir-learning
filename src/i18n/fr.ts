@@ -3,76 +3,25 @@
 
 export const STR = {
   appTitle: 'Learn CIR',
-  appTagline: 'Deux saisons fiscales chez CIR Corp',
+  appTagline: 'Une saison fiscale chez CIR Corp',
   // Une ligne, pas un paragraphe : l'accueil annonce le métier, il ne le
   // résume pas. Le détail de chaque saison vit sur l'écran de sélection.
   appPitch: 'Décrocher les clients. Monter des dossiers qui tiennent au contrôle.',
   disclaimer:
     'Les cas, entreprises et montants sont fictifs. Ce jeu est un outil pédagogique et ne constitue en aucun cas un conseil fiscal. Les barèmes reflètent l’état du droit au 20 août 2026 (LF 2026 promulguée le 19 février 2026).',
   menu: {
-    newGame: 'Nouveau parcours',
+    newGame: 'Nouvelle partie',
     continue: 'Continuer',
     codex: 'Codex',
     options: 'Options',
   },
-  modeSelect: {
-    title: 'Votre parcours en deux saisons',
-    subtitle:
-      'La première saison apprend le métier, la seconde vérifie que vous le tenez vraiment — autres clients, autres pièges. Les deux sont ouvertes : l’ordre est un conseil.',
-    start: 'Démarrer la saison',
-    advised: (season: string) =>
-      `Recommandé : jouez d’abord la saison ${season}. Cette saison-ci suppose ses réflexes acquis — mais rien ne vous empêche de commencer par elle.`,
-    doneTag: 'Terminée',
-    bestScore: (n: number) => `Meilleur score : ${n} / 100`,
-    seasonTag: (n: number) => `Saison ${n}`,
-  },
-  modes: {
-    onboarding: {
-      label: 'Onboarding',
-      audience: 'Saison 1 — apprendre le métier',
-      desc:
-        'Six clients qui se trompent de bonne foi. Les postes de dépense arrivent un par un, le taux justifiable est affiché à l’écran, et la tolérance se resserre de ±15 % à ±5 % au fil des dossiers.',
-    },
-    expert: {
-      label: 'Expert',
-      audience: 'Saison 2 — tenir le dossier',
-      desc:
-        'Quatre dossiers denses, cinq postes dès le premier. Les interlocuteurs embellissent : le taux opposable ne se révèle qu’avec la pièce rapportée du terrain. Un dossier est à refuser, et le vérificateur relance. Tolérance ±3 % à ±1 %.',
-    },
-  },
-  journey: {
-    title: 'Parcours',
-    progressLabel: (done: number, total: number) => `${done} / ${total} saisons terminées`,
-    complete: 'Parcours complété',
-    completeSub:
-      'Vous avez mené les deux saisons : décrocher une mission CIR, puis la défendre quand on la conteste. C’est tout le métier.',
-    unlocked: (label: string) => `Nouvelle saison débloquée : ${label}`,
-    startNext: (label: string) => `Enchaîner sur la saison ${label}`,
-    resetTitle: 'Réinitialiser le parcours',
-    resetHelp:
-      'Efface les saisons terminées et les meilleurs scores. Utile pour refaire jouer le parcours complet à quelqu’un d’autre.',
-    resetDone: 'Parcours réinitialisé : aucune saison n’est plus marquée comme terminée.',
-  },
-  /**
-   * Chapeaux d'écran propres à chaque saison. Le même sous-titre pour les deux
-   * effaçait la différence de posture : on n'ouvre pas la deuxième saison en
-   * « alimentant son portefeuille », on ouvre en cadrant des dossiers durs.
-   */
+  /** Chapeaux d'écran de la saison. */
   season: {
-    onboarding: {
-      daySubtitle: 'Alimentez le portefeuille et entretenez la relation.',
-      nightSubtitle: 'Transformez la matière collectée en dossier défendable.',
-      quizTitle: 'Avant de commencer : où en êtes-vous ?',
-      quizIntro:
-        '5 questions rapides. Aucune bonne réponse attendue — c’est un point de départ pour mesurer votre progression.',
-    },
-    expert: {
-      daySubtitle: 'Des dossiers denses et des interlocuteurs qui embellissent : cadrez avant de promettre.',
-      nightSubtitle: 'Montez des assiettes qui tiendront devant un vérificateur qui relance.',
-      quizTitle: 'Reprise de saison : où en êtes-vous ?',
-      quizIntro:
-        'Les mêmes 5 questions qu’à votre arrivée, un an plus tard. Ce qui reste acquis se verra tout de suite.',
-    },
+    daySubtitle: 'Alimentez le portefeuille et entretenez la relation.',
+    nightSubtitle: 'Transformez la matière collectée en dossier défendable.',
+    quizTitle: 'Avant de commencer : où en êtes-vous ?',
+    quizIntro:
+      '5 questions rapides. Aucune bonne réponse attendue — c’est un point de départ pour mesurer votre progression.',
   },
   hud: {
     day: 'Relation client',
@@ -327,9 +276,6 @@ export const STR = {
     noInterim: 'Aucun dossier chiffré à ce stade : l’administration attendra le dépôt.',
     backToWork: 'Retourner au bureau',
     question: 'Question',
-    // Séance contradictoire (deuxième saison) : le vérificateur relance.
-    relance: 'Le vérificateur relance',
-    mitigated: 'rectifié en séance, rappel atténué',
     reread: 'Le vérificateur a relu vos échanges',
     verifier: 'Le vérificateur',
     verifierRole: 'Direction générale des finances publiques',

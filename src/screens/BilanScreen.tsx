@@ -24,7 +24,6 @@ export function BilanScreen() {
   // quand aucun contrôle n'était dû : il promettait une scène qui n'arrivait
   // pas. Il dit maintenant où l'on va vraiment.
   const endLabel = finalAuditDue(
-    save.mode,
     save.gauges.security,
     balance.auditSecurityThreshold,
     save.portfolio,

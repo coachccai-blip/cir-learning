@@ -617,3 +617,33 @@ Champs de sauvegarde ajoutés (`mailsRead`, `gaugeHistory`, enrichissement de
      écran de fin — n'ayant pas de contexte d'empilement propre, leurs panneaux
      recevaient ce dégradé et perdaient du contraste. Le contenu passe
      au-dessus.
+
+## Retour à une saison unique (lot « retirer le mode Expert »)
+
+102. **Le mode Expert est retiré.** Learn CIR redevient ce que son public
+     demande : **un petit jeu pour découvrir l'activité CIR**, en une saison.
+     La deuxième saison doublait le contenu — quatre clients inédits, leurs
+     cas, leurs cartes, leurs entretiens, une séance contradictoire, des
+     interlocuteurs qui embellissent — pour un public qui n'était pas celui du
+     jeu. Sont supprimés : `clients-expert.ts`, `cases-expert.ts`,
+     `cards-expert.ts`, `scenarios/expert.ts`, l'écran de sélection de saison
+     et le module `journey.ts`.
+103. **`GameMode` disparaît du modèle.** Les tables d'équilibrage indexées par
+     mode (tolérance, indices, objectif de CA, courbe de progression, XP de
+     départ) redeviennent des valeurs simples. La sauvegarde ne porte plus de
+     `mode` ; une partie enregistrée qui en portait un est relue sans lui.
+     C'est ce qui évite de laisser traîner un axe de variation à une seule
+     valeur, qui se serait fait oublier au prochain lot.
+104. **La séance contradictoire part avec la saison qu'elle servait.** Elle
+     n'existait qu'en Expert : la garder aurait laissé du code injoignable et
+     un `remedyRelief` que rien ne déclenche. Le contrôle garde ses vingt
+     formulations de questions et son mot de la fin — c'est là que se joue la
+     pédagogie du dernier écran, pas dans le tour de relance.
+105. **Le vérificateur ne parle plus qu'à un débutant.** Les dix-huit leçons de
+     fin (deux saisons × trois issues × trois variantes) se réduisent aux neuf
+     de la première : il explique la règle derrière chaque constat, ce qui
+     n'aurait plus de sens face à un consultant de deuxième année.
+106. **Le taux opposable est toujours donné.** Il ne se gagnait sur le terrain
+     qu'en Expert. Sans cette saison, tous les indices sont à l'écran : la
+     difficulté vient de la tolérance et des pièges, jamais d'une information
+     cachée.

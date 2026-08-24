@@ -8,7 +8,6 @@ import { Avatar } from '../avatars/Avatar';
 import { Icon } from '../ui/Icon';
 import { SpeakButton } from '../components/SpeakButton';
 import { auditLesson, buildAuditFindings, resolveAudit } from '../engine/audit';
-import { measuresLearning } from '../engine/journey';
 import { finalAuditDue, weakestDossier } from '../engine/auditgate';
 import { shuffleForDisplay } from '../engine/rng';
 import ruleset from '../data/rules/ruleset-2026.json';
@@ -33,7 +32,7 @@ export function AuditScreen() {
   const target = useMemo(() => {
     if (!save) return null;
     if (interim) return weakestDossier(save.portfolio);
-    if (!finalAuditDue(save.mode, save.gauges.security, balance.auditSecurityThreshold, save.portfolio)) {
+    if (!finalAuditDue(save.gauges.security, balance.auditSecurityThreshold, save.portfolio)) {
       return null;
     }
     return weakestDossier(save.portfolio);
@@ -41,24 +40,12 @@ export function AuditScreen() {
 
   const [idx, setIdx] = useState(0);
   const [defended, setDefended] = useState<string[]>([]);
-  // Constats reconnus et rectifiés en séance contradictoire : le rappel est
-  // atténué, pas effacé.
-  const [mitigated, setMitigated] = useState<string[]>([]);
-  // Tour de parole sur le constat courant : le vérificateur relance une fois.
-  const [round, setRound] = useState<'constat' | 'relance'>('constat');
   const [finished, setFinished] = useState(false);
 
-  // Fin de saison → quiz de sortie (mesure de l'apprentissage) puis écran de
-  // fin. En deuxième saison, on va droit au bilan : le même quiz, posé à
-  // quelqu'un qui vient de passer six semaines sur ces notions, ne mesure plus
-  // rien — et le bilan masque de lui-même la section quand elle est vide.
+  // Fin de saison → quiz de sortie (mesure de l'apprentissage) puis écran de fin.
   const toEnd = () => {
     if (interim) {
       closeInterimAudit();
-      return;
-    }
-    if (!save || !measuresLearning(save.mode)) {
-      go('end');
       return;
     }
     useStore.setState({ quizPhase: 'post' });
@@ -89,12 +76,7 @@ export function AuditScreen() {
   // publique que le joueur n'a jamais vue à l'écran.
   const theCase = caseForClient(save, target.clientId);
   const cardset = cardsetById(c.cardsetId);
-  // Deuxième saison : séance contradictoire, le vérificateur relance.
-  const contradictoire = save.mode === 'expert' && !interim;
-  const allFindings = buildAuditFindings(target, theCase, cardset, RULESET, {
-    contradictoire,
-    seed: save.seed,
-  });
+  const allFindings = buildAuditFindings(target, theCase, cardset, RULESET, { seed: save.seed });
   const findings = interim ? allFindings.slice(0, 2) : allFindings;
 
   // Flashbacks : le vérificateur a « relu vos échanges » — il cite vos propres
@@ -110,12 +92,10 @@ export function AuditScreen() {
       target.scores.justification ?? 0,
       target.playerCir ?? 0,
       target.feeRate,
-      mitigated,
-      balance.audit.remedyRelief,
     );
     // Le mot de la fin : ce que la séance a montré, dit dans le registre de la
     // saison. Il n'a pas de sens sur une simple demande d'information.
-    const lesson = interim ? null : auditLesson(save.mode, result.outcome, save.seed);
+    const lesson = interim ? null : auditLesson(result.outcome, save.seed);
     return (
       <div className="container">
         <h1>{interim ? STR.audit.interimResult : STR.audit.result}</h1>
@@ -137,12 +117,11 @@ export function AuditScreen() {
             {result.findings.map((f) => (
               <li
                 key={f.finding.id}
-                className={f.defended ? 'verdict-ok' : f.mitigated ? 'verdict-mid' : 'verdict-bad'}
+                className={f.defended ? 'verdict-ok' : 'verdict-bad'}
               >
-                <Icon name={f.defended ? 'check' : f.mitigated ? 'dash' : 'cross'} size={16} />
+                <Icon name={f.defended ? 'check' : 'cross'} size={16} />
                 <span>
                   {f.finding.label}
-                  {f.mitigated && <span className="muted"> — {STR.audit.mitigated}</span>}
                 </span>
               </li>
             ))}
@@ -183,11 +162,10 @@ export function AuditScreen() {
   }
 
   const finding = findings[idx];
-  const relance = round === 'relance' ? finding.followUp : null;
-  const prompt = relance ? relance.question : finding.question;
-  const canDefend = relance ? true : finding.defensible;
-  const goodAnswer = relance ? relance.goodAnswer : finding.goodAnswer;
-  const weakAnswers = relance ? relance.weakAnswers : finding.weakAnswers;
+  const prompt = finding.question;
+  const canDefend = finding.defensible;
+  const goodAnswer = finding.goodAnswer;
+  const weakAnswers = finding.weakAnswers;
 
   // La bonne réponse est mélangée aux réponses faibles : le joueur doit la
   // reconnaître, pas la repérer à sa position.
@@ -196,31 +174,17 @@ export function AuditScreen() {
       ...(canDefend ? [{ text: goodAnswer, good: true }] : []),
       ...weakAnswers.map((w) => ({ text: w, good: false })),
     ],
-    `${save.seed}:audit:${finding.id}:${round}`,
+    `${save.seed}:audit:${finding.id}`,
   );
 
   function nextFinding() {
-    setRound('constat');
     if (idx + 1 >= findings.length) setFinished(true);
     else setIdx((i) => i + 1);
   }
 
   function answer(good: boolean) {
-    if (round === 'relance') {
-      // Rectifier ne défend pas le constat : cela limite le rappel.
-      if (good) setMitigated((m) => [...m, finding.id]);
-      nextFinding();
-      return;
-    }
-    if (good && finding.defensible) {
-      setDefended((d) => [...d, finding.id]);
-      nextFinding();
-      return;
-    }
-    // Séance contradictoire : le vérificateur ne clôt pas sur un aveu, il
-    // demande ce que le conseil propose.
-    if (finding.followUp) setRound('relance');
-    else nextFinding();
+    if (good && finding.defensible) setDefended((d) => [...d, finding.id]);
+    nextFinding();
   }
 
   return (
@@ -272,11 +236,6 @@ export function AuditScreen() {
           </div>
           <div className="muted" style={{ marginTop: 8, fontSize: '0.8rem' }}>
             {STR.audit.question} {idx + 1} / {findings.length}
-            {relance && (
-              <div className="tag tag-warn" style={{ marginTop: 8 }}>
-                <Icon name="scale" size={13} /> {STR.audit.relance}
-              </div>
-            )}
           </div>
         </div>
         <div>

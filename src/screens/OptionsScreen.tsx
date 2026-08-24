@@ -12,8 +12,6 @@ export function OptionsScreen() {
   const options = useStore((s) => s.options);
   const setOptions = useStore((s) => s.setOptions);
   const resetSave = useStore((s) => s.resetSave);
-  const resetJourney = useStore((s) => s.resetJourney);
-  const toast = useStore((s) => s.toast);
   const save = useStore((s) => s.save);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -181,23 +179,6 @@ export function OptionsScreen() {
         </button>
       </div>
 
-      {/* Usage formateur : refaire jouer le parcours entier à quelqu'un
-          d'autre suppose de reverrouiller la deuxième saison. */}
-      <div className="panel stack" style={{ marginTop: 16 }}>
-        <strong>{STR.journey.resetTitle}</strong>
-        <p className="muted" style={{ fontSize: '0.85rem', margin: 0 }}>
-          {STR.journey.resetHelp}
-        </p>
-        <button
-          className="btn"
-          onClick={() => {
-            resetJourney();
-            toast(STR.journey.resetDone);
-          }}
-        >
-          {STR.journey.resetTitle}
-        </button>
-      </div>
     </div>
   );
 }

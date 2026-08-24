@@ -1,7 +1,7 @@
 // Calendrier fiscal de la saison (§4.4) et chapitres de campagne (§10.2).
 // Contenu, pas du code : uniquement des données déclaratives.
 
-import type { CalendarMilestone, ChapterDef, GameMode } from '../engine/types';
+import type { CalendarMilestone, ChapterDef } from '../engine/types';
 
 /** Nombre de cycles (semaines) d'une saison. */
 /**
@@ -114,68 +114,8 @@ export const CHAPTERS: ChapterDef[] = [
   },
 ];
 
-/**
- * Chapitres de la deuxième saison. Même squelette de calendrier, autre récit :
- * on ne découvre plus le métier, on tient un dossier que l'on vous conteste.
- */
-export const CHAPTERS_EXPERT: ChapterDef[] = [
-  {
-    num: 1,
-    title: 'Retour de saison',
-    fromCycle: 1,
-    toCycle: 1,
-    notion: 'Lire un dossier préparé par le client, et ce qu’il ne dit pas',
-    objective: 'Ouvrir les dossiers de l’année et repérer les chiffres trop ronds.',
-  },
-  {
-    num: 2,
-    title: 'Ce qu’on ne vous dit pas',
-    fromCycle: 2,
-    toCycle: 2,
-    notion: 'Déclaré contre démontrable : la preuve se gagne sur le terrain',
-    objective: 'Obtenir un accès direct aux équipes et aux fichiers sources.',
-  },
-  {
-    num: 3,
-    title: 'Savoir refuser',
-    fromCycle: 3,
-    toCycle: 3,
-    notion: 'Un dossier qui n’existe pas ne se monte pas, il se décline',
-    objective: 'Trancher sur le dossier qui ne relève pas du CIR.',
-  },
-  {
-    num: 4,
-    title: 'La ligne, au poste près',
-    fromCycle: 4,
-    toCycle: 4,
-    notion: 'Cascade de sous-traitance, entité liée, aides croisées',
-    objective: 'Monter des assiettes justes à un point de tolérance près.',
-  },
-  {
-    num: 5,
-    title: 'Écrire pour être lu',
-    fromCycle: 5,
-    toCycle: 5,
-    notion: 'Un justificatif opposable, pas un récit d’entreprise',
-    objective: 'Rédiger, déposer, et tenir la première demande d’information.',
-  },
-  {
-    num: 6,
-    title: 'Le contradictoire',
-    fromCycle: 6,
-    toCycle: 6,
-    notion: 'Défendre, reconnaître, rectifier — trois réponses, trois effets',
-    objective: 'Passer la séance contradictoire sans perdre le dossier.',
-  },
-];
-
-export function chaptersFor(mode: GameMode): ChapterDef[] {
-  return mode === 'expert' ? CHAPTERS_EXPERT : CHAPTERS;
-}
-
-export function chapterForCycle(cycle: number, mode: GameMode = 'onboarding'): ChapterDef {
-  const chapters = chaptersFor(mode);
-  return chapters.find((c) => cycle >= c.fromCycle && cycle <= c.toCycle) ?? chapters[chapters.length - 1];
+export function chapterForCycle(cycle: number): ChapterDef {
+  return CHAPTERS.find((c) => cycle >= c.fromCycle && cycle <= c.toCycle) ?? CHAPTERS[CHAPTERS.length - 1];
 }
 
 export function nextMilestone(cycle: number): CalendarMilestone | null {

@@ -2,15 +2,11 @@
 //
 // Le contrôle s'arrêtait sur une liste de constats cochés et un montant. Or
 // c'est la dernière scène du jeu : celle dont le joueur se souviendra. Le
-// vérificateur y dit ce que la séance a montré — et il ne le dit pas de la
-// même manière selon la saison.
-//
-// En première saison, il s'adresse à quelqu'un qui découvre : il explique la
-// règle derrière le constat. En deuxième, il s'adresse à un professionnel :
-// il ne réexplique rien, il situe le travail. Trois variantes par cas, tirées
-// à la graine, pour qu'une saison rejouée ne se termine pas sur la même phrase.
+// vérificateur y dit ce que la séance a montré, et explique la règle derrière
+// chaque constat — il s'adresse à quelqu'un qui découvre le métier. Trois
+// variantes par issue, tirées à la graine, pour qu'une partie rejouée ne se
+// termine pas sur la même phrase.
 
-import type { GameMode } from '../engine/types';
 
 /** Issue du contrôle, telle que `resolveAudit` la rend. */
 export type AuditOutcome = 'validated' | 'partial' | 'total';
@@ -85,70 +81,4 @@ const ONBOARDING: Record<AuditOutcome, AuditLesson[]> = {
   ],
 };
 
-const EXPERT: Record<AuditOutcome, AuditLesson[]> = {
-  validated: [
-    {
-      verdict:
-        'Rien à redresser, sur un dossier de cette complexité. Vous avez tenu la contradiction jusqu’au bout.',
-      lesson:
-        'Vous avez cessé de monter des dossiers pour commencer à les défendre. C’est exactement ce qui sépare la deuxième année de la première.',
-    },
-    {
-      verdict:
-        'Je n’emporte rien. Vos retraits étaient documentés, et c’est ce qui a rendu vos maintiens crédibles.',
-      lesson:
-        'Ce que vous écartez, écrit noir sur blanc, protège ce que vous gardez. Un dossier sans arbitrage visible se lit comme un dossier non trié.',
-    },
-    {
-      verdict:
-        'Vous avez répondu sur le texte, pas sur l’intention. C’est le seul terrain où je ne peux rien contre vous.',
-      lesson:
-        'Face à l’administration, l’argument d’autorité ne pèse rien et la bonne foi ne prouve rien. Seule la règle, citée et appliquée, tranche.',
-    },
-  ],
-  partial: [
-    {
-      verdict:
-        'Rappel partiel. Vous avez rectifié en séance ce que vous ne pouviez pas tenir — c’est un réflexe de professionnel.',
-      lesson:
-        'Reconnaître un constat n’efface pas le rappel, mais reconnaître trop tard le double. Ce que vous cédez au bon moment, vous ne le payez qu’une fois.',
-    },
-    {
-      verdict:
-        'Une part tombe. Ce sont les postes que vous aviez repris d’un tiers sans les revérifier vous-même.',
-      lesson:
-        'Un chiffre transmis par le client, ou par un confrère, engage celui qui le dépose. Le déclarant, c’est vous.',
-    },
-    {
-      verdict:
-        'Je redresse une fraction. Sur le reste, vous saviez de quoi vous parliez, et cela s’entend.',
-      lesson:
-        'Les dossiers denses se perdent toujours sur la même chose : le rang de sous-traitance, l’entité liée, la date où la recherche s’arrête. Trois vérifications, trois rappels évités.',
-    },
-  ],
-  total: [
-    {
-      verdict:
-        'Le rappel est lourd, et vous n’ignoriez rien de ce que je vous ai opposé. C’est plus grave qu’une erreur de débutant.',
-      lesson:
-        'Un consultant expérimenté qui suit son client dans son optimisme n’est plus un conseil : il est le maillon qui a validé le dossier. C’est vous que l’on cherchera.',
-    },
-    {
-      verdict:
-        'Tout tombe. Vous avez repris des taux que vos propres pièces contredisaient.',
-      lesson:
-        'Un tableau transmis par le client n’est pas une preuve : c’est une prétention. La preuve, c’est le planning, le relevé, le dépôt — ce que personne n’a écrit pour vous plaire.',
-    },
-    {
-      verdict:
-        'Je redresse l’intégralité. Le périmètre était intenable, et vous aviez les moyens de le savoir.',
-      lesson:
-        'Savoir dire non se paie une fois, à la signature. Ne pas savoir le dire se paie trois ans plus tard, avec les intérêts, et devant le client.',
-    },
-  ],
-};
-
-export const AUDIT_LESSONS: Record<GameMode, Record<AuditOutcome, AuditLesson[]>> = {
-  onboarding: ONBOARDING,
-  expert: EXPERT,
-};
+export const AUDIT_LESSONS: Record<AuditOutcome, AuditLesson[]> = ONBOARDING;

@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { SCENARIOS } from '../../src/data/scenarios/index';
 import { EVENTS } from '../../src/data/events';
 import { CLIENTS } from '../../src/data/clients';
-import { EXPERT_CLIENTS } from '../../src/data/clients-expert';
 import { CASES } from '../../src/data/cases';
 import { CARDSETS } from '../../src/data/cards';
 import { CODEX, CODEX_STARTER, codexById } from '../../src/data/codex';
@@ -82,19 +81,10 @@ describe('Intégrité des références client → contenu', () => {
     // Tous les clients jouaient le même point d'étape et la même restitution :
     // la scène devenait une formalité, alors que c'est là que le métier se
     // joue. Chaque dossier a désormais la sienne.
-    const roster = [...CLIENTS, ...EXPERT_CLIENTS];
+    const roster = CLIENTS;
     for (const kind of ['followup', 'closing'] as const) {
       const used = roster.map((c) => c.scenarios[kind]);
       expect(new Set(used).size, `${kind} partagé entre clients`).toBe(used.length);
-    }
-  });
-
-  it('chaque client expert pointe vers un cas, un cardset et des scénarios existants', () => {
-    const scenarioIds = new Set(SCENARIOS.map((s) => s.id));
-    for (const cl of EXPERT_CLIENTS) {
-      for (const kind of ['discovery', 'kickoff', 'followup', 'closing'] as const) {
-        expect(scenarioIds.has(cl.scenarios[kind]), `${cl.name}/${kind}`).toBe(true);
-      }
     }
   });
 

@@ -1,7 +1,6 @@
-import balance from '../data/balance.json';
 import { clientById } from '../data/clients';
 import { CODEX_STARTER } from '../data/codex';
-import type { ClientState, GameMode, SaveGame } from '../engine/types';
+import type { ClientState, SaveGame } from '../engine/types';
 import { rngFromSeed } from '../engine/rng';
 
 export function makeSeed(): string {
@@ -42,21 +41,18 @@ export function initClientState(
   };
 }
 
-export function createNewGame(mode: GameMode, createdAt: string, seedOverride?: string): SaveGame {
+export function createNewGame(createdAt: string, seedOverride?: string): SaveGame {
   const seed = seedOverride ?? makeSeed();
   const rng = rngFromSeed(seed);
   void rng;
   return {
     schemaVersion: 1,
-    mode,
     seed,
     createdAt,
     cycle: 1,
     phase: 'DAY',
     gauges: { relation: 50, security: 50, profitability: 50 },
-    // La deuxième saison ne repart pas stagiaire : le joueur revient avec une
-    // saison au compteur, et son grade le dit dès le premier écran.
-    xp: (balance.startingXp as Record<string, number>)[mode] ?? 0,
+    xp: 0,
     revenue: { signed: 0, collected: 0 },
     portfolio: [],
     prospects: [],

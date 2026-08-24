@@ -376,7 +376,6 @@ export interface GeneratedProspect {
 
 // ---------- Sauvegarde / état ----------
 
-export type GameMode = 'onboarding' | 'expert';
 export type Phase = 'DAY' | 'NIGHT';
 
 export type DossierState =
@@ -463,7 +462,6 @@ export interface DeltaLogEntry {
 
 export interface SaveGame {
   schemaVersion: number;
-  mode: GameMode;
   seed: string;
   createdAt: string;
   cycle: number;
@@ -525,17 +523,11 @@ export interface AuditFinding {
   goodAnswer: string;
   weakAnswers: string[];
   reassessment: number; // montant de rappel si non défendu
-  /**
-   * Relance du vérificateur en séance contradictoire (deuxième saison) : une
-   * fois le constat posé, il demande ce que le conseil propose. Une
-   * rectification honnête n'efface pas le rappel, elle l'atténue.
-   */
-  followUp?: { question: string; goodAnswer: string; weakAnswers: string[] };
 }
 
 export interface AuditResult {
   outcome: 'validated' | 'partial' | 'total';
-  findings: { finding: AuditFinding; defended: boolean; mitigated: boolean }[];
+  findings: { finding: AuditFinding; defended: boolean }[];
   reassessedAmount: number;
   feesRefunded: number;
 }

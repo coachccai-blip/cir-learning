@@ -1,7 +1,6 @@
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { ALL_PORTRAITS } from '../avatars/portraits';
-import { journeyComplete, JOURNEY } from '../engine/journey';
 import { Icon } from '../ui/Icon';
 
 /**
@@ -41,8 +40,8 @@ const BUBBLES: Bubble[] = [
 
 export function HomeScreen() {
   const go = useStore((s) => s.go);
+  const newGame = useStore((s) => s.newGame);
   const save = useStore((s) => s.save);
-  const progress = useStore((s) => s.progress);
 
   return (
     <div className="home">
@@ -71,7 +70,7 @@ export function HomeScreen() {
         <div className="home-sub">{STR.appTagline}</div>
         <p className="home-pitch">{STR.appPitch}</p>
         <div className="home-menu">
-          <button className="btn btn-primary" onClick={() => go('mode')}>
+          <button className="btn btn-primary" onClick={() => newGame()}>
             <Icon name="play" size={18} /> {STR.menu.newGame}
           </button>
           {save && (
@@ -87,25 +86,6 @@ export function HomeScreen() {
               <Icon name="sliders" size={17} /> {STR.menu.options}
             </button>
           </div>
-        </div>
-        {/* Le parcours se joue dans l'ordre : l'accueil annonce où l'on en est. */}
-        <div className="home-journey" aria-label={STR.journey.title}>
-          {JOURNEY.map((m, i) => {
-            const done = progress.completed.includes(m);
-            return (
-              <span key={m} className={`journey-pill${done ? ' is-done' : ''}`}>
-                <span className="journey-pill-mark">
-                  {done ? <Icon name="check" size={13} /> : i + 1}
-                </span>
-                {STR.modes[m].label}
-              </span>
-            );
-          })}
-          {journeyComplete(progress) && (
-            <span className="journey-pill is-done">
-              <Icon name="flag" size={14} /> {STR.journey.complete}
-            </span>
-          )}
         </div>
         <p className="disclaimer">
           <Icon name="info" size={14} /> {STR.disclaimer}

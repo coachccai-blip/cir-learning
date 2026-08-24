@@ -10,7 +10,6 @@
 // couvraient auparavant vingt-trois semaines, héritées d'un calendrier plus
 // long : la moitié des messages n'apparaissait jamais.
 
-import type { GameMode } from '../engine/types';
 
 export interface GameMail {
   id: string;
@@ -20,14 +19,11 @@ export interface GameMail {
   subject: string;
   body: string;
   codexUnlock?: string;
-  /** Saison concernée. Absent = les deux. */
-  mode?: GameMode;
 }
 
 const ONBOARDING_MAILS: GameMail[] = [
   {
     id: 'mail_bienvenue',
-    mode: 'onboarding',
     fromCycle: 1,
     toCycle: 2,
     sender: 'Sophie Meyer — Directrice de BU',
@@ -36,7 +32,6 @@ const ONBOARDING_MAILS: GameMail[] = [
   },
   {
     id: 'mail_methodo',
-    mode: 'onboarding',
     fromCycle: 1,
     toCycle: 3,
     sender: 'Karim Bensaïd — Consultant senior',
@@ -46,7 +41,6 @@ const ONBOARDING_MAILS: GameMail[] = [
   },
   {
     id: 'mail_timesheets',
-    mode: 'onboarding',
     fromCycle: 3,
     toCycle: 4,
     sender: 'Amélie Roux — Manager',
@@ -56,7 +50,6 @@ const ONBOARDING_MAILS: GameMail[] = [
   },
   {
     id: 'mail_cloture',
-    mode: 'onboarding',
     fromCycle: 4,
     toCycle: 5,
     sender: 'Amélie Roux — Manager',
@@ -65,7 +58,6 @@ const ONBOARDING_MAILS: GameMail[] = [
   },
   {
     id: 'mail_rescrit',
-    mode: 'onboarding',
     fromCycle: 4,
     toCycle: 5,
     sender: 'Karim Bensaïd — Consultant senior',
@@ -75,7 +67,6 @@ const ONBOARDING_MAILS: GameMail[] = [
   },
   {
     id: 'mail_rush',
-    mode: 'onboarding',
     fromCycle: 5,
     toCycle: 6,
     sender: 'Sophie Meyer — Directrice de BU',
@@ -85,54 +76,6 @@ const ONBOARDING_MAILS: GameMail[] = [
 ];
 
 const EXPERT_MAILS: GameMail[] = [
-  {
-    id: 'mail_exp_rentree',
-    mode: 'expert',
-    fromCycle: 1,
-    toCycle: 2,
-    sender: 'Sophie Meyer — Directrice de BU',
-    subject: 'Votre portefeuille de la saison',
-    body: 'Vos dossiers de l’an dernier sont déposés, aucun n’est revenu. C’est pour ça que je vous confie ceux-là. Objectif : 220 k€ de CA signé — volontairement plus bas que l’an dernier, parce que ces dossiers-ci se défendent au lieu de se monter. — S.',
-  },
-  {
-    id: 'mail_exp_taux_ronds',
-    mode: 'expert',
-    fromCycle: 1,
-    toCycle: 3,
-    sender: 'Karim Bensaïd — Consultant senior',
-    subject: 'Entre nous : les taux trop ronds',
-    body: 'Tu vas voir passer des tableaux préparés par les clients, avec des taux d’affectation ronds et identiques sur toute une équipe. Ce n’est pas une négligence, c’est une moyenne de confort. Demande le relevé qui a servi à la calculer : il n’existe pas.',
-    codexUnlock: 'cdx_personnel',
-  },
-  {
-    id: 'mail_exp_agrements',
-    mode: 'expert',
-    fromCycle: 2,
-    toCycle: 4,
-    sender: 'Amélie Roux — Manager',
-    subject: 'La liste des organismes agréés a bougé',
-    body: 'Deux prestataires que nous retenions l’an dernier ne sont plus agréés cette année. Reprends les attestations de tous tes sous-traitants, y compris les partenaires historiques : c’est la première chose qu’un vérificateur recoupe, et elle est publique.',
-    codexUnlock: 'cdx_st_agrement',
-  },
-  {
-    id: 'mail_exp_relecture',
-    mode: 'expert',
-    fromCycle: 3,
-    toCycle: 5,
-    sender: 'Amélie Roux — Manager',
-    subject: 'Relecture d’un dossier junior',
-    body: 'Je te confie la relecture du dossier d’un nouveau. Regarde d’abord les taux de personnel et les aides publiques : c’est là que se logent les erreurs de première année. Signale-lui ce qui manque, ne le corrige pas à sa place — il ne l’apprendrait pas.',
-  },
-  {
-    id: 'mail_exp_contradictoire',
-    mode: 'expert',
-    fromCycle: 4,
-    toCycle: 6,
-    sender: 'Sophie Meyer — Directrice de BU',
-    subject: 'Préparez la séance contradictoire',
-    body: 'La vérification en cours passera en séance contradictoire. Un rappel de méthode : on ne nie pas un constat établi, on propose la rectification et on la chiffre. Reconnaître tôt limite la portée ; s’entêter la multiplie. — S.',
-    codexUnlock: 'cdx_controle_deroule',
-  },
 ];
 
 /** Messages communs aux deux saisons. */
@@ -159,8 +102,8 @@ const SHARED_MAILS: GameMail[] = [
 
 export const MAILS: GameMail[] = [...ONBOARDING_MAILS, ...EXPERT_MAILS, ...SHARED_MAILS];
 
-export function mailsForCycle(cycle: number, mode: GameMode): GameMail[] {
+export function mailsForCycle(cycle: number): GameMail[] {
   return MAILS.filter(
-    (m) => (m.mode === undefined || m.mode === mode) && cycle >= m.fromCycle && cycle <= m.toCycle,
+    (m) => cycle >= m.fromCycle && cycle <= m.toCycle,
   );
 }

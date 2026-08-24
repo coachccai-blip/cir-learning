@@ -186,21 +186,11 @@ export function BaseScreen() {
     );
   }
 
-  // En Onboarding, tous les indices sont à l'écran : le joueur doit pouvoir
-  // construire l'assiette juste sans deviner, la difficulté venant de la
-  // tolérance et des pièges. En Expert, le taux opposable se gagne sur le
-  // terrain (cf. `revealsTruth`).
+  // Tous les indices sont à l'écran : le joueur doit pouvoir construire
+  // l'assiette juste sans deviner, la difficulté venant de la tolérance et des
+  // pièges, jamais d'une information cachée.
   const collected = cs.piecesCollected;
 
-  /**
-   * Le taux réellement opposable est-il visible ? En deuxième saison, le
-   * dirigeant embellit sciemment : seul le consultant qui a rapporté la pièce
-   * connaît le chiffre. Sans elle, il faut trancher au jugement.
-   */
-  function revealsTruth(evidence: string | undefined): boolean {
-    if (save!.mode !== 'expert') return true;
-    return !evidence || collected.includes(evidence);
-  }
 
   return (
     <div className="container">
@@ -340,11 +330,9 @@ export function BaseScreen() {
                   {p.trap ? (
                     <>
                       <Hint tone="warn">{p.trap}</Hint>
-                      {/* En Onboarding, le taux justifiable est donné : le joueur doit
-                          pouvoir construire l'assiette juste sans deviner. En Expert, il
-                          ne s'obtient qu'en rapportant la pièce du terrain — c'est tout
-                          l'intérêt d'avoir mené les entretiens. */}
-                      {revealsTruth(p.evidence) ? (
+                      {/* Le taux justifiable est donné : le joueur doit pouvoir
+                          construire l'assiette juste sans deviner. */}
+                      {true ? (
                         <Hint tone="ok">
                           <strong>
                             {STR.base.hintDefensible} {Math.round(p.trueRdRatio * 100)} %

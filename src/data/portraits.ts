@@ -27,8 +27,7 @@ export const PORTRAIT_FILES: Record<string, string> = {
   'prospect-m-02': 'prospect-m-02.png',
   'prospect-m-03': 'prospect-m-03.png',
   'prospect-m-04': 'prospect-m-04.png',
-  // Deuxième saison (mode Expert) : les figures secondaires de la première
-  // saison passent au premier plan, dans d'autres maisons et d'autres rôles.
+  // Visages de second plan, réutilisés par les PNJ des entretiens.
   'cherif-07': 'cherif-07.png',
   'roy-09': 'roy-09.png',
   'sy-dr-10': 'sy-dr-10.png',

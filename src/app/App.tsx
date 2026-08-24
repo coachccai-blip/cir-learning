@@ -3,7 +3,6 @@ import { useStore } from '../state/store';
 import { TopBar } from '../components/TopBar';
 import { Toasts } from '../components/Toasts';
 import { HomeScreen } from '../screens/HomeScreen';
-import { ModeScreen } from '../screens/ModeScreen';
 import { DayScreen } from '../screens/DayScreen';
 import { NightScreen } from '../screens/NightScreen';
 import { DialogueScreen } from '../screens/DialogueScreen';
@@ -49,7 +48,10 @@ export function App() {
     root.toggleAttribute('data-reduce-motion', options.reduceMotion);
   }, [save, view, options.textSize, options.reduceMotion]);
 
-  const chromeless = view === 'home' || view === 'mode' || view === 'end' || view === 'quiz';
+
+  // Les écrans pleine page (accueil, quiz, fin) portent leur propre décor :
+  // le bandeau de jeu n'y a pas sa place.
+  const chromeless = view === 'home' || view === 'end' || view === 'quiz';
 
   return (
     <div className="app-shell">
@@ -59,7 +61,6 @@ export function App() {
       <Celebration />
       <main style={{ flex: 1 }}>
         {view === 'home' && <HomeScreen />}
-        {view === 'mode' && <ModeScreen />}
         {view === 'day' && <DayScreen />}
         {view === 'night' && <NightScreen />}
         {view === 'dialogue' && <DialogueScreen />}

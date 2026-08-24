@@ -55,23 +55,26 @@ Corollaire : les 4 réponses d'un dialogue ne sont **jamais** « 1 bonne + 3 abs
 
 ---
 
-## 2. Public cible et niveaux de difficulté
+## 2. Public cible
 
-Deux modes, **même moteur, même contenu, filtres différents** :
-
-| Mode | Public | Ce qui change |
-|---|---|---|
-| **Onboarding** (`onboarding`) — *mode par défaut* | Nouveaux consultants (semaines 1-4) | Règles réelles, tolérance ±5 %, 2 indices par cycle, contrôle fiscal possible en fin de saison, deadlines fermes |
-| **Expert** (`expert`) | Consultants en poste | Tolérance ±1 %, aucun indice, cas limites (entités liées, subventions partielles, sous-traitance en cascade, articulation CIR/CII), contrôle fiscal systématique, portefeuille plus large que le budget d'actions |
-
-Le mode est choisi au lancement et **stocké dans la sauvegarde**. Le leaderboard est segmenté par mode.
+Learn CIR s'adresse aux **nouveaux consultants** (semaines 1 à 4) et à
+quiconque veut **découvrir l'activité CIR** : une saison, un seul niveau, les
+règles réelles. Tolérance ±5 % sur l'assiette, tous les indices affichés à
+l'écran, contrôle fiscal en fin de saison si la sécurité a lâché, échéances
+fermes.
 
 > **Arbitrage du 21/08/2026 — le mode Découverte est retiré.** Le brief prévoyait
-> un troisième mode, plus permissif, pour les candidats et les écoles. Learn CIR
-> est un **parcours d'onboarding de consultants** : un mode qui supprime le
-> contrôle fiscal et tolère ±15 % d'erreur d'assiette enseigne l'inverse du
-> métier. Restent **Onboarding** (par défaut) et **Expert**. Les parties et les
-> scores enregistrés en Découverte basculent automatiquement sur Onboarding.
+> un troisième mode, plus permissif, pour les candidats et les écoles. Un mode
+> qui supprime le contrôle fiscal et tolère ±15 % d'erreur d'assiette enseigne
+> l'inverse du métier.
+
+> **Arbitrage du 24/08/2026 — le mode Expert est retiré à son tour.** La
+> deuxième saison doublait le contenu (quatre clients inédits, séance
+> contradictoire, interlocuteurs qui embellissent) pour un public qui n'était
+> pas celui du jeu. Learn CIR redevient ce qu'il doit être : **un petit jeu
+> pour découvrir l'activité, en une saison**. Il ne reste ni sélection de mode,
+> ni parcours, ni progression entre saisons. Les sauvegardes qui portaient un
+> mode sont relues sans lui.
 
 ---
 
@@ -210,7 +213,7 @@ Le calendrier est un fichier de contenu (`src/data/calendar.json`), pas du code.
 
 - Modèle d'honoraires : **au succès**, pourcentage du CIR obtenu (paramétrable, défaut 20 % HT). Un client peut négocier à la baisse (12-18 %) — arbitrage Relation / Rentabilité.
 - KPI suivis : CA signé, CA encaissé, taux de conversion prospect→client, panier moyen, taux d'attrition.
-- Objectif de saison (mode onboarding) : **300 000 € de CA signé** et **≥ 4 clients déposés**.
+- Objectif de saison : **300 000 € de CA signé** et **≥ 4 clients déposés**.
 
 > ⚠️ Point à vérifier avant implémentation : les dépenses de conseil facturées pour l'obtention du CIR sont, au-delà d'un seuil, **déductibles de l'assiette** du client (CGI art. 244 quater B, III). Si confirmé, en faire un mini-système : plus le consultant facture cher, plus l'assiette du client se réduit. C'est un excellent moment pédagogique. Voir §9.7.
 
@@ -224,7 +227,7 @@ Le calendrier est un fichier de contenu (`src/data/calendar.json`), pas du code.
 | Consultant Junior | 800 | 2ᵉ client simultané |
 | Consultant | 2 200 | Mini-jeu de rescrit fiscal |
 | Consultant Senior | 4 500 | 3ᵉ client, action « Déléguer » |
-| Manager | 8 000 | Mode libre expert, choix du portefeuille |
+| Manager | 8 000 | Grade le plus élevé de la saison |
 
 **Badges** (≈ 20, chacun = 1 notion maîtrisée) — exemples :
 
@@ -417,7 +420,7 @@ Trois niveaux obligatoires : **quoi** (les deltas), **pourquoi** (la logique mé
 
 ### 8.5 Événement Contrôle fiscal (épilogue)
 
-Déclenché sur les dossiers dont la **Sécurité < 60** (onboarding) ou systématiquement (expert). Format : dialogue de 10 nœuds face au vérificateur, où **chaque question porte sur une décision réellement prise par le joueur** pendant la partie.
+Déclenché sur les dossiers dont la **Sécurité < 60**. Une saison bien tenue s'achève sans visite — c'est la récompense. Format : dialogue de 10 nœuds face au vérificateur, où **chaque question porte sur une décision réellement prise par le joueur** pendant la partie.
 
 - Si le joueur a collecté la pièce → l'option « Voici le compte rendu d'essais du 14 mars » est **disponible**.
 - Sinon → seules des options faibles sont proposées. La partie est déjà jouée : le contrôle ne fait que révéler la qualité du travail.
@@ -474,7 +477,7 @@ Depuis la loi de finances 2025, pour les dépenses exposées **à compter du 15 
 | Majoration « jeune docteur » (doublement d'assiette) | ❌ **Supprimée** — non rétablie par la LF 2026 (promulguée le 19 février 2026) |
 | Forfait de fonctionnement | Réduit de 43 % → **40 %** |
 
-> ⚠️ **Mécanique de jeu à en tirer** : dans plusieurs cas, le client (ou un collègue mal informé) proposera d'intégrer des frais de brevet ou de la veille. Accepter = gonflement d'assiette = redressement au contrôle. Le salaire d'un jeune docteur reste éligible **au taux normal**, sans majoration : cette nuance est un excellent piège de niveau expert.
+> ⚠️ **Mécanique de jeu à en tirer** : dans plusieurs cas, le client (ou un collègue mal informé) proposera d'intégrer des frais de brevet ou de la veille. Accepter = gonflement d'assiette = redressement au contrôle. Le salaire d'un jeune docteur reste éligible **au taux normal**, sans majoration : cette nuance est un excellent piège.
 
 ### 9.6 CII (crédit d'impôt innovation) — pour l'articulation
 
@@ -929,7 +932,6 @@ cir-quest/
 ```jsonc
 {
   "schemaVersion": 1,
-  "mode": "onboarding",
   "seed": "a3f9d2",
   "createdAt": "2026-09-01T00:00:00.000Z",
   "cycle": 7,
@@ -1040,7 +1042,7 @@ Mini-jeu de cartes, tableur d'assiette branché sur le moteur du lot 1, éditeur
 35 fiches codex, dialogue de contrôle indexé sur les décisions passées, score final et grade, débrief avec l'historique des décisions, leaderboard local, export/import. **DoD** : une partie se termine avec un débrief exploitable en entretien de formation.
 
 ### Lot 8 — Contenu de la campagne
-Les 9 chapitres, 6 clients, 24 scénarios, 90 cartes, 6 cas d'assiette, 20 événements. **DoD** : la campagne se termine en mode onboarding en ~2 h ; volume conforme au §10.1.
+Les 9 chapitres, 6 clients, 24 scénarios, 90 cartes, 6 cas d'assiette, 20 événements. **DoD** : la campagne se termine en ~2 h ; volume conforme au §10.1.
 
 ### Lot 9 — Mode libre, polish, PWA
 Saison libre, cas isolés, service worker, budget de perf, passe d'accessibilité, passe d'équilibrage. **DoD** : Lighthouse ≥ 90 sur les 4 axes, jouable hors ligne, budget JS respecté.

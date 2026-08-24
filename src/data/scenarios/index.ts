@@ -7,7 +7,6 @@ import { GREEN_DISCOVERY, GREEN_KICKOFF } from './green';
 import { SERVICES_DISCOVERY, SERVICES_KICKOFF } from './services';
 import { TUTORIAL } from './misc';
 import { CALL_SCENARIOS } from './calls';
-import { EXPERT_SCENARIOS } from './expert';
 import { FOLLOWUP_SCENARIOS } from './followups';
 import { CLOSING_SCENARIOS } from './closings';
 
@@ -28,7 +27,6 @@ export const SCENARIOS: Scenario[] = [
   ...FOLLOWUP_SCENARIOS,
   ...CLOSING_SCENARIOS,
   ...CALL_SCENARIOS,
-  ...EXPERT_SCENARIOS,
 ];
 
 export function scenarioById(id: string): Scenario {

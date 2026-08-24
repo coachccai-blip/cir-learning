@@ -25,25 +25,26 @@ describe('Déclenchement du contrôle de fin de saison', () => {
   const portfolio = [dossier(0.9), dossier(0.4), dossier(0.7)];
 
   it('épargne une première saison bien tenue', () => {
-    expect(finalAuditDue('onboarding', THRESHOLD, THRESHOLD, portfolio)).toBe(false);
-    expect(finalAuditDue('onboarding', 100, THRESHOLD, portfolio)).toBe(false);
+    expect(finalAuditDue(THRESHOLD, THRESHOLD, portfolio)).toBe(false);
+    expect(finalAuditDue(100, THRESHOLD, portfolio)).toBe(false);
   });
 
   it('contrôle une première saison dont la sécurité a lâché', () => {
-    expect(finalAuditDue('onboarding', THRESHOLD - 1, THRESHOLD, portfolio)).toBe(true);
-    expect(finalAuditDue('onboarding', 0, THRESHOLD, portfolio)).toBe(true);
+    expect(finalAuditDue(THRESHOLD - 1, THRESHOLD, portfolio)).toBe(true);
+    expect(finalAuditDue(0, THRESHOLD, portfolio)).toBe(true);
   });
 
-  it('contrôle systématiquement la deuxième saison, sécurité ou non', () => {
-    expect(finalAuditDue('expert', 100, THRESHOLD, portfolio)).toBe(true);
-    expect(finalAuditDue('expert', 0, THRESHOLD, portfolio)).toBe(true);
+  it('ne dépend que de la sécurité, jamais du hasard', () => {
+    // Deux appels identiques donnent le même verdict : le contrôle se mérite.
+    expect(finalAuditDue(30, THRESHOLD, portfolio)).toBe(finalAuditDue(30, THRESHOLD, portfolio));
+    expect(finalAuditDue(THRESHOLD + 20, THRESHOLD, portfolio)).toBe(false);
   });
 
   it('ne contrôle rien quand aucune assiette n’a été chiffrée', () => {
     const rien = [dossier(null, false), dossier(null, false)];
-    expect(finalAuditDue('expert', 0, THRESHOLD, rien)).toBe(false);
-    expect(finalAuditDue('onboarding', 0, THRESHOLD, rien)).toBe(false);
-    expect(finalAuditDue('expert', 0, THRESHOLD, [])).toBe(false);
+    expect(finalAuditDue(0, THRESHOLD, rien)).toBe(false);
+    expect(finalAuditDue(0, THRESHOLD, rien)).toBe(false);
+    expect(finalAuditDue(0, THRESHOLD, [])).toBe(false);
   });
 
   it('porte sur le dossier le moins précis, jamais au hasard', () => {
@@ -68,12 +69,12 @@ describe('Fin de saison, écran par écran', () => {
   });
 
   /** Termine une saison dans l'état demandé et rend l'écran affiché. */
-  async function endSeason(mode: 'onboarding' | 'expert', security: number, chiffre: boolean) {
+  async function endSeason(security: number, chiffre: boolean) {
     const { useStore } = await import('../../src/state/store');
     const s = useStore.getState();
     s.boot();
     s.setOptions({ volume: 0 });
-    s.newGame(mode, `fin-${mode}-${security}-${chiffre}`);
+    s.newGame(`fin-${security}-${chiffre}`);
     useStore.setState({
       save: {
         ...useStore.getState().save!,
@@ -86,19 +87,16 @@ describe('Fin de saison, écran par écran', () => {
   }
 
   it('n’envoie pas le vérificateur sur une première saison propre', async () => {
-    expect(await endSeason('onboarding', 90, true)).toBe('quiz');
+    expect(await endSeason(90, true)).toBe('quiz');
   });
 
   it('l’envoie quand la sécurité a lâché', async () => {
-    expect(await endSeason('onboarding', 20, true)).toBe('audit');
+    expect(await endSeason(20, true)).toBe('audit');
   });
 
-  it('l’envoie toujours en deuxième saison, et sans quiz derrière', async () => {
-    expect(await endSeason('expert', 95, true)).toBe('audit');
-  });
-
-  it('va droit au bilan quand rien n’a été chiffré', async () => {
-    expect(await endSeason('expert', 10, false)).toBe('end');
+  it('va droit au quiz de sortie quand rien n’a été chiffré', async () => {
+    // Sans assiette construite, il n'y a rien à contrôler : on passe au bilan.
+    expect(await endSeason(10, false)).toBe('quiz');
   });
 });
 
@@ -144,40 +142,35 @@ describe('Vivier de questions du vérificateur', () => {
 });
 
 describe('Le mot de la fin du vérificateur', () => {
-  it('ne dit pas la même chose en première et en deuxième saison', async () => {
+  it('rend toujours la même leçon pour une même partie', async () => {
     const { auditLesson } = await import('../../src/engine/audit');
     for (const outcome of ['validated', 'partial', 'total'] as const) {
       for (const seed of ['s1', 's2', 's3', 's4']) {
-        const on = auditLesson('onboarding', outcome, seed);
-        const ex = auditLesson('expert', outcome, seed);
-        expect(on.verdict, `${outcome}/${seed}`).not.toBe(ex.verdict);
-        expect(on.lesson, `${outcome}/${seed}`).not.toBe(ex.lesson);
+        const a = auditLesson(outcome, seed);
+        expect(auditLesson(outcome, seed).verdict, `${outcome}/${seed}`).toBe(a.verdict);
+        expect(auditLesson(outcome, seed).lesson, `${outcome}/${seed}`).toBe(a.lesson);
       }
     }
   });
 
   it('dit autre chose selon l’issue du contrôle', async () => {
     const { auditLesson } = await import('../../src/engine/audit');
-    for (const mode of ['onboarding', 'expert'] as const) {
-      const verdicts = (['validated', 'partial', 'total'] as const).map(
-        (o) => auditLesson(mode, o, 'fixe').verdict,
-      );
-      expect(new Set(verdicts).size, mode).toBe(3);
-    }
+    const verdicts = (['validated', 'partial', 'total'] as const).map(
+      (o) => auditLesson(o, 'fixe').verdict,
+    );
+    expect(new Set(verdicts).size).toBe(3);
   });
 
   it('varie d’une partie à l’autre, sans jamais rester vide', async () => {
     const { auditLesson } = await import('../../src/engine/audit');
     const seen = new Set(
-      Array.from({ length: 30 }, (_, i) => auditLesson('expert', 'partial', `g${i}`).lesson),
+      Array.from({ length: 30 }, (_, i) => auditLesson('partial', `g${i}`).lesson),
     );
     expect(seen.size).toBeGreaterThan(1);
-    for (const mode of ['onboarding', 'expert'] as const) {
-      for (const o of ['validated', 'partial', 'total'] as const) {
-        const l = auditLesson(mode, o, 'x');
-        expect(l.verdict.length).toBeGreaterThan(40);
-        expect(l.lesson.length).toBeGreaterThan(40);
-      }
+    for (const o of ['validated', 'partial', 'total'] as const) {
+      const l = auditLesson(o, 'x');
+      expect(l.verdict.length).toBeGreaterThan(40);
+      expect(l.lesson.length).toBeGreaterThan(40);
     }
   });
 });

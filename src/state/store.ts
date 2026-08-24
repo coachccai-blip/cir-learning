@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import balance from '../data/balance.json';
 import ruleset from '../data/rules/ruleset-2026.json';
-import { clientById, findClient, rosterFor } from '../data/clients';
+import { clientById, findClient, roster } from '../data/clients';
 import { caseById, writtenCases } from '../data/cases';
 import { cardsetById } from '../data/cards';
 import { scenarioById } from '../data/scenarios/index';
@@ -13,7 +13,6 @@ import type {
   CardVerdict,
   DeltaLogEntry,
   GameEvent,
-  GameMode,
   Gauges,
   GeneratedProspect,
   Ruleset,
@@ -29,7 +28,6 @@ import { evaluatePromise, generateProspect, resolveGenericMission } from '../eng
 import { neglectedClients, resolveMilestone } from '../engine/milestones';
 import { stepFor, stepForClient } from '../engine/progression';
 import { prospectsForCycle, remainingProspects } from '../engine/roster';
-import { completeSeason, EMPTY_PROGRESS, measuresLearning, type Progress } from '../engine/journey';
 import { finalAuditDue } from '../engine/auditgate';
 import { varyCase } from '../engine/casevar';
 import { twistsForCase } from '../data/case-twists';
@@ -40,11 +38,9 @@ import {
   DEFAULT_OPTIONS,
   loadCodexRead,
   loadOptions,
-  loadProgress,
   loadSave,
   persistCodexRead,
   persistOptions,
-  persistProgress,
   persistSave,
   type Options,
 } from './persistence';
@@ -57,7 +53,6 @@ const RULESET = ruleset as Ruleset;
 
 export type View =
   | 'home'
-  | 'mode'
   | 'day'
   | 'night'
   | 'dialogue'
@@ -123,7 +118,6 @@ interface UIState {
   save: SaveGame | null;
   options: Options;
   /** Avancement du parcours (saisons terminées) — hors sauvegarde de partie. */
-  progress: Progress;
   codexReadPersistent: string[];
   toasts: Toast[];
   dialogue: DialogueContext | null;
@@ -159,7 +153,7 @@ interface UIState {
 interface Actions {
   boot: () => void;
   go: (view: View) => void;
-  newGame: (mode: GameMode, seedOverride?: string) => void;
+  newGame: (seedOverride?: string) => void;
   startFirstDay: () => void;
   recordChoice: (entry: {
     scenarioId: string;
@@ -217,9 +211,7 @@ interface Actions {
   closeInterimAudit: () => void;
   commitQuiz: (phase: 'pre' | 'post', answers: number[]) => void;
   /** Marque la saison terminée : c'est ce qui déverrouille la suivante. */
-  completeSeason: (mode: GameMode, score: number) => void;
   /** Remet le parcours à zéro (usage formateur, depuis les options). */
-  resetJourney: () => void;
   /** Le joueur a vu la sortie proposée après deux missions et poursuit. */
   acknowledgeGraduation: () => void;
 }
@@ -237,7 +229,6 @@ export const useStore = create<Store>((set, get) => ({
   view: 'home',
   save: null,
   options: DEFAULT_OPTIONS,
-  progress: EMPTY_PROGRESS,
   codexReadPersistent: [],
   toasts: [],
   dialogue: null,
@@ -257,32 +248,28 @@ export const useStore = create<Store>((set, get) => ({
     set({
       save,
       options: loadOptions(),
-      progress: loadProgress(),
       codexReadPersistent: loadCodexRead(),
     });
   },
 
   go: (view) => set({ view }),
 
-  newGame: (mode, seedOverride) => {
+  newGame: (seedOverride) => {
     // Toute saison est jouable d'emblée : l'ordre du parcours est un conseil
     // affiché à la sélection, pas une porte fermée.
-    const save = createNewGame(mode, new Date(0).toISOString(), seedOverride);
+    const save = createNewGame(new Date(0).toISOString(), seedOverride);
     // Le portefeuille démarre vide : on n'hérite pas d'un portefeuille, on le
     // construit au téléphone. Les dossiers du parcours attendent dans le
     // vivier de prospection, et il faut décrocher un rendez-vous pour les
     // ouvrir. Deux pour commencer — ceux que le parcours demande de mener à
     // leur terme ; les suivants n'arrivent qu'après, pour qui continue.
     save.portfolio = [];
-    save.prospects = prospectsForCycle(mode, rosterFor(mode), save.seed, 1, balance.openingClients, []);
+    save.prospects = prospectsForCycle(roster(), 1, []);
     applyCaseVariations(save.seed);
     persist(save);
     set({ save, settlement: null, transition: null });
-    // Quiz d'entrée avant de commencer (mesure de l'apprentissage §18.1). La
-    // deuxième saison s'en passe : elle interrogerait sur les notions que le
-    // joueur vient précisément de travailler.
-    if (measuresLearning(mode)) set({ view: 'quiz', quizPhase: 'pre' });
-    else get().startFirstDay();
+    // Quiz d'entrée avant de commencer (mesure de l'apprentissage §18.1).
+    set({ view: 'quiz', quizPhase: 'pre' });
   },
 
   recordChoice: (entry) => {
@@ -329,12 +316,9 @@ export const useStore = create<Store>((set, get) => ({
     if (!save) return;
     set({ view: 'day' });
     get().generateProspects(3);
-    // Le tutoriel présente le cabinet et le métier : il n'a pas de sens en
-    // deuxième saison. Celle-ci ouvre sur une autre scène — la directrice de BU
-    // confie un portefeuille à quelqu'un qui a déjà déposé une campagne.
+    // Le tutoriel présente le cabinet et le métier, une seule fois par partie.
     if (!save.tutorialDone) {
-      const scenarioId = save.mode === 'expert' ? 'sc_exp_opening' : 'sc_tutorial';
-      get().startDialogue({ scenarioId, kind: 'tutorial', returnTo: 'day' });
+      get().startDialogue({ scenarioId: 'sc_tutorial', kind: 'tutorial', returnTo: 'day' });
     }
   },
 
@@ -968,17 +952,10 @@ export const useStore = create<Store>((set, get) => ({
       );
     }
 
-    // Une piste de plus par semaine à partir de la troisième, et une seule :
-    // le joueur qui s'arrête à deux missions ne voit jamais arriver un dossier
-    // qu'il n'ouvrira pas, et celui qui continue garde de quoi faire.
-    const arriving = prospectsForCycle(
-      save.mode,
-      rosterFor(save.mode),
-      save.seed,
-      nextCycle,
-      balance.openingClients,
-      next.prospects.map((p) => p.scriptedClientId ?? ''),
-    );
+    // Les fiches écrites arrivent selon le calendrier de la saison, jamais
+    // deux fois la même.
+    const offered = next.prospects.map((p) => p.scriptedClientId ?? '');
+    const arriving = prospectsForCycle(roster(), nextCycle, offered);
     if (arriving.length > 0) {
       next.prospects = [...next.prospects, ...arriving];
     }
@@ -1095,14 +1072,12 @@ export const useStore = create<Store>((set, get) => ({
     // n'avait rien à dire — et l'absence de contrôle, qui est la récompense
     // d'une saison bien tenue, passait pour une formalité de plus.
     const due = finalAuditDue(
-      save.mode,
       save.gauges.security,
       balance.auditSecurityThreshold,
       save.portfolio,
     );
     if (due) set({ save: next, view: 'audit', auditMode: 'final' });
-    else if (measuresLearning(save.mode)) set({ save: next, view: 'quiz', quizPhase: 'post' });
-    else set({ save: next, view: 'end' });
+    else set({ save: next, view: 'quiz', quizPhase: 'post' });
     get().checkBadges();
   },
 
@@ -1112,16 +1087,7 @@ export const useStore = create<Store>((set, get) => ({
   },
 
 
-  completeSeason: (mode, score) => {
-    const progress = completeSeason(get().progress, mode, score);
-    persistProgress(progress);
-    set({ progress });
-  },
 
-  resetJourney: () => {
-    persistProgress(EMPTY_PROGRESS);
-    set({ progress: EMPTY_PROGRESS });
-  },
 
   acknowledgeGraduation: () => {
     const save = get().save;
@@ -1130,7 +1096,7 @@ export const useStore = create<Store>((set, get) => ({
     // n'en sert que deux pour laisser le temps de les mener au bilan ; passé
     // ce cap, le joueur a montré qu'il savait faire et peut aller chercher les
     // autres dossiers au téléphone.
-    const extra = remainingProspects(rosterFor(save.mode), save.seed, [
+    const extra = remainingProspects(roster(), save.seed, [
       ...save.prospects.map((p) => p.scriptedClientId ?? ''),
       // Un dossier déjà au portefeuille ne se rappelle pas : il est déjà pris.
       ...save.portfolio.map((cs) => cs.clientId),
@@ -1147,8 +1113,8 @@ export const useStore = create<Store>((set, get) => ({
 }));
 
 /** Tolérance annoncée dans l'interface, pour le n-ième dossier d'une saison. */
-export function toleranceLabel(mode: GameMode, step = 1): string {
-  return `±${Math.round(stepFor(mode, step).tolerance * 100)} %`;
+export function toleranceLabel(step = 1): string {
+  return `±${Math.round(stepFor(step).tolerance * 100)} %`;
 }
 
 export { chapterForCycle, nextMilestone, maxClients };

@@ -1,19 +1,10 @@
 {
-  "tolerance": {
-    "onboarding": 0.05,
-    "expert": 0.01
-  },
-  "hints": {
-    "onboarding": 2,
-    "expert": 0
-  },
+  "tolerance": 0.05,
+  "hints": 2,
   "eventChance": 0.33,
   "auditSecurityThreshold": 60,
   "defaultFeeRate": 0.2,
-  "seasonRevenueTarget": {
-    "onboarding": 300000,
-    "expert": 220000
-  },
+  "seasonRevenueTarget": 300000,
   "nonEligibleProspectRatio": 0.25,
   "xp": {
     "dialogueChoice": {
@@ -83,83 +74,42 @@
   },
   "investigateCost": 2,
   "neglectGraceCycles": 2,
-  "progression": {
-    "onboarding": [
-      {
-        "postes": [
-          "personnel",
-          "amortization"
-        ],
-        "tolerance": 0.15
-      },
-      {
-        "postes": [
-          "personnel",
-          "amortization",
-          "subcontracting"
-        ],
-        "tolerance": 0.1
-      },
-      {
-        "postes": [
-          "personnel",
-          "amortization",
-          "subcontracting",
-          "grants"
-        ],
-        "tolerance": 0.07
-      },
-      {
-        "postes": [
-          "personnel",
-          "amortization",
-          "subcontracting",
-          "grants",
-          "decoys"
-        ],
-        "tolerance": 0.05
-      }
-    ],
-    "expert": [
-      {
-        "postes": [
-          "personnel",
-          "amortization",
-          "subcontracting",
-          "grants",
-          "decoys"
-        ],
-        "tolerance": 0.03
-      },
-      {
-        "postes": [
-          "personnel",
-          "amortization",
-          "subcontracting",
-          "grants",
-          "decoys"
-        ],
-        "tolerance": 0.02
-      },
-      {
-        "postes": [
-          "personnel",
-          "amortization",
-          "subcontracting",
-          "grants",
-          "decoys"
-        ],
-        "tolerance": 0.01
-      }
-    ]
-  },
-  "audit": {
-    "remedyRelief": 0.4
-  },
-  "startingXp": {
-    "onboarding": 0,
-    "expert": 2600
-  },
+  "progression": [
+    {
+      "postes": [
+        "personnel",
+        "amortization"
+      ],
+      "tolerance": 0.15
+    },
+    {
+      "postes": [
+        "personnel",
+        "amortization",
+        "subcontracting"
+      ],
+      "tolerance": 0.1
+    },
+    {
+      "postes": [
+        "personnel",
+        "amortization",
+        "subcontracting",
+        "grants"
+      ],
+      "tolerance": 0.07
+    },
+    {
+      "postes": [
+        "personnel",
+        "amortization",
+        "subcontracting",
+        "grants",
+        "decoys"
+      ],
+      "tolerance": 0.05
+    }
+  ],
   "missionsToGraduate": 2,
   "openingClients": 2
 }

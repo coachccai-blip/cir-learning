@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { genderOfVoice, pickVoice, pitchFor, rateFor, scoreForGender } from '../../src/app/speech';
 import { displayedSpeaker, genderForSpeaker, isGenericSpeaker } from '../../src/data/voices';
 import { CLIENTS } from '../../src/data/clients';
-import { EXPERT_CLIENTS } from '../../src/data/clients-expert';
 import { SCENARIOS } from '../../src/data/scenarios/index';
 
 // Voix telles qu'on les rencontre réellement : macOS, Windows, Chrome Android.
@@ -125,7 +124,7 @@ describe('Quand le système n’offre pas la bonne voix', () => {
 });
 
 describe('Genre de lecture de chaque personnage', () => {
-  const ALL = [...CLIENTS, ...EXPERT_CLIENTS];
+  const ALL = CLIENTS;
 
   it('lit chaque client avec la voix de son genre quand la scène le nomme', () => {
     for (const c of ALL) {
