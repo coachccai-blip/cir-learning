@@ -5,7 +5,9 @@
 // menait aucun au bout, et la sortie proposée après deux missions devenait
 // illisible. Elle en sert désormais deux, toujours les mêmes, dans un ordre
 // fixe — Maison Dupuis dès la première semaine, Mecaprécis à la deuxième. Le
-// joueur a le temps de mener chacune jusqu'au bilan.
+// joueur a le temps de mener chacune jusqu'au bilan. Le reste du catalogue
+// n'est pas perdu : il s'ouvre d'un coup dans les prospects pour qui décline
+// la sortie proposée après deux missions et choisit de continuer.
 //
 // La deuxième saison garde son vivier tiré à la graine : le joueur y est
 // aguerri, et deux parties ne doivent pas se ressembler.

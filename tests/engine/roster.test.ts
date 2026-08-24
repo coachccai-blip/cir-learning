@@ -262,3 +262,61 @@ describe('Le vivier ne se répète pas', () => {
     expect(new Set(after).size, `doublon avec les écartés : ${before.join(', ')}`).toBe(after.length);
   });
 });
+
+describe('Continuer à jouer ouvre le reste du catalogue', () => {
+  it('sert les dossiers jamais proposés, une seule fois', async () => {
+    const { useStore } = await import('../../src/state/store');
+    const s = useStore.getState();
+    s.newGame('onboarding', 'suite');
+    // Le calendrier d'entrée n'a servi que Maison Dupuis.
+    const before = useStore.getState().save!.prospects.map((p) => p.scriptedClientId);
+    expect(before).toEqual(['cli_agri_dupuis']);
+
+    useStore.getState().acknowledgeGraduation();
+    const after = useStore.getState().save!.prospects.filter((p) => p.scriptedClientId);
+    // Les cinq autres dossiers écrits de la saison sont désormais appelables.
+    expect(after).toHaveLength(ROSTER.length);
+    expect(new Set(after.map((p) => p.scriptedClientId)).size).toBe(ROSTER.length);
+    expect(after.map((p) => p.scriptedClientId)).toContain('cli_indus_verdier');
+    expect(after.map((p) => p.scriptedClientId)).toContain('cli_services_datao');
+
+    // Un second appel ne duplique rien : l'accusé de réception est à usage unique.
+    useStore.getState().acknowledgeGraduation();
+    expect(useStore.getState().save!.prospects.filter((p) => p.scriptedClientId)).toHaveLength(
+      ROSTER.length,
+    );
+  });
+
+  it('ne repropose pas un dossier déjà décroché', async () => {
+    const { useStore } = await import('../../src/state/store');
+    const s = useStore.getState();
+    s.newGame('onboarding', 'suite-2');
+    const dupuis = useStore.getState().save!.prospects[0];
+    useStore.getState().resolveProspectCall(dupuis.id, ['prospect_sign']);
+    useStore.getState().acknowledgeGraduation();
+    const scripted = useStore.getState().save!.prospects.filter((p) => p.scriptedClientId);
+    expect(scripted.filter((p) => p.scriptedClientId === 'cli_agri_dupuis')).toHaveLength(1);
+    expect(new Set(scripted.map((p) => p.scriptedClientId)).size).toBe(ROSTER.length);
+  });
+});
+
+describe('Le catalogue ouvert ignore ce qui est déjà pris', () => {
+  it('ne repropose pas un client déjà au portefeuille', async () => {
+    const { useStore } = await import('../../src/state/store');
+    const { initClientState } = await import('../../src/state/factory');
+    const s = useStore.getState();
+    s.newGame('onboarding', 'deja-pris');
+    // Un dossier arrivé au portefeuille sans passer par le vivier : il ne doit
+    // pas ressortir en piste à appeler.
+    useStore.setState({
+      save: {
+        ...useStore.getState().save!,
+        portfolio: [{ ...initClientState('cli_saas_nexalog'), dossierState: 'CLOSED' }],
+      },
+    });
+    useStore.getState().acknowledgeGraduation();
+    const scripted = useStore.getState().save!.prospects.map((p) => p.scriptedClientId);
+    expect(scripted).not.toContain('cli_saas_nexalog');
+    expect(scripted).toContain('cli_indus_verdier');
+  });
+});

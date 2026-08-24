@@ -28,7 +28,7 @@ import { newBadges } from '../engine/badges';
 import { evaluatePromise, generateProspect, resolveGenericMission } from '../engine/prospects';
 import { neglectedClients, resolveMilestone } from '../engine/milestones';
 import { stepFor, stepForClient } from '../engine/progression';
-import { prospectsForCycle } from '../engine/roster';
+import { prospectsForCycle, remainingProspects } from '../engine/roster';
 import { completeSeason, EMPTY_PROGRESS, measuresLearning, type Progress } from '../engine/journey';
 import { finalAuditDue } from '../engine/auditgate';
 import { varyCase } from '../engine/casevar';
@@ -1126,9 +1126,23 @@ export const useStore = create<Store>((set, get) => ({
   acknowledgeGraduation: () => {
     const save = get().save;
     if (!save || save.graduationAcknowledged) return;
-    const next = { ...save, graduationAcknowledged: true };
+    // Choisir de continuer ouvre le reste du catalogue. Le calendrier d'entrée
+    // n'en sert que deux pour laisser le temps de les mener au bilan ; passé
+    // ce cap, le joueur a montré qu'il savait faire et peut aller chercher les
+    // autres dossiers au téléphone.
+    const extra = remainingProspects(rosterFor(save.mode), save.seed, [
+      ...save.prospects.map((p) => p.scriptedClientId ?? ''),
+      // Un dossier déjà au portefeuille ne se rappelle pas : il est déjà pris.
+      ...save.portfolio.map((cs) => cs.clientId),
+    ]);
+    const next = {
+      ...save,
+      graduationAcknowledged: true,
+      prospects: [...save.prospects, ...extra],
+    };
     persist(next);
     set({ save: next });
+    for (const p of extra) get().toast(STR.prospects.newCall(p.company, p.hook));
   },
 }));
 

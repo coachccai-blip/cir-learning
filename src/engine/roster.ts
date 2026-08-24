@@ -88,3 +88,19 @@ export function prospectsForCycle(
   const waiting = order.slice(openingSize).filter((c) => !alreadyOffered.includes(c.id));
   return waiting[0] ? [scriptedProspect(waiting[0], openingSize + cycle)] : [];
 }
+
+/**
+ * Fiches restées au catalogue, jamais servies. Le calendrier de la première
+ * saison n'en sert que deux, pour laisser le temps de les mener au bilan. Le
+ * joueur qui décline la sortie proposée et choisit de continuer a fait ce
+ * tour-là : le reste du catalogue s'ouvre alors d'un coup.
+ */
+export function remainingProspects(
+  roster: readonly ClientDef[],
+  seed: string,
+  alreadyOffered: readonly string[],
+): GeneratedProspect[] {
+  return rosterOrder(roster, seed)
+    .filter((c) => !alreadyOffered.includes(c.id))
+    .map((c, i) => scriptedProspect(c, 100 + i));
+}

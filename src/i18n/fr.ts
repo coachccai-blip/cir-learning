@@ -368,7 +368,7 @@ export const STR = {
   graduation: {
     title: 'Bravo ! Vous connaissez dans les grandes lignes l’activité de CIR Corp',
     body:
-      'Deux missions conduites du premier appel jusqu’au bilan : vous avez parcouru toute la chaîne du métier — décrocher, cadrer, qualifier, chiffrer, rédiger, restituer, et défendre. Vous pouvez vous arrêter ici et recevoir votre bilan de saison, ou poursuivre : d’autres pistes arrivent chaque semaine.',
+      'Deux missions conduites du premier appel jusqu’au bilan : vous avez parcouru toute la chaîne du métier — décrocher, cadrer, qualifier, chiffrer, rédiger, restituer, et défendre. Vous pouvez vous arrêter ici et recevoir votre bilan de saison, ou poursuivre : le reste du portefeuille de l’agence s’ouvre alors dans vos prospects.',
     quit: 'Terminer la saison',
     keepPlaying: 'Continuer à jouer',
     progress: (done: number, total: number) =>
