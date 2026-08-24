@@ -20,7 +20,7 @@ export const SAAS_DISCOVERY: Scenario = {
       choices: [
         choice('optimal', 'technique', 'Volontiers. Sur quel point avez-vous buté sans savoir si une solution existait ?', { relation: 5, security: 8, mood: 5, trust: 4 }, { what: 'Vous canalisez la passion.', why: 'Le GEEK s’ouvre par une vraie question technique, pas par une coupure.', rule: 'Avec un techos, la curiosité sincère ouvre les portes.', codexUnlock: 'cdx_verrou' }, 'n2'),
         choice('acceptable', 'synthese', 'Montrez-moi l’essentiel, puis les points où le résultat était incertain.', { security: 6, mood: 2 }, { what: 'Vous cadrez le temps.', why: 'Correct, un peu directif pour un passionné.', rule: 'Recadrer sans casser l’élan.' }, 'n2'),
-        choice('tempting', 'empathie', 'Racontez-moi tout dans le détail, on a largement le temps devant nous !', { relation: 6, security: -4, profitability: -8, mood: 6 }, { what: 'Vous vous laissez embarquer.', why: 'Le kick-off déborde, vos PA fondent.', rule: 'Se laisser noyer par le GEEK coûte du temps facturable.' }, 'n2'),
+        choice('tempting', 'empathie', 'Racontez-moi tout dans le détail, on a largement le temps devant nous !', { relation: 6, security: -4, profitability: -8, mood: 6 }, { what: 'Vous vous laissez embarquer.', why: 'Le kick-off déborde, et votre semaine avec.', rule: 'Se laisser noyer par le GEEK coûte du temps facturable.' }, 'n2'),
         choice('poor', 'fermete', 'Pas le temps pour la technique : donnez-moi directement les chiffres.', { relation: -10, mood: -8 }, { what: 'Vous coupez le passionné.', why: 'Vous vous fermez la source d’information la plus riche.', rule: 'Couper un GEEK, c’est perdre la matière technique.' }, 'n2'),
       ],
     },

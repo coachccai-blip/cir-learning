@@ -1,22 +1,15 @@
 {
-  "actionPoints": {
-    "day": 6,
-    "night": 5
-  },
   "energy": {
     "start": 100,
-    "nightFull": -12,
-    "nightNormal": -6,
-    "overtime": -20,
-    "weekend": 10,
+    "perAction": -4,
+    "weekend": 22,
     "rest": 15,
     "debriefSuccess": 8,
     "thresholds": {
       "fit": 80,
       "tired": 49,
       "exhausted": 24
-    },
-    "restfulNightBonus": 5
+    }
   },
   "tolerance": {
     "onboarding": 0.05,

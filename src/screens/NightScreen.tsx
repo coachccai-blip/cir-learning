@@ -7,23 +7,21 @@ import { GaugesBar } from '../components/Gauges';
 import { clientById } from '../data/clients';
 import type { ClientState, DossierState } from '../engine/types';
 
-function nightAction(cs: ClientState): { label: string; view: 'qualification' | 'base' | 'justif'; cost: number } | null {
-  const map: Partial<Record<DossierState, { label: string; view: 'qualification' | 'base' | 'justif'; cost: number }>> = {
-    KICKED_OFF: { label: STR.activities.qualification, view: 'qualification', cost: 2 },
-    SIGNED: { label: STR.activities.qualification, view: 'qualification', cost: 2 },
-    CARDS_DONE: { label: STR.activities.base, view: 'base', cost: 2 },
-    BASE_DONE: { label: STR.activities.justification, view: 'justif', cost: 2 },
+function nightAction(cs: ClientState): { label: string; view: 'qualification' | 'base' | 'justif' } | null {
+  const map: Partial<Record<DossierState, { label: string; view: 'qualification' | 'base' | 'justif' }>> = {
+    KICKED_OFF: { label: STR.activities.qualification, view: 'qualification' },
+    SIGNED: { label: STR.activities.qualification, view: 'qualification' },
+    CARDS_DONE: { label: STR.activities.base, view: 'base' },
+    BASE_DONE: { label: STR.activities.justification, view: 'justif' },
   };
   return map[cs.dossierState] ?? null;
 }
 
 export function NightScreen() {
   const save = useStore((s) => s.save);
-  const spendPA = useStore((s) => s.spendPA);
+  const spendEnergy = useStore((s) => s.spendEnergy);
   const go = useStore((s) => s.go);
-  const applyEnergy = useStore((s) => s.applyEnergy);
   const lastDeltas = useStore((s) => s.lastDeltas);
-  const toast = useStore((s) => s.toast);
   if (!save) return null;
 
   const dossiers = save.portfolio.filter(
@@ -33,22 +31,11 @@ export function NightScreen() {
   function openMinigame(cs: ClientState) {
     const a = nightAction(cs);
     if (!a) return;
-    if (!spendPA(a.cost)) {
-      toast('Pas assez de PA.');
-      return;
-    }
+    // Monter un dossier fatigue, mais ne se refuse jamais : c'est au joueur de
+    // décider s'il enchaîne ou s'il garde de l'énergie pour la semaine.
+    spendEnergy(a.label);
     useStore.setState({ activeClientId: cs.clientId });
     go(a.view);
-  }
-
-  function overtime() {
-    if (save?.overtimeUsedThisNight) {
-      toast('Heures sup déjà utilisées cette nuit.');
-      return;
-    }
-    applyEnergy(-20, STR.activities.overtime);
-    useStore.setState({ save: save ? { ...save, actionPoints: save.actionPoints + 2, overtimeUsedThisNight: true } : save });
-    toast('+2 PA, −20 énergie');
   }
 
   return (
@@ -62,9 +49,6 @@ export function NightScreen() {
         <GraduationButton />
         <button className="btn btn-ghost" data-sfx="nav" onClick={() => go('codex')}>
           <Icon name="book" size={17} /> {STR.menu.codex}
-        </button>
-        <button className="btn btn-sm" onClick={overtime} disabled={save.overtimeUsedThisNight}>
-          <Icon name="clock" size={15} /> {STR.activities.overtime}
         </button>
         <button className="btn btn-brand" data-sfx="nav" onClick={() => go('bilan')}>
           <Icon name="arrowRight" size={17} /> {STR.hud.toBilan}
@@ -143,9 +127,8 @@ export function NightScreen() {
                   className="btn btn-primary"
                   data-sfx="open"
                   onClick={() => openMinigame(cs)}
-                  disabled={save.actionPoints < a.cost}
                 >
-                  <Icon name="play" size={15} /> {a.label} ({a.cost})
+                  <Icon name="play" size={15} /> {a.label}
                 </button>
               ) : (
                 <span className="tag tag-ok">

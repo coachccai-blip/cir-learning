@@ -7,6 +7,7 @@ import { cardsetById } from '../data/cards';
 import { Avatar } from '../avatars/Avatar';
 import { Icon } from '../ui/Icon';
 import { buildAuditFindings, resolveAudit } from '../engine/audit';
+import { measuresLearning } from '../engine/journey';
 import { shuffleForDisplay } from '../engine/rng';
 import ruleset from '../data/rules/ruleset-2026.json';
 import balance from '../data/balance.json';
@@ -49,10 +50,17 @@ export function AuditScreen() {
   const [round, setRound] = useState<'constat' | 'relance'>('constat');
   const [finished, setFinished] = useState(false);
 
-  // Fin de saison → quiz de sortie (mesure de l'apprentissage) puis écran de fin.
+  // Fin de saison → quiz de sortie (mesure de l'apprentissage) puis écran de
+  // fin. En deuxième saison, on va droit au bilan : le même quiz, posé à
+  // quelqu'un qui vient de passer six semaines sur ces notions, ne mesure plus
+  // rien — et le bilan masque de lui-même la section quand elle est vide.
   const toEnd = () => {
     if (interim) {
       closeInterimAudit();
+      return;
+    }
+    if (!save || !measuresLearning(save.mode)) {
+      go('end');
       return;
     }
     useStore.setState({ quizPhase: 'post' });

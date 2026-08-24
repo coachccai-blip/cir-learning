@@ -6,7 +6,7 @@ import type { CalendarMilestone, ChapterDef, GameMode } from '../engine/types';
 /** Nombre de cycles (semaines) d'une saison. */
 /**
  * Six cycles. Une partie doit tenir en une heure : à ~1,5 min par action, cela
- * borne la saison à ~75 points d'action. Six semaines de 13 PA y répondent, et
+ * borne la saison à six semaines. Le joueur mène chacune à son rythme, et
  * chaque semaine porte une échéance qui a des conséquences (aucune n'est
  * décorative, cf. `applyMilestone` dans le store).
  */

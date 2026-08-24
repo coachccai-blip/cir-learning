@@ -62,6 +62,11 @@ export function migrateSave(data: unknown): SaveGame | null {
     gaugeHistory: s.gaugeHistory ?? [],
     generatedClients: s.generatedClients ?? [],
     graduationAcknowledged: s.graduationAcknowledged ?? false,
+    // Les points d'action ont disparu : une partie enregistrée sous l'ancien
+    // régime pouvait être à zéro PA, et se retrouverait bloquée. Seule
+    // l'énergie subsiste, et elle ne bloque rien.
+    energy: s.energy ?? 100,
+    restUsedThisDay: s.restUsedThisDay ?? false,
     history: (s.history ?? []).map((h) => ({
       ...h,
       text: h.text ?? '',
@@ -71,6 +76,7 @@ export function migrateSave(data: unknown): SaveGame | null {
     portfolio: (s.portfolio ?? []).map((c) => ({
       ...c,
       followupDone: c.followupDone ?? false,
+      investigateDebt: c.investigateDebt ?? 0,
       lastTouchedCycle: c.lastTouchedCycle ?? 0,
       baseStep: c.baseStep ?? null,
     })),

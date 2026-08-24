@@ -11,8 +11,9 @@ import { mailsForCycle } from '../data/mails';
 import { codexById } from '../data/codex';
 import type { ClientState } from '../engine/types';
 import { nextClientAction, type ClientActionKind } from '../engine/activities';
+import BALANCE from '../data/balance.json';
 
-type DayAction = { label: string; kind: ClientActionKind; cost: number };
+type DayAction = { label: string; kind: ClientActionKind };
 
 /** Libellé FR de l'action moteur : le chrome d'UI reste dans l'i18n. */
 function clientAction(cs: ClientState): DayAction | null {
@@ -22,7 +23,7 @@ function clientAction(cs: ClientState): DayAction | null {
 
 export function DayScreen() {
   const save = useStore((s) => s.save);
-  const spendPA = useStore((s) => s.spendPA);
+  const spendEnergy = useStore((s) => s.spendEnergy);
   const applyEnergy = useStore((s) => s.applyEnergy);
   const applyGauges = useStore((s) => s.applyGauges);
   const generateProspects = useStore((s) => s.generateProspects);
@@ -45,10 +46,7 @@ export function DayScreen() {
   function doClientAction(cs: ClientState) {
     const a = clientAction(cs);
     if (!a) return;
-    if (!spendPA(a.cost)) {
-      toast('Pas assez de PA.');
-      return;
-    }
+    spendEnergy(a.label);
     if (a.kind === 'proposal') {
       signClient(cs.clientId);
     } else {
@@ -56,24 +54,27 @@ export function DayScreen() {
     }
   }
 
+  // Souffler ne coûte plus rien, mais ne se prend qu'une fois par jour : sans
+  // cette limite, l'énergie se remonterait à volonté et ne dirait plus rien.
   function rest() {
-    if (!spendPA(1)) return;
-    applyEnergy(15, STR.activities.rest);
-    toast('+15 énergie');
+    if (save?.restUsedThisDay) {
+      toast(STR.activities.restDone);
+      return;
+    }
+    useStore.setState({ save: save ? { ...save, restUsedThisDay: true } : save });
+    applyEnergy(BALANCE.energy.rest, STR.activities.rest);
+    toast(`+${BALANCE.energy.rest} énergie`);
   }
 
   function networking() {
-    if (!spendPA(2)) return;
+    spendEnergy(STR.activities.networking);
     generateProspects(3);
     applyGauges({ relation: 4 }, STR.activities.networking);
     toast('3 prospects tièdes ajoutés');
   }
 
   function callProspect(prospectId: string) {
-    if (!spendPA(1)) {
-      toast('Pas assez de PA.');
-      return;
-    }
+    spendEnergy(STR.activities.prospection);
     playSfx('ring');
     const p = save?.prospects.find((x) => x.id === prospectId);
     startDialogue({
@@ -179,8 +180,8 @@ export function DayScreen() {
                     {STR.common.client}
                   </button>
                   {action ? (
-                    <button className="btn btn-sm btn-primary" onClick={() => doClientAction(cs)} disabled={save.actionPoints < action.cost}>
-                      {action.label} ({action.cost})
+                    <button className="btn btn-sm btn-primary" onClick={() => doClientAction(cs)}>
+                      {action.label}
                     </button>
                   ) : (
                     <span className="tag" title={STR.day.nothingToday}>
@@ -243,11 +244,11 @@ export function DayScreen() {
             <h3>{STR.day.prospects}</h3>
           </div>
           <div className="row">
-            <button className="btn btn-sm" onClick={networking} disabled={save.actionPoints < 2}>
-              <Icon name="users" size={15} /> {STR.activities.networking} (2)
+            <button className="btn btn-sm" onClick={networking}>
+              <Icon name="users" size={15} /> {STR.activities.networking}
             </button>
-            <button className="btn btn-sm" onClick={rest} disabled={save.actionPoints < 1}>
-              <Icon name="bolt" size={15} /> {STR.activities.rest} (1)
+            <button className="btn btn-sm" onClick={rest} disabled={save.restUsedThisDay}>
+              <Icon name="bolt" size={15} /> {STR.activities.rest}
             </button>
           </div>
           {newProspects.length === 0 && <p className="muted">{STR.day.noProspects}</p>}
@@ -270,9 +271,8 @@ export function DayScreen() {
                   className="btn btn-sm btn-primary"
                   data-sfx="call"
                   onClick={() => callProspect(p.id)}
-                  disabled={save.actionPoints < 1}
                 >
-                  <Icon name="phone" size={15} /> {STR.activities.prospection} (1)
+                  <Icon name="phone" size={15} /> {STR.activities.prospection}
                 </button>
               </div>
             </div>

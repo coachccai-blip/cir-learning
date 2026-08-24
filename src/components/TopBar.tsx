@@ -16,11 +16,6 @@ export function TopBar() {
   // Alerte « J-2 » : l'échéance tombe cette semaine ou la suivante.
   const deadlineSoon = ms !== null && ms.cycle - save.cycle <= 1 && ms.alert !== false;
 
-  // Autant de pastilles que de PA possibles dans la phase (jour + bonus forme).
-  const maxDots = Math.max(save.actionPoints, save.phase === 'DAY' ? 11 : 8);
-  const dots = [];
-  for (let i = 0; i < maxDots; i++) dots.push(<span key={i} className={`pa-dot${i < save.actionPoints ? ' on' : ''}`} />);
-
   return (
     <header className="topbar">
       {/* Groupe 1 — temps : phase, date, chapitre */}
@@ -42,14 +37,9 @@ export function TopBar() {
       </div>
 
       <div className="hud">
-        {/* Groupe 2 — ressources actionnables : PA, énergie */}
+        {/* Groupe 2 — la seule ressource qui se consomme : l'énergie. Elle ne
+            barre aucune action ; elle dit ce que la semaine a coûté. */}
         <div className="hud-group">
-          <div className="hud-chip hud-primary">
-            <span className="hud-label">
-              <Icon name="play" size={14} /> {STR.hud.pa}
-            </span>
-            <span className="pa-dots">{dots}</span>
-          </div>
           <div className="hud-chip hud-primary">
             <span className="hud-label">
               <Icon name="bolt" size={14} /> {STR.hud.energy} · {ENERGY_STATE_LABEL[estate]}

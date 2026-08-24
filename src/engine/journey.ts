@@ -60,3 +60,15 @@ export function completeSeason(progress: Progress, mode: GameMode, score: number
     best: { ...progress.best, [mode]: Math.max(progress.best[mode] ?? 0, score) },
   };
 }
+
+/**
+ * Cette saison mesure-t-elle l'apprentissage par un quiz d'entrée et de sortie ?
+ *
+ * Le quiz sert à montrer au joueur ce qu'il ne savait pas et ce qu'il a appris.
+ * Passé la première saison, il pose exactement les mêmes notions à quelqu'un
+ * qui vient de les travailler six semaines durant : la mesure ne dit plus rien,
+ * et les deux écrans ne sont plus qu'un péage à l'entrée et à la sortie.
+ */
+export function measuresLearning(mode: GameMode): boolean {
+  return mode === 'onboarding';
+}

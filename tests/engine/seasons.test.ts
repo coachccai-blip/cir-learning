@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import balance from '../../src/data/balance.json';
 import ruleset from '../../src/data/rules/ruleset-2026.json';
 import { CASES } from '../../src/data/cases';
@@ -510,5 +510,47 @@ describe('Boîte mail par saison', () => {
 
   it('garde des identifiants uniques et des fiches codex existantes', () => {
     expect(new Set(MAILS.map((m) => m.id)).size).toBe(MAILS.length);
+  });
+});
+
+describe('Le quiz n’a de sens qu’en première saison', () => {
+  beforeAll(() => {
+    const mem: Record<string, string> = {};
+    (globalThis as unknown as { localStorage: unknown }).localStorage = {
+      getItem: (k: string) => mem[k] ?? null,
+      setItem: (k: string, v: string) => {
+        mem[k] = v;
+      },
+      removeItem: (k: string) => {
+        delete mem[k];
+      },
+    };
+  });
+
+  it('mesure l’apprentissage en Onboarding, pas en Expert', async () => {
+    const { measuresLearning } = await import('../../src/engine/journey');
+    expect(measuresLearning('onboarding')).toBe(true);
+    expect(measuresLearning('expert')).toBe(false);
+  });
+
+  it('ouvre la première saison sur le quiz de positionnement', async () => {
+    const { useStore } = await import('../../src/state/store');
+    const s = useStore.getState();
+    s.boot();
+    s.setOptions({ volume: 0 });
+    s.newGame('onboarding', 'quiz-on');
+    expect(useStore.getState().view).toBe('quiz');
+    expect(useStore.getState().quizPhase).toBe('pre');
+  });
+
+  it('démarre la deuxième saison directement, sans quiz', async () => {
+    const { useStore } = await import('../../src/state/store');
+    const s = useStore.getState();
+    s.setOptions({ volume: 0 });
+    s.newGame('expert', 'quiz-off');
+    // On entre en jeu ; le premier écran est la scène de rentrée, pas un quiz.
+    expect(useStore.getState().view).not.toBe('quiz');
+    expect(useStore.getState().save!.quizPre).toEqual([]);
+    expect(useStore.getState().save!.quizPost).toEqual([]);
   });
 });

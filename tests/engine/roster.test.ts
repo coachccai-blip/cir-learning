@@ -176,3 +176,35 @@ describe('Une piste écrite ratée se rappelle', () => {
     );
   });
 });
+
+describe('Le vivier ne se répète pas', () => {
+  it('ne sert jamais deux fois la même raison sociale ni le même interlocuteur', async () => {
+    const { useStore } = await import('../../src/state/store');
+    const s = useStore.getState();
+    s.newGame('onboarding', 'doublons');
+    // Sans budget d'actions, un joueur peut appeler et réseauter tout son
+    // saoul : le vivier doit tenir la distance sans se répéter.
+    for (let cycle = 0; cycle < 6; cycle++) useStore.getState().generateProspects(5);
+    const prospects = useStore.getState().save!.prospects;
+    expect(prospects.length).toBeGreaterThanOrEqual(30);
+    const companies = prospects.map((p) => p.company);
+    const contacts = prospects.map((p) => p.contactName);
+    expect(new Set(companies).size, 'raisons sociales en double').toBe(companies.length);
+    expect(new Set(contacts).size, 'interlocuteurs en double').toBe(contacts.length);
+  });
+
+  it('évite aussi les noms des fiches déjà écartées', async () => {
+    const { useStore } = await import('../../src/state/store');
+    const s = useStore.getState();
+    s.newGame('onboarding', 'ecartes');
+    useStore.getState().generateProspects(4);
+    // On écarte tout : les fiches restent affichées, leurs noms restent pris.
+    for (const p of useStore.getState().save!.prospects.filter((x) => !x.scriptedClientId)) {
+      useStore.getState().resolveProspectCall(p.id, ['prospect_decline']);
+    }
+    const before = useStore.getState().save!.prospects.map((p) => p.company);
+    useStore.getState().generateProspects(4);
+    const after = useStore.getState().save!.prospects.map((p) => p.company);
+    expect(new Set(after).size, `doublon avec les écartés : ${before.join(', ')}`).toBe(after.length);
+  });
+});

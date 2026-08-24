@@ -247,7 +247,7 @@ export interface WorkCard {
   description: string;
   clues: string[];
   verdict: Exclude<CardVerdict, 'INVESTIGATE'>;
-  /** INVESTIGATE est toujours accepté, mais coûte 1 PA au cycle suivant. */
+  /** INVESTIGATE est toujours accepté, mais fatigue au cycle suivant. */
   explanation: string;
   codexRef?: string;
 }
@@ -408,7 +408,7 @@ export interface ClientState {
     base: number | null; // précision d'assiette
     justification: number | null;
   };
-  /** Cartes placées en « à investiguer » → PA dus au cycle suivant. */
+  /** Cartes placées en « à investiguer » → fatigue due au cycle suivant. */
   investigateDebt: number;
   /** Le suivi de mission n'est jouable qu'une fois par client. */
   followupDone: boolean;
@@ -474,7 +474,6 @@ export interface SaveGame {
   createdAt: string;
   cycle: number;
   phase: Phase;
-  actionPoints: number;
   energy: number;
   gauges: Gauges;
   xp: number;
@@ -498,7 +497,6 @@ export interface SaveGame {
     prospectsSigned: number;
     prospectsDeclined: number;
   };
-  overtimeUsedThisNight: boolean;
   restUsedThisDay: boolean;
   tutorialDone: boolean;
   /**

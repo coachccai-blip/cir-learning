@@ -5,7 +5,7 @@ import type { ProspectTemplate } from '../engine/types';
 export const PROSPECT_TEMPLATES: ProspectTemplate[] = [
   {
     id: 'pr_saas',
-    companyPool: ['Fluxio', 'Cortexa', 'Brightloop', 'Nimbly', 'Datastream'],
+    companyPool: ['Fluxio', 'Cortexa', 'Brightloop', 'Nimbly', 'Datastream', 'Kairos Soft', 'Vertigo Labs', 'Opteria', 'Sylvant'],
     sectorPool: ['SAAS'],
     sizeRange: [15, 120],
     eligibilityProfile: 'BORDERLINE',
@@ -14,7 +14,7 @@ export const PROSPECT_TEMPLATES: ProspectTemplate[] = [
   },
   {
     id: 'pr_biotech',
-    companyPool: ['Neuronova', 'Immunext', 'BioSère', 'Genethik'],
+    companyPool: ['Neuronova', 'Immunext', 'BioSère', 'Genethik', 'Oncoliss', 'Peptidia', 'Vectalis', 'Myosane'],
     sectorPool: ['BIOTECH'],
     sizeRange: [20, 90],
     eligibilityProfile: 'ELIGIBLE',
@@ -23,7 +23,7 @@ export const PROSPECT_TEMPLATES: ProspectTemplate[] = [
   },
   {
     id: 'pr_indus',
-    companyPool: ['Métalfine', 'Précilex', 'Forgetech', 'Alliage & Co'],
+    companyPool: ['Métalfine', 'Précilex', 'Forgetech', 'Alliage & Co', 'Rectifil', 'Tornex', 'Fonderie Bellac', 'Usinéa'],
     sectorPool: ['INDUS'],
     sizeRange: [30, 200],
     eligibilityProfile: 'BORDERLINE',
@@ -32,7 +32,7 @@ export const PROSPECT_TEMPLATES: ProspectTemplate[] = [
   },
   {
     id: 'pr_green',
-    companyPool: ['Solaris Bio', 'Terravert', 'EcoMat', 'Cyclonov'],
+    companyPool: ['Solaris Bio', 'Terravert', 'EcoMat', 'Cyclonov', 'Algavia', 'Recyclor', 'Chanvrix', 'Thermolia'],
     sectorPool: ['GREENTECH'],
     sizeRange: [15, 110],
     eligibilityProfile: 'BORDERLINE',
@@ -41,7 +41,7 @@ export const PROSPECT_TEMPLATES: ProspectTemplate[] = [
   },
   {
     id: 'pr_agri',
-    companyPool: ['Ferme du Vallon', 'NutriGraine', 'Saveurs Nord', 'BioChamp'],
+    companyPool: ['Ferme du Vallon', 'NutriGraine', 'Saveurs Nord', 'BioChamp', 'Levuria', 'Les Vergers Rouzet', 'Fromagerie Tissot', 'Grains & Cie'],
     sectorPool: ['AGRI'],
     sizeRange: [10, 80],
     eligibilityProfile: 'BORDERLINE',
@@ -50,7 +50,7 @@ export const PROSPECT_TEMPLATES: ProspectTemplate[] = [
   },
   {
     id: 'pr_services_toxic',
-    companyPool: ['ConseilPro', 'DigitAll', 'InfoServ', 'NetConsult', 'Prestalink'],
+    companyPool: ['ConseilPro', 'DigitAll', 'InfoServ', 'NetConsult', 'Prestalink', 'Axemis', 'Ovalink', 'Synerdis', 'Cognitek'],
     sectorPool: ['SERVICES'],
     sizeRange: [40, 300],
     eligibilityProfile: 'NOT_ELIGIBLE',
@@ -59,7 +59,7 @@ export const PROSPECT_TEMPLATES: ProspectTemplate[] = [
   },
   {
     id: 'pr_retail_toxic',
-    companyPool: ['ModaShop', 'Épicerie Plus', 'MaisonDéco', 'Sportissimo'],
+    companyPool: ['ModaShop', 'Épicerie Plus', 'MaisonDéco', 'Sportissimo', 'Papeterie Guibert', 'Jardin&Vous', 'Chausséa Nord', 'Optique Verrin'],
     sectorPool: ['SERVICES'],
     sizeRange: [20, 150],
     eligibilityProfile: 'NOT_ELIGIBLE',

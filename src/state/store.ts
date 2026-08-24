@@ -22,7 +22,7 @@ import type {
   Scenario,
 } from '../engine/types';
 import { clamp } from '../engine/dialogue/mood';
-import { energyState, gradeForXp, maxClients, xpForBaseAccuracy } from '../engine/economy';
+import { energyCostOfAction, gradeForXp, maxClients, xpForBaseAccuracy } from '../engine/economy';
 import { scoreAssiette } from '../engine/cir/scoring';
 import { computeBreakdown } from '../engine/cir/calculator';
 import { newBadges } from '../engine/badges';
@@ -31,7 +31,7 @@ import { buildClientFromProspect, prospectBecomesClient } from '../engine/client
 import { neglectedClients, resolveMilestone } from '../engine/milestones';
 import { stepFor, stepForClient } from '../engine/progression';
 import { arrivingProspect, openingProspects } from '../engine/roster';
-import { completeSeason, EMPTY_PROGRESS, type Progress } from '../engine/journey';
+import { completeSeason, EMPTY_PROGRESS, measuresLearning, type Progress } from '../engine/journey';
 import { varyCase } from '../engine/casevar';
 import { twistsForCase } from '../data/case-twists';
 import { caseForClient } from './dossier';
@@ -196,7 +196,7 @@ interface Actions {
   unlockCodex: (id: string) => void;
   markCodexRead: (id: string) => void;
 
-  spendPA: (n: number) => boolean;
+  spendEnergy: (cause: string) => void;
   checkBadges: () => void;
   endDialogue: (result: {
     clientId?: string;
@@ -291,8 +291,12 @@ export const useStore = create<Store>((set, get) => ({
     loadGeneratedClients([]);
     applyCaseVariations(save.seed);
     persist(save);
-    // Quiz d'entrée avant de commencer (mesure de l'apprentissage §18.1).
-    set({ save, view: 'quiz', quizPhase: 'pre', settlement: null, transition: null });
+    set({ save, settlement: null, transition: null });
+    // Quiz d'entrée avant de commencer (mesure de l'apprentissage §18.1). La
+    // deuxième saison s'en passe : elle interrogerait sur les notions que le
+    // joueur vient précisément de travailler.
+    if (measuresLearning(mode)) set({ view: 'quiz', quizPhase: 'pre' });
+    else get().startFirstDay();
   },
 
   recordChoice: (entry) => {
@@ -441,13 +445,10 @@ export const useStore = create<Store>((set, get) => ({
     }
   },
 
-  spendPA: (n) => {
-    const save = get().save;
-    if (!save || save.actionPoints < n) return false;
-    const next = { ...save, actionPoints: save.actionPoints - n };
-    persist(next);
-    set({ save: next });
-    return true;
+  // Une activité ne se paie plus en points d'action mais en fatigue : elle
+  // n'est jamais refusée, elle laisse une trace.
+  spendEnergy: (cause) => {
+    get().applyEnergy(energyCostOfAction(), cause);
   },
 
   endDialogue: (result) => {
@@ -619,8 +620,19 @@ export const useStore = create<Store>((set, get) => ({
     if (!save) return;
     const base = save.prospects.length;
     const fresh: GeneratedProspect[] = [];
+    // Les noms déjà servis — y compris ceux des fiches écartées, qui restent
+    // affichées — sont exclus du tirage, et la liste s'enrichit au fil de la
+    // fournée : deux prospects de la même vague ne se ressemblent pas non plus.
+    const companies = save.prospects.map((p) => p.company);
+    const contacts = save.prospects.map((p) => p.contactName);
     for (let i = 0; i < n; i++) {
-      fresh.push(generateProspect(PROSPECT_TEMPLATES, save.seed, base + i + save.cycle * 7));
+      const p = generateProspect(PROSPECT_TEMPLATES, save.seed, base + i + save.cycle * 7, {
+        companies,
+        contacts,
+      });
+      companies.push(p.company);
+      contacts.push(p.contactName);
+      fresh.push(p);
     }
     const next = { ...save, prospects: [...save.prospects, ...fresh] };
     persist(next);
@@ -917,10 +929,9 @@ export const useStore = create<Store>((set, get) => ({
     const save = get().save;
     if (!save) return;
     if (save.phase === 'DAY') {
-      const st = energyState(save.energy);
-      let pa = balance.actionPoints.night;
-      if (st === 'exhausted') pa -= 1;
-      const next = { ...save, phase: 'NIGHT' as const, actionPoints: Math.max(1, pa), overtimeUsedThisNight: false };
+      // Le joueur bascule quand il l'a décidé : rien ne l'y force, rien ne l'en
+      // empêche. C'est à lui de juger qu'il a fait le tour de sa journée.
+      const next = { ...save, phase: 'NIGHT' as const };
       persist(next);
       set({
         save: next,
@@ -935,13 +946,14 @@ export const useStore = create<Store>((set, get) => ({
   advanceCycle: () => {
     const save = get().save;
     if (!save) return;
-    // Fatigue de nuit
-    const nightDrain = save.actionPoints === 0 ? balance.energy.nightFull : balance.energy.nightNormal;
-    let energy = clamp(save.energy + nightDrain);
-    // Récompense de nuit reposée
-    if (save.actionPoints >= 2) energy = clamp(energy + balance.energy.restfulNightBonus);
-    // Week-end
-    energy = clamp(energy + balance.energy.weekend);
+    // La fatigue de la semaine a déjà été payée activité par activité. Restent
+    // le week-end, qui rend une partie de ce qu'elle a coûté, et les questions
+    // reportées : chaque carte laissée « à investiguer » se rouvre, et cela se
+    // paie. C'est ce qui empêche de tout reporter sans jamais trancher.
+    const debt = save.portfolio.reduce((n, cs) => n + cs.investigateDebt, 0);
+    const energy = clamp(
+      save.energy + balance.energy.weekend + debt * balance.energy.perAction,
+    );
 
     // Échéance du cycle : chacune a une conséquence, aucune n'est décorative.
     const missed: string[] = [...save.missedDeadlines];
@@ -988,17 +1000,11 @@ export const useStore = create<Store>((set, get) => ({
       return;
     }
 
-    const st = energyState(energy);
-    let dayPA = balance.actionPoints.day;
-    if (st === 'fit') dayPA += 1;
-    if (st === 'exhausted') dayPA -= 1;
-
     const next: SaveGame = {
       ...save,
-      portfolio,
+      portfolio: portfolio.map((cs) => (cs.investigateDebt > 0 ? { ...cs, investigateDebt: 0 } : cs)),
       cycle: nextCycle,
       phase: 'DAY',
-      actionPoints: Math.max(1, dayPA),
       energy,
       cycleLog: [],
       missedDeadlines: missed,

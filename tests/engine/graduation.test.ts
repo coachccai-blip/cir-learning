@@ -39,10 +39,12 @@ describe('Sortie après deux missions', () => {
 });
 
 // ---------------------------------------------------------------------------
-// La saison est-elle réellement jouable jusque-là, budget d'actions compris ?
+// La saison est-elle réellement jouable jusque-là ? Le budget de points
+// d'action a disparu : ce qui borne encore la saison, c'est le calendrier et
+// l'alternance des deux phases.
 // ---------------------------------------------------------------------------
 
-describe('Deux missions tiennent dans le budget d’une saison', () => {
+describe('Deux missions tiennent dans une saison', () => {
   beforeAll(() => {
     const mem: Record<string, string> = {};
     (globalThis as unknown as { localStorage: unknown }).localStorage = {
@@ -72,8 +74,6 @@ describe('Deux missions tiennent dans le budget d’une saison', () => {
       useStore.getState().commitQuiz('pre', [0, 0, 0, 0, 0, 0]);
       useStore.getState().startFirstDay();
 
-      /** Coût des étapes techniques, tel que la phase Technique le facture. */
-      const NIGHT_COST = 2;
       const TECH: Partial<Record<DossierState, DossierState>> = {
         SIGNED: 'CARDS_DONE',
         KICKED_OFF: 'CARDS_DONE',
@@ -98,38 +98,41 @@ describe('Deux missions tiennent dans le budget d’une saison', () => {
         });
       }
 
-      // Un joueur appliqué : il décroche ses deux rendez-vous, puis fait
-      // avancer ses deux dossiers autant que ses points d'action le permettent.
+      // Un joueur appliqué : il décroche ses deux rendez-vous, puis mène ses
+      // deux dossiers aussi loin que la semaine le permet. Plus de budget
+      // d'actions — ce qui borne encore la saison, c'est l'alternance des deux
+      // phases : une étape technique n'est jouable qu'après le jour qui l'ouvre.
       const wanted = balance.missionsToGraduate;
       for (let cycle = 1; cycle <= 6; cycle++) {
         // --- Phase Relation client
-        for (let guard = 0; guard < 30; guard++) {
+        for (let guard = 0; guard < 40; guard++) {
           const save = useStore.getState().save!;
           const open = save.portfolio.filter(
             (c) => c.dossierState !== 'CLOSED' && c.dossierState !== 'LOST',
           );
           // Décrocher d'abord : sans client, rien d'autre n'est jouable.
           const lead = save.prospects.find((p) => p.status === 'NEW' && p.scriptedClientId);
-          if (open.length < wanted && lead && useStore.getState().spendPA(1)) {
+          if (open.length < wanted && lead) {
+            useStore.getState().spendEnergy('Prospection téléphonique');
             useStore.getState().resolveProspectCall(lead.id, ['prospect_sign']);
             continue;
           }
-          const target = open
-            .map((c) => ({ c, a: nextClientAction(c) }))
-            .find((x) => x.a && x.a.cost <= useStore.getState().save!.actionPoints);
+          const target = open.map((c) => ({ c, a: nextClientAction(c) })).find((x) => x.a);
           if (!target) break;
-          useStore.getState().spendPA(target.a!.cost);
+          useStore.getState().spendEnergy(target.a!.kind);
           if (target.a!.kind === 'proposal') useStore.getState().signClient(target.c.clientId);
           else play(target.a!.kind, target.c.clientId);
         }
 
-        // --- Phase Technique : on facture le même coût que l'écran, et on fait
-        // avancer l'état à la main (les mini-jeux sont testés ailleurs).
+        // --- Phase Technique : la bascule ne se refuse jamais. On fait avancer
+        // l'état à la main (les mini-jeux sont testés ailleurs).
         useStore.getState().switchPhase();
-        for (let guard = 0; guard < 30; guard++) {
+        expect(useStore.getState().save!.phase, `semaine ${cycle}`).toBe('NIGHT');
+        for (let guard = 0; guard < 40; guard++) {
           const save = useStore.getState().save!;
           const next = save.portfolio.find((c) => TECH[c.dossierState]);
-          if (!next || !useStore.getState().spendPA(NIGHT_COST)) break;
+          if (!next) break;
+          useStore.getState().spendEnergy('Montage');
           useStore.setState({
             save: {
               ...useStore.getState().save!,
@@ -152,4 +155,51 @@ describe('Deux missions tiennent dans le budget d’une saison', () => {
       expect(save.cycle).toBeLessThanOrEqual(6);
     });
   }
+});
+
+// ---------------------------------------------------------------------------
+// Plus de points d'action : rien ne se refuse jamais.
+// ---------------------------------------------------------------------------
+
+describe('Aucune activité n’est refusée', () => {
+  it('bascule en phase Technique quoi qu’il arrive, même à plat', async () => {
+    const { useStore } = await import('../../src/state/store');
+    const s = useStore.getState();
+    s.newGame('onboarding', 'sans-pa');
+    // Un joueur exténué garde la main : l'énergie dégrade, elle ne bloque pas.
+    useStore.setState({ save: { ...useStore.getState().save!, energy: 0 } });
+    useStore.getState().switchPhase();
+    expect(useStore.getState().save!.phase).toBe('NIGHT');
+    useStore.getState().switchPhase();
+    expect(useStore.getState().save!.cycle).toBe(2);
+    expect(useStore.getState().save!.phase).toBe('DAY');
+  });
+
+  it('laisse appeler toutes les pistes du vivier dans la même journée', async () => {
+    const { useStore } = await import('../../src/state/store');
+    const s = useStore.getState();
+    s.newGame('onboarding', 'tout-appeler');
+    useStore.getState().generateProspects(6);
+    const all = useStore.getState().save!.prospects.filter((p) => p.status === 'NEW');
+    expect(all.length).toBeGreaterThan(4);
+    for (const p of all) {
+      useStore.getState().spendEnergy('Prospection téléphonique');
+      useStore.getState().resolveProspectCall(p.id, ['prospect_decline']);
+    }
+    // Aucun appel n'est resté en attente faute de budget.
+    expect(useStore.getState().save!.prospects.filter((p) => p.status === 'NEW')).toEqual([]);
+    expect(useStore.getState().save!.cycle).toBe(1);
+  });
+
+  it('rend l’énergie au week-end sans jamais dépasser les bornes', async () => {
+    const { useStore } = await import('../../src/state/store');
+    const s = useStore.getState();
+    s.newGame('onboarding', 'weekend');
+    useStore.setState({ save: { ...useStore.getState().save!, energy: 30 } });
+    useStore.getState().switchPhase();
+    useStore.getState().advanceCycle();
+    const after = useStore.getState().save!.energy;
+    expect(after).toBeGreaterThan(30);
+    expect(after).toBeLessThanOrEqual(100);
+  });
 });

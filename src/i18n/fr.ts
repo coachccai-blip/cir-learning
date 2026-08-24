@@ -81,7 +81,6 @@ export const STR = {
     cycle: 'Semaine',
     chapter: (n: number) => `Ch.${n}`,
     energy: 'Énergie',
-    pa: 'PA',
     xp: 'XP',
     revenue: 'CA signé',
     nextDeadline: 'Prochaine échéance',
@@ -161,13 +160,12 @@ export const STR = {
     closing: 'Bilan de mission',
     networking: 'Réseautage / événement',
     rest: 'Souffler',
+    restDone: 'Vous avez déjà soufflé aujourd’hui.',
     qualification: 'Qualification d’éligibilité',
     base: 'Construction de l’assiette',
     justification: 'Rédaction du justificatif',
     review: 'Contrôle qualité croisé',
     training: 'Veille & formation',
-    overtime: 'Heures sup',
-    cost: 'PA',
   },
   dialogue: {
     objectives: 'Objectifs',
@@ -215,7 +213,7 @@ export const STR = {
     validate: 'Valider le tri',
     remaining: 'cartes à classer',
     result: 'Résultat de la qualification',
-    investigateNote: '« À investiguer » n’est jamais faux, mais coûte 1 PA de suivi au prochain cycle.',
+    investigateNote: '« À investiguer » n’est jamais faux : c’est une question reportée, à reprendre — et à payer en fatigue — la semaine suivante.',
   },
   base: {
     title: 'Construction de l’assiette',
@@ -465,7 +463,3 @@ export const STR = {
     locked: 'Terminez le chapitre 3 pour débloquer le mode libre.',
   },
 } as const;
-
-export function paLabel(n: number): string {
-  return `${n} PA`;
-}

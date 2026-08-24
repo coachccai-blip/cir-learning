@@ -150,21 +150,6 @@
   font-size: 1rem;
   font-family: var(--font-title);
 }
-.pa-dots {
-  display: inline-flex;
-  gap: 3px;
-}
-.pa-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.22);
-  transition: background 200ms ease, transform 200ms ease;
-}
-.pa-dot.on {
-  background: var(--brand-orange-main);
-  transform: scale(1.12);
-}
 
 /* ---------- Jauges ---------- */
 .gauges {
@@ -1244,12 +1229,6 @@
 }
 
 /* Un point d'action dépensé s'éteint visiblement. */
-.pa-dot {
-  transition: background-color 220ms ease, transform 220ms ease, opacity 220ms ease;
-}
-.pa-dot.on {
-  animation: pa-pop 260ms ease both;
-}
 @keyframes pa-pop {
   from { transform: scale(0.6); }
   60% { transform: scale(1.15); }
@@ -1264,7 +1243,6 @@
 :root[data-reduce-motion] .bubble,
 :root[data-reduce-motion] .stack > .panel,
 :root[data-reduce-motion] .grid > .panel,
-:root[data-reduce-motion] .pa-dot.on,
 :root[data-reduce-motion] .home-aurora,
 :root[data-reduce-motion] .home-bubble {
   animation: none;
@@ -1282,9 +1260,6 @@
   .bubble,
   .stack > .panel,
   .grid > .panel,
-  .pa-dot.on {
-    animation: none;
-  }
   .btn:active:not(:disabled),
   .choice:active:not(:disabled),
   .card:active {
