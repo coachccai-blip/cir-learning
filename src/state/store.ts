@@ -26,16 +26,15 @@ import { scoreAssiette } from '../engine/cir/scoring';
 import { computeBreakdown } from '../engine/cir/calculator';
 import { newBadges } from '../engine/badges';
 import { evaluatePromise, generateProspect, resolveGenericMission } from '../engine/prospects';
-import { buildClientFromProspect, prospectBecomesClient } from '../engine/clientgen';
 import { neglectedClients, resolveMilestone } from '../engine/milestones';
 import { stepFor, stepForClient } from '../engine/progression';
-import { arrivingProspect, openingProspects } from '../engine/roster';
+import { prospectsForCycle } from '../engine/roster';
 import { completeSeason, EMPTY_PROGRESS, measuresLearning, type Progress } from '../engine/journey';
 import { finalAuditDue } from '../engine/auditgate';
 import { varyCase } from '../engine/casevar';
 import { twistsForCase } from '../data/case-twists';
 import { caseForClient } from './dossier';
-import { loadCaseVariations, loadGeneratedClients, registerGeneratedClient } from '../data/registry';
+import { loadCaseVariations } from '../data/registry';
 import { rngFromSeed } from '../engine/rng';
 import {
   DEFAULT_OPTIONS,
@@ -55,7 +54,6 @@ import { playSound, type SoundName } from '../app/sound';
 
 const RULESET = ruleset as Ruleset;
 /** Millésime instruit pendant la saison (les cas écrits à la main sont sur 2025). */
-const FISCAL_YEAR = 2025;
 
 export type View =
   | 'home'
@@ -255,7 +253,6 @@ export const useStore = create<Store>((set, get) => ({
     const save = loadSave();
     // Les dossiers générés doivent être dans le registre avant que le moindre
     // écran ne tente de résoudre un `clientId` de prospect converti.
-    loadGeneratedClients(save?.generatedClients ?? []);
     if (save) applyCaseVariations(save.seed);
     set({
       save,
@@ -277,8 +274,7 @@ export const useStore = create<Store>((set, get) => ({
     // ouvrir. Deux pour commencer — ceux que le parcours demande de mener à
     // leur terme ; les suivants n'arrivent qu'après, pour qui continue.
     save.portfolio = [];
-    save.prospects = openingProspects(rosterFor(mode), save.seed, balance.openingClients);
-    loadGeneratedClients([]);
+    save.prospects = prospectsForCycle(mode, rosterFor(mode), save.seed, 1, balance.openingClients, []);
     applyCaseVariations(save.seed);
     persist(save);
     set({ save, settlement: null, transition: null });
@@ -653,44 +649,18 @@ export const useStore = create<Store>((set, get) => ({
     }
 
     if (willSign) {
+      // Une piste générée ne devient jamais un dossier du portefeuille : les
+      // clients sont ceux qui sont écrits, avec leur découverte, leur
+      // proposition et leurs entretiens. Un dossier ouvert au téléphone
+      // démarrait au kick-off et sautait ces deux étapes — le joueur voyait
+      // un client apparaître sans l'avoir rencontré. Il reste ici ce que ces
+      // appels sont vraiment : de petites missions conseil.
       const outcome = resolveGenericMission(p);
-      // Certaines signatures deviennent de vraies missions de fond : elles
-      // entrent au portefeuille avec leur propre dossier à instruire la nuit.
-      // Les autres restent des missions conseil qui n'apportent que du CA.
-      const openSlots = save.portfolio.filter(
-        (cs) => cs.dossierState !== 'CLOSED' && cs.dossierState !== 'DEPOSITED' && cs.dossierState !== 'LOST',
-      ).length;
-      const becomesClient =
-        openSlots < balance.prospectToClient.maxActiveClients &&
-        prospectBecomesClient(p, save.seed, balance.prospectToClient);
-
-      let portfolio = save.portfolio;
-      let generatedClients = save.generatedClients;
-      let openedClientId: string | undefined;
-      if (becomesClient) {
-        const bundle = buildClientFromProspect(
-          p,
-          save.seed,
-          RULESET,
-          balance.prospectToClient,
-          FISCAL_YEAR,
-        );
-        registerGeneratedClient(bundle);
-        generatedClients = [...save.generatedClients, bundle];
-        // Le contrat est déjà signé au téléphone : le dossier démarre au kick-off.
-        portfolio = [...save.portfolio, initClientState(bundle.client.id, 'SIGNED')];
-        openedClientId = bundle.client.id;
-      }
-
       const next: SaveGame = {
         ...save,
         prospects: save.prospects.map((x) =>
-          x.id === prospectId
-            ? { ...x, status: 'SIGNED' as const, revenue: outcome.revenue, becameClientId: openedClientId }
-            : x,
+          x.id === prospectId ? { ...x, status: 'SIGNED' as const, revenue: outcome.revenue } : x,
         ),
-        portfolio,
-        generatedClients,
         revenue: { ...save.revenue, signed: save.revenue.signed + outcome.revenue },
         stats: { ...save.stats, prospectsSigned: save.stats.prospectsSigned + 1 },
       };
@@ -704,20 +674,12 @@ export const useStore = create<Store>((set, get) => ({
       );
       if (outcome.toxic) {
         get().toast(`${p.company} signé… mais rien d'éligible. Cette mission va vous coûter.`);
-      } else if (becomesClient) {
-        get().toast(STR.prospects.becameClient(p.company, p.contactName));
-        get().celebrate({
-          icon: '🏢',
-          title: STR.prospects.newClientTitle(p.company),
-          subtitle: STR.prospects.newClientSubtitle,
-          tone: 'good',
-        });
       } else {
         get().toast(
           `${p.company} signé — mission conseil (+${outcome.revenue.toLocaleString('fr-FR')} € CA)`,
         );
       }
-      get().playSfx(becomesClient ? 'fanfare' : 'validate');
+      get().playSfx('validate');
     } else {
       const goodRefusal = p.eligibility === 'NOT_ELIGIBLE' && !flags.includes('prospect_decline_rude');
       const next: SaveGame = {
@@ -1009,16 +971,16 @@ export const useStore = create<Store>((set, get) => ({
     // Une piste de plus par semaine à partir de la troisième, et une seule :
     // le joueur qui s'arrête à deux missions ne voit jamais arriver un dossier
     // qu'il n'ouvrira pas, et celui qui continue garde de quoi faire.
-    const newcomer = arrivingProspect(
+    const arriving = prospectsForCycle(
+      save.mode,
       rosterFor(save.mode),
       save.seed,
       nextCycle,
       balance.openingClients,
       next.prospects.map((p) => p.scriptedClientId ?? ''),
     );
-    const arriving = newcomer ? [newcomer] : [];
-    if (newcomer) {
-      next.prospects = [...next.prospects, newcomer];
+    if (arriving.length > 0) {
+      next.prospects = [...next.prospects, ...arriving];
     }
 
     persist(next);

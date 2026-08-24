@@ -1,43 +1,15 @@
-// Registre des dossiers générés en cours de partie (prospects convertis en
-// clients). Les catalogues statiques restent la source de vérité du contenu
-// écrit à la main ; ce registre les complète pour la durée de la session, et
-// il est réalimenté depuis la sauvegarde à chaque chargement.
-
-import type { AssietteCase, Cardset, ClientDef, GeneratedClientBundle } from '../engine/types';
-
-const clients = new Map<string, ClientDef>();
-const cases = new Map<string, AssietteCase>();
-const cardsets = new Map<string, Cardset>();
 // Variantes des dossiers écrits à la main, recalculées à l'identique depuis la
 // graine à chaque chargement : rien de tout cela n'a besoin d'être persisté.
+//
+// Ce registre servait aussi les clients fabriqués à partir d'un prospect
+// converti. Ces dossiers-là entraient au portefeuille déjà signés et sautaient
+// le rendez-vous de découverte et la proposition : le joueur voyait apparaître
+// un client qu'il n'avait jamais rencontré. Les clients sont désormais tous
+// écrits à la main, et le registre n'a plus qu'un rôle.
+
+import type { AssietteCase } from '../engine/types';
+
 const varied = new Map<string, AssietteCase>();
-
-/** Réalimente le registre depuis la sauvegarde (remplace le contenu précédent). */
-export function loadGeneratedClients(bundles: readonly GeneratedClientBundle[]): void {
-  clients.clear();
-  cases.clear();
-  cardsets.clear();
-  for (const b of bundles) registerGeneratedClient(b);
-}
-
-export function registerGeneratedClient(b: GeneratedClientBundle): void {
-  clients.set(b.client.id, b.client);
-  cases.set(b.case.id, b.case);
-  cardsets.set(b.cardset.id, b.cardset);
-}
-
-export function generatedClient(id: string): ClientDef | undefined {
-  return clients.get(id);
-}
-export function generatedCase(id: string): AssietteCase | undefined {
-  return cases.get(id);
-}
-export function generatedCardset(id: string): Cardset | undefined {
-  return cardsets.get(id);
-}
-export function generatedClients(): ClientDef[] {
-  return [...clients.values()];
-}
 
 /** Installe les variantes de la partie en cours (remplace les précédentes). */
 export function loadCaseVariations(cases: readonly AssietteCase[]): void {

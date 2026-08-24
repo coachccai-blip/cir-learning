@@ -372,12 +372,6 @@ export interface GeneratedProspect {
   status: 'NEW' | 'SIGNED' | 'DECLINED' | 'LOST';
   /** CA encaissé si la mission conseil a été signée. */
   revenue?: number;
-  /**
-   * Client ouvert par cette signature, s'il y en a un. Une signature qui a
-   * donné un vrai dossier n'est pas une mission conseil : elle se suit au
-   * portefeuille, et la lister deux fois faisait mentir les deux listes.
-   */
-  becameClientId?: string;
 }
 
 // ---------- Sauvegarde / état ----------
@@ -466,11 +460,6 @@ export interface DeltaLogEntry {
 }
 
 /** Dossier complet fabriqué pour un prospect signé, persisté dans la sauvegarde. */
-export interface GeneratedClientBundle {
-  client: ClientDef;
-  case: AssietteCase;
-  cardset: Cardset;
-}
 
 export interface SaveGame {
   schemaVersion: number;
@@ -521,7 +510,6 @@ export interface SaveGame {
    * clients. Persistés avec la sauvegarde : sans eux, un rechargement ne
    * saurait plus résoudre `clientId` / `caseId` / `cardsetId`.
    */
-  generatedClients: GeneratedClientBundle[];
 }
 
 

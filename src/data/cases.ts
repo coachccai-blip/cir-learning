@@ -3,7 +3,7 @@
 
 import type { AssietteCase } from '../engine/types';
 import { EXPERT_CASES } from './cases-expert';
-import { generatedCase, variedCase } from './registry';
+import { variedCase } from './registry';
 
 export const CASES: AssietteCase[] = [
   {
@@ -278,11 +278,7 @@ export function writtenCases(): AssietteCase[] {
 export function caseById(id: string): AssietteCase {
   // La variante de la partie en cours prime : c'est elle que le joueur
   // instruit, et c'est sur elle que le corrigé doit être calculé.
-  const c =
-    variedCase(id) ??
-    CASES.find((c) => c.id === id) ??
-    EXPERT_CASES.find((c) => c.id === id) ??
-    generatedCase(id);
+  const c = variedCase(id) ?? CASES.find((c) => c.id === id) ?? EXPERT_CASES.find((c) => c.id === id);
   if (!c) throw new Error(`Cas inconnu : ${id}`);
   return c;
 }

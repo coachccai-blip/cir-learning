@@ -2,7 +2,6 @@
 
 import type { ClientDef, GameMode } from '../engine/types';
 import { EXPERT_CLIENTS } from './clients-expert';
-import { generatedClient, generatedClients } from './registry';
 
 export const CLIENTS: ClientDef[] = [
   {
@@ -203,10 +202,7 @@ export function rosterFor(mode: GameMode): ClientDef[] {
 }
 
 export function clientById(id: string): ClientDef {
-  const c =
-    CLIENTS.find((c) => c.id === id) ??
-    EXPERT_CLIENTS.find((c) => c.id === id) ??
-    generatedClient(id);
+  const c = CLIENTS.find((c) => c.id === id) ?? EXPERT_CLIENTS.find((c) => c.id === id);
   if (!c) throw new Error(`Client inconnu : ${id}`);
   return c;
 }
@@ -214,10 +210,10 @@ export function clientById(id: string): ClientDef {
 /** Le client existe-t-il ? Utilisé là où l'absence est un cas normal. */
 export function findClient(id: string | undefined): ClientDef | undefined {
   if (!id) return undefined;
-  return CLIENTS.find((c) => c.id === id) ?? EXPERT_CLIENTS.find((c) => c.id === id) ?? generatedClient(id);
+  return CLIENTS.find((c) => c.id === id) ?? EXPERT_CLIENTS.find((c) => c.id === id);
 }
 
-/** Catalogues écrits à la main + dossiers générés en cours de partie. */
+/** Tous les clients du jeu : ils sont tous écrits à la main. */
 export function allClients(): ClientDef[] {
-  return [...CLIENTS, ...EXPERT_CLIENTS, ...generatedClients()];
+  return [...CLIENTS, ...EXPERT_CLIENTS];
 }

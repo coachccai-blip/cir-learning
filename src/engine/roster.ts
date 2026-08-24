@@ -11,8 +11,13 @@
 // Un décrochage réussi n'est pas une signature : il donne un rendez-vous de
 // découverte. Le dossier entre au portefeuille à l'état de lead, et c'est
 // l'entretien de découverte qui le transforme en client.
+//
+// Les prospects générés, eux, ne deviennent jamais des dossiers : ce sont de
+// petites missions conseil. Un client du portefeuille est toujours écrit à la
+// main, avec sa découverte, sa proposition et ses entretiens.
 
-import type { ClientDef, GeneratedProspect } from './types';
+import type { ClientDef, GameMode, GeneratedProspect } from './types';
+import { PIPELINE } from '../data/pipeline';
 import { shuffleForDisplay } from './rng';
 import { CALL_POOL } from '../data/scenarios/calls';
 
@@ -46,33 +51,40 @@ export function scriptedProspect(c: ClientDef, index: number): GeneratedProspect
   };
 }
 
-/** Les fiches présentes dans le vivier dès le premier jour. */
-export function openingProspects(
-  roster: readonly ClientDef[],
-  seed: string,
-  size: number,
-): GeneratedProspect[] {
-  return rosterOrder(roster, seed)
-    .slice(0, Math.max(1, size))
-    .map((c, i) => scriptedProspect(c, i));
-}
-
 /**
- * Fiche qui rejoint le vivier au début de cette semaine, s'il y en a une. Rien
- * avant la troisième : le joueur qui s'arrête à deux missions ne doit jamais
- * voir arriver un dossier qu'il n'ouvrira pas.
+ * Fiches qui apparaissent au vivier à cette semaine.
+ *
+ * Deux régimes coexistent, et c'est voulu. La première saison suit un
+ * calendrier écrit (cf. `PIPELINE`) : toujours les deux mêmes dossiers, dans
+ * le même ordre, pour que le joueur qui découvre ait le temps de les mener au
+ * bout. La deuxième tire dans son vivier à la graine, une fiche par semaine à
+ * partir de la troisième : rien avant, pour que celui qui s'arrête à deux
+ * missions ne voie jamais arriver un dossier qu'il n'ouvrira pas.
  */
-export function arrivingProspect(
+export function prospectsForCycle(
+  mode: GameMode,
   roster: readonly ClientDef[],
   seed: string,
   cycle: number,
   openingSize: number,
   alreadyOffered: readonly string[],
-): GeneratedProspect | null {
-  if (cycle < 3) return null;
+): GeneratedProspect[] {
+  const planned = PIPELINE[mode];
+  if (planned) {
+    return planned
+      .filter((e) => e.cycle === cycle && !alreadyOffered.includes(e.clientId))
+      .map((e, i) => {
+        const c = roster.find((x) => x.id === e.clientId);
+        if (!c) throw new Error(`Calendrier ${mode} : client inconnu ${e.clientId}`);
+        return scriptedProspect(c, cycle + i);
+      });
+  }
+
   const order = rosterOrder(roster, seed);
-  const waiting = order
-    .slice(openingSize)
-    .filter((c) => !alreadyOffered.includes(c.id));
-  return waiting[0] ? scriptedProspect(waiting[0], openingSize + cycle) : null;
+  if (cycle === 1) {
+    return order.slice(0, Math.max(1, openingSize)).map((c, i) => scriptedProspect(c, i));
+  }
+  if (cycle < 3) return [];
+  const waiting = order.slice(openingSize).filter((c) => !alreadyOffered.includes(c.id));
+  return waiting[0] ? [scriptedProspect(waiting[0], openingSize + cycle)] : [];
 }

@@ -84,6 +84,5 @@ export function createNewGame(mode: GameMode, createdAt: string, seedOverride?: 
     quizPost: [],
     mailsRead: [],
     gaugeHistory: [],
-    generatedClients: [],
   };
 }

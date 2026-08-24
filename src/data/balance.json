@@ -81,13 +81,6 @@
     "penaltyDeadline": 4,
     "penaltyReassessment": 10
   },
-  "prospectToClient": {
-    "minEstimatedCir": 45000,
-    "conversionRatio": 0.55,
-    "feeRate": 0.18,
-    "cardCount": 6,
-    "maxActiveClients": 7
-  },
   "investigateCost": 2,
   "neglectGraceCycles": 2,
   "progression": {
