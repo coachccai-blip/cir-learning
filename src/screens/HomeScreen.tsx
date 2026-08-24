@@ -11,6 +11,9 @@ import { Icon } from '../ui/Icon';
  * La composition est écrite à la main plutôt que tirée au hasard — les bulles
  * restent hors de la colonne centrale, où vit le texte, et le placement ne
  * change pas d'un chargement à l'autre. `prefers-reduced-motion` fige tout.
+ *
+ * Six visages, pas seize : au-delà, l'accueil se lisait comme un trombinoscope
+ * et le regard ne trouvait plus le menu.
  */
 interface Bubble {
   /** Position en % du conteneur (centre de la bulle). */
@@ -28,22 +31,12 @@ interface Bubble {
 }
 
 const BUBBLES: Bubble[] = [
-  { x: 8, y: 18, size: 152, dur: 17, delay: 0, drift: 22 },
-  { x: 20, y: 47, size: 84, dur: 13, delay: 2.5, drift: 16, wide: true },
-  { x: 11, y: 74, size: 118, dur: 19, delay: 1.2, drift: 20 },
-  { x: 26, y: 12, size: 62, dur: 11, delay: 3.4, drift: 13, wide: true },
-  { x: 25, y: 86, size: 58, dur: 12, delay: 0.8, drift: 12, wide: true },
-  { x: 4, y: 43, size: 52, dur: 14, delay: 4.1, drift: 11, wide: true },
-  { x: 33, y: 68, size: 44, dur: 10, delay: 1.9, drift: 9, wide: true },
+  { x: 8, y: 20, size: 152, dur: 17, delay: 0, drift: 22 },
+  { x: 12, y: 74, size: 118, dur: 19, delay: 1.2, drift: 20 },
   { x: 92, y: 22, size: 138, dur: 18, delay: 0.6, drift: 21 },
-  { x: 80, y: 52, size: 90, dur: 14, delay: 3, drift: 17, wide: true },
-  { x: 89, y: 78, size: 110, dur: 16, delay: 2, drift: 19 },
-  { x: 74, y: 14, size: 58, dur: 12, delay: 4.6, drift: 12, wide: true },
-  { x: 96, y: 50, size: 50, dur: 13, delay: 1.4, drift: 10, wide: true },
-  { x: 76, y: 88, size: 66, dur: 15, delay: 3.8, drift: 14, wide: true },
-  { x: 67, y: 70, size: 42, dur: 10, delay: 0.3, drift: 9, wide: true },
-  { x: 50, y: 5, size: 54, dur: 13, delay: 2.2, drift: 11, wide: true },
-  { x: 44, y: 95, size: 48, dur: 11, delay: 4.9, drift: 10, wide: true },
+  { x: 89, y: 76, size: 110, dur: 16, delay: 2, drift: 19 },
+  { x: 21, y: 46, size: 84, dur: 13, delay: 2.5, drift: 16, wide: true },
+  { x: 80, y: 50, size: 90, dur: 14, delay: 3, drift: 17, wide: true },
 ];
 
 export function HomeScreen() {

@@ -10,9 +10,17 @@ import { clientById } from '../data/clients';
 import { mailsForCycle } from '../data/mails';
 import { codexById } from '../data/codex';
 import type { ClientState } from '../engine/types';
-import { nextClientAction, type ClientActionKind } from '../engine/activities';
+import { dayStage, nextClientAction, type ClientActionKind } from '../engine/activities';
+import { ManagerAssist } from '../components/ManagerAssist';
 
 type DayAction = { label: string; kind: ClientActionKind };
+
+/** Consigne de la manager selon l'avancement de la journée. */
+const DAY_BRIEF = {
+  prospect: 'dayProspect',
+  meetings: 'dayMeetings',
+  technique: 'dayTechnique',
+} as const;
 
 /** Libellé FR de l'action moteur : le chrome d'UI reste dans l'i18n. */
 function clientAction(cs: ClientState): DayAction | null {
@@ -75,14 +83,6 @@ export function DayScreen() {
   }
 
   const newProspects = save.prospects.filter((p) => p.status === 'NEW');
-  // Ne restent ici que les signatures qui n'ont pas ouvert de dossier. Une
-  // piste écrite a donné un rendez-vous, un prospect converti a donné un
-  // client : les deux se suivent au portefeuille, et les compter aussi comme
-  // « missions conseil » faisait mentir les deux listes à la fois.
-  const signedProspects = save.prospects.filter(
-    (p) => p.status === 'SIGNED' && !p.scriptedClientId && !p.becameClientId,
-  );
-
   return (
     <div className="container">
       <div className="row" style={{ marginBottom: 8 }}>
@@ -101,6 +101,10 @@ export function DayScreen() {
       </div>
 
       <GraduationBanner />
+
+      {/* La manager dit par où commencer, et quand passer à la suite : le
+          joueur arrivait sur un portefeuille vide sans savoir quoi en faire. */}
+      <ManagerAssist text={STR.manager.brief[DAY_BRIEF[dayStage(save.portfolio)]]} />
 
       <div className="panel" style={{ marginBottom: 20 }}>
         <GaugesBar gauges={save.gauges} deltas={lastDeltas} />
@@ -261,39 +265,6 @@ export function DayScreen() {
             </div>
           ))}
 
-          {signedProspects.length > 0 && (
-            <>
-              <div className="panel-title" style={{ marginTop: 8 }}>
-                <Icon name="briefcase" size={19} />
-                <h3>{STR.day.signedMissions}</h3>
-              </div>
-              {signedProspects.map((p) => (
-                <div className="list-item" key={p.id}>
-                  <div className="avatar" title={`${p.contactName} — mission conseil`}>
-                    <Avatar seed={p.portraitId} />
-                  </div>
-                  <div className="list-main">
-                    <strong>{p.company}</strong>
-                    <div className="muted" style={{ fontSize: '0.8rem' }}>
-                      {p.contactName} · {p.size} sal.
-                    </div>
-                    <div className="inline-note">
-                      <Icon name={p.eligibility === 'NOT_ELIGIBLE' ? 'alert' : 'euro'} size={14}
-                        className={p.eligibility === 'NOT_ELIGIBLE' ? 'ink-bad' : 'ink-ok'} />
-                      <span>
-                        {p.eligibility === 'NOT_ELIGIBLE'
-                          ? STR.day.toxicMission
-                          : `${STR.hud.revenue} : ${(p.revenue ?? 0).toLocaleString('fr-FR')} €`}
-                      </span>
-                    </div>
-                  </div>
-                  <span className="tag tag-ok">
-                    <Icon name="check" size={13} /> {STR.common.signed}
-                  </span>
-                </div>
-              ))}
-            </>
-          )}
         </section>
       </div>
     </div>

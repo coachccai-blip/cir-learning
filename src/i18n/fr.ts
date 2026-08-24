@@ -4,8 +4,9 @@
 export const STR = {
   appTitle: 'Learn CIR',
   appTagline: 'Deux saisons fiscales chez CIR Corp',
-  appPitch:
-    'Un parcours complet en deux saisons. La première apprend les deux métiers du CIR : décrocher des clients côté relation, monter des dossiers qui tiennent au contrôle côté technique. La seconde vous met en face de gens qui embellissent, d’un dossier qu’il faut refuser et d’un vérificateur qui relance.',
+  // Une ligne, pas un paragraphe : l'accueil annonce le métier, il ne le
+  // résume pas. Le détail de chaque saison vit sur l'écran de sélection.
+  appPitch: 'Décrocher les clients. Monter des dossiers qui tiennent au contrôle.',
   disclaimer:
     'Les cas, entreprises et montants sont fictifs. Ce jeu est un outil pédagogique et ne constitue en aucun cas un conseil fiscal. Les barèmes reflètent l’état du droit au 20 août 2026 (LF 2026 promulguée le 19 février 2026).',
   menu: {
@@ -104,8 +105,6 @@ export const STR = {
     unread: (n: number) => `${n} non lu${n > 1 ? 's' : ''}`,
     noMail: 'Rien de nouveau cette semaine.',
     linkedSheet: (title: string) => `Fiche liée : « ${title} »`,
-    signedMissions: 'Missions conseil signées',
-    toxicMission: 'Mission toxique : rien d’éligible dans ce dossier.',
     missionDone: 'Mission terminée',
     nothingToday: 'Rien à faire en phase Relation client sur ce dossier.',
   },
@@ -379,10 +378,17 @@ export const STR = {
     name: 'Amélie Roux',
     role: 'votre manager',
     brief: {
+      // Phase Relation client : la consigne suit l'état réel de la journée.
+      dayProspect:
+        'Votre portefeuille est vide, et personne ne va le remplir à votre place. Prenez le téléphone : chaque piste bien menée vous décroche un rendez-vous de découverte, et c’est ce rendez-vous qui fait le client. Deux suffisent pour commencer.',
+      dayMeetings:
+        'Vous avez des clients : menez-les jusqu’au bout de la journée. Rendez-vous de découverte, proposition, kick-off, suivi de mission — c’est là que se récoltent les pièces dont vous aurez besoin ce soir. Ne passez en phase Technique qu’une fois cette liste vide.',
+      dayTechnique:
+        'Plus rien à faire côté relation : vos kick-offs sont passés et vos suivis sont faits. Passez en phase Technique — c’est là qu’on trie les travaux, qu’on monte l’assiette et qu’on rédige le justificatif.',
       night:
         'Voilà vos dossiers ouverts. Prenez-les dans l’ordre : on trie les travaux, on monte l’assiette, on rédige le justificatif, et seulement ensuite on restitue au client. Chaque étape s’appuie sur la précédente — sauter le tri, c’est chiffrer à l’aveugle.',
       qualification:
-        'On trie les travaux un par un. La question n’est jamais « est-ce technique ? » mais « qu’est-ce qu’on ne savait pas faire au départ ? ». Un verrou et une incertitude : c’est de la recherche. Un produit nouveau sans verrou : c’est de l’innovation, pas du CIR. Le reste, c’est du développement courant. Dans le doute, mettez à investiguer : cela vous coûtera un point d’action, jamais un redressement.',
+        'On trie les travaux un par un. La question n’est jamais « est-ce technique ? » mais « qu’est-ce qu’on ne savait pas faire au départ ? ». Un verrou et une incertitude : c’est de la recherche. Un produit nouveau sans verrou : c’est de l’innovation, pas du CIR. Le reste, c’est du développement courant. Dans le doute, mettez à investiguer : la question se rouvrira la semaine prochaine, ce qui coûte du temps — jamais un redressement.',
       base:
         'On construit l’assiette. Voici les réflexes, dans l’ordre où je les vérifie moi-même quand je relis un dossier.',
       justif:

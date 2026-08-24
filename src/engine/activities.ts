@@ -30,3 +30,24 @@ export function nextClientAction(cs: ClientState): ClientAction | null {
       return null;
   }
 }
+
+/**
+ * Où en est la journée, du point de vue de la manager.
+ *
+ * Le joueur arrivait sur un portefeuille vide sans savoir par quel bout
+ * commencer, puis restait en phase Relation client une fois tout fait, faute
+ * qu'on lui dise que la suite se passe ailleurs. Ces trois états couvrent la
+ * boucle : on décroche, on mène ses rendez-vous, on bascule au montage.
+ */
+export type DayStage = 'prospect' | 'meetings' | 'technique';
+
+export function dayStage(portfolio: readonly ClientState[]): DayStage {
+  const open = portfolio.filter(
+    (cs) => cs.dossierState !== 'LOST' && cs.dossierState !== 'CLOSED' && cs.dossierState !== 'DEPOSITED',
+  );
+  // Sans dossier ouvert, il n'y a rien d'autre à faire que le téléphone.
+  if (open.length === 0) return 'prospect';
+  // Un rendez-vous, un kick-off ou un suivi en attente : la journée n'est pas finie.
+  if (open.some((cs) => nextClientAction(cs) !== null)) return 'meetings';
+  return 'technique';
+}
