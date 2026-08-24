@@ -499,7 +499,7 @@ export const useStore = create<Store>((set, get) => ({
       };
     }
 
-    // Refus de mission (SERVICES / prospect toxique)
+    // Refus de mission ferme : le dossier ne sera pas monté.
     if (result.declined) {
       next = { ...next, stats: { ...next.stats, refusedMissions: next.stats.refusedMissions + 1 } };
     }

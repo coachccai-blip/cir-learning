@@ -11,6 +11,7 @@ import { Icon } from '../ui/Icon';
 import { displayedSpeaker, genderForSpeaker } from '../data/voices';
 import {
   advance,
+  declinesMission,
   displayOrder,
   getNode,
   maskedChoiceIndex,
@@ -129,7 +130,7 @@ export function DialogueScreen() {
     if (choice.effects.energy) applyEnergy(choice.effects.energy, choice.feedback.what);
     setMood((m) => Math.max(0, Math.min(100, m + res.mood)));
     if (choice.flags) setFlags((f) => Array.from(new Set([...f, ...choice.flags!])));
-    if (choice.flags?.includes('a_dit_non')) setDeclined(true);
+    if (declinesMission(choice.flags ?? [])) setDeclined(true);
     if (choice.promise) setPromise({ min: choice.promise.min, max: choice.promise.max, kind: choice.promise.kind });
     if (choice.feedback.codexUnlock) {
       unlockCodex(choice.feedback.codexUnlock);

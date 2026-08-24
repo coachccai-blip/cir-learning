@@ -113,3 +113,18 @@ export function sessionScore(session: DialogueSession): number {
   if (session.choicesMade === 0) return 0;
   return Math.round(session.scoreSum / session.choicesMade);
 }
+
+
+/**
+ * Ce choix met-il fin à la mission ?
+ *
+ * Deux refus très différents coexistent dans le contenu : refuser de gonfler
+ * une assiette (`a_dit_non`, qui laisse la mission se poursuivre sur un
+ * périmètre honnête) et refuser le dossier lui-même (`refus_mission`). Les
+ * confondre laissait Data&Co coincé au stade de lead, son rendez-vous de
+ * découverte se rejouant sans fin. La règle vit ici, pas dans un écran, pour
+ * être vérifiable.
+ */
+export function declinesMission(flags: readonly string[]): boolean {
+  return flags.includes('refus_mission');
+}
