@@ -282,3 +282,53 @@ describe('Le catalogue ouvert ignore ce qui est déjà pris', () => {
     expect(scripted).toContain('cli_indus_verdier');
   });
 });
+
+describe('Un appel qui n’ouvre aucun dossier ne signe pas de contrat', () => {
+  /** Prend la première piste générée du vivier, éligible ou non. */
+  async function callGenerated(seed: string, wantToxic: boolean) {
+    const { useStore } = await import('../../src/state/store');
+    const s = useStore.getState();
+    s.boot();
+    s.setOptions({ volume: 0 });
+    s.newGame(seed);
+    for (let i = 0; i < 8; i++) {
+      useStore.getState().generateProspects(4);
+      const p = useStore
+        .getState()
+        .save!.prospects.find(
+          (x) =>
+            x.status === 'NEW' &&
+            !x.scriptedClientId &&
+            (x.eligibility === 'NOT_ELIGIBLE') === wantToxic,
+        );
+      if (p) {
+        useStore.getState().resolveProspectCall(p.id, ['prospect_sign']);
+        return { p, save: useStore.getState().save! };
+      }
+    }
+    throw new Error('aucune piste générée du profil demandé');
+  }
+
+  it('n’encaisse rien et n’ouvre pas de dossier sur une piste éligible', async () => {
+    const { p, save } = await callGenerated('sans-contrat', false);
+    const after = save.prospects.find((x) => x.id === p.id)!;
+    // Pas de contrat : ni chiffre d'affaires, ni compteur de signature.
+    expect(after.status).toBe('DECLINED');
+    expect(after.revenue).toBe(0);
+    expect(save.revenue.signed).toBe(0);
+    expect(save.stats.prospectsSigned).toBe(0);
+    // Et surtout : rien n'est entré au portefeuille.
+    expect(save.portfolio.some((cs) => cs.clientId.includes(p.id))).toBe(false);
+  });
+
+  it('signe bel et bien la mission toxique, sans chiffre d’affaires', async () => {
+    const { p, save } = await callGenerated('toxique', true);
+    const after = save.prospects.find((x) => x.id === p.id)!;
+    // Le cas non éligible est la seule signature possible au téléphone : c'est
+    // la faute que la scène est écrite pour enseigner.
+    expect(after.status).toBe('SIGNED');
+    expect(save.stats.prospectsSigned).toBe(1);
+    expect(save.revenue.signed).toBe(0);
+    expect(save.gauges.security).toBeLessThan(50);
+  });
+});

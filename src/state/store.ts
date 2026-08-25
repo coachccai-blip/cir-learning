@@ -24,7 +24,7 @@ import { gradeForXp, maxClients, xpForBaseAccuracy } from '../engine/economy';
 import { scoreAssiette } from '../engine/cir/scoring';
 import { computeBreakdown } from '../engine/cir/calculator';
 import { newBadges } from '../engine/badges';
-import { evaluatePromise, generateProspect, resolveGenericMission } from '../engine/prospects';
+import { evaluatePromise, generateProspect, resolveToxicMission } from '../engine/prospects';
 import { neglectedClients, resolveMilestone } from '../engine/milestones';
 import { stepFor, stepForClient } from '../engine/progression';
 import { prospectsForCycle, remainingProspects } from '../engine/roster';
@@ -635,35 +635,43 @@ export const useStore = create<Store>((set, get) => ({
     if (willSign) {
       // Une piste générée ne devient jamais un dossier du portefeuille : les
       // clients sont ceux qui sont écrits, avec leur découverte, leur
-      // proposition et leurs entretiens. Un dossier ouvert au téléphone
-      // démarrait au kick-off et sautait ces deux étapes — le joueur voyait
-      // un client apparaître sans l'avoir rencontré. Il reste ici ce que ces
-      // appels sont vraiment : de petites missions conseil.
-      const outcome = resolveGenericMission(p);
+      // proposition et leurs entretiens.
+      //
+      // On en tirait quand même un contrat et du chiffre d'affaires, sans
+      // qu'aucun dossier n'apparaisse nulle part : le joueur lisait « contrat
+      // signé, +12 000 € » et ne retrouvait le client sur aucun écran. Sur une
+      // piste éligible, l'appel s'arrête donc à l'intérêt manifesté — pas de
+      // rendez-vous décroché, pas de contrat.
+      //
+      // Le prospect non éligible fait exception : là, on a bel et bien signé,
+      // et c'est précisément la faute que la scène enseigne.
+      const toxic = p.eligibility === 'NOT_ELIGIBLE';
       const next: SaveGame = {
         ...save,
         prospects: save.prospects.map((x) =>
-          x.id === prospectId ? { ...x, status: 'SIGNED' as const, revenue: outcome.revenue } : x,
+          x.id === prospectId
+            ? { ...x, status: toxic ? ('SIGNED' as const) : ('DECLINED' as const), revenue: 0 }
+            : x,
         ),
-        revenue: { ...save.revenue, signed: save.revenue.signed + outcome.revenue },
-        stats: { ...save.stats, prospectsSigned: save.stats.prospectsSigned + 1 },
+        stats: toxic
+          ? { ...save.stats, prospectsSigned: save.stats.prospectsSigned + 1 }
+          : save.stats,
       };
       persist(next);
       set({ save: next });
-      get().applyGauges(
-        { relation: outcome.relation, security: outcome.security, profitability: outcome.profitability },
-        outcome.toxic
-          ? `Mission toxique signée : ${p.company} n'a pas de R&D réelle`
-          : `Mission conseil signée : ${p.company}`,
-      );
-      if (outcome.toxic) {
-        get().toast(`${p.company} signé… mais rien d'éligible. Cette mission va vous coûter.`);
-      } else {
-        get().toast(
-          `${p.company} signé — mission conseil (+${outcome.revenue.toLocaleString('fr-FR')} € CA)`,
+      if (toxic) {
+        const cost = resolveToxicMission();
+        get().applyGauges(
+          { relation: cost.relation, security: cost.security, profitability: cost.profitability },
+          `Mission toxique signée : ${p.company} n'a pas de R&D réelle`,
         );
+        get().toast(STR.prospects.toxicSigned(p.company));
+      } else {
+        // Un appel bien mené entretient la relation, même sans contrat.
+        get().applyGauges({ relation: 2 }, `Contact entretenu : ${p.company}`);
+        get().toast(STR.prospects.noDeal(p.company));
       }
-      get().playSfx('validate');
+      get().playSfx(toxic ? 'validate' : 'tap');
     } else {
       const goodRefusal = p.eligibility === 'NOT_ELIGIBLE' && !flags.includes('prospect_decline_rude');
       const next: SaveGame = {
@@ -677,7 +685,7 @@ export const useStore = create<Store>((set, get) => ({
       };
       persist(next);
       set({ save: next });
-      get().toast(goodRefusal ? 'Prospect non éligible écarté — bien vu.' : `${p.company} : pas de suite.`);
+      get().toast(goodRefusal ? STR.prospects.declinedWell : STR.prospects.noFollowUp(p.company));
     }
   },
 

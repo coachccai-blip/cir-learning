@@ -117,25 +117,18 @@ export function generateProspect(
 }
 
 /**
- * Résolution d'une petite mission générique signée en prospection.
- * Un prospect non éligible signé est une « mission toxique » (§1.1 OP8).
+ * Coût d'une mission signée sur un prospect sans R&D réelle (§1.1 OP8).
+ *
+ * Les autres prospects ne signent plus rien au téléphone : un appel bien mené
+ * y manifeste de l'intérêt, sans donner ni rendez-vous ni contrat. Ne reste
+ * que la mission toxique — celle que la scène est écrite pour enseigner.
  */
-export function resolveGenericMission(p: GeneratedProspect): {
-  revenue: number;
+export function resolveToxicMission(): {
   relation: number;
   security: number;
   profitability: number;
-  toxic: boolean;
 } {
-  const fee = balance.defaultFeeRate;
-  if (p.eligibility === 'NOT_ELIGIBLE') {
-    return { revenue: 0, relation: -12, security: -15, profitability: -8, toxic: true };
-  }
-  const revenue = Math.round(p.estimatedCir * fee);
-  if (p.eligibility === 'BORDERLINE') {
-    return { revenue, relation: 3, security: -6, profitability: 4, toxic: false };
-  }
-  return { revenue, relation: 5, security: 0, profitability: 6, toxic: false };
+  return { relation: -12, security: -15, profitability: -8 };
 }
 
 // ---------- Promesses ----------

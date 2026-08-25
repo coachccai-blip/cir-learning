@@ -3,7 +3,6 @@
   "hints": 2,
   "eventChance": 0.33,
   "auditSecurityThreshold": 60,
-  "defaultFeeRate": 0.2,
   "seasonRevenueTarget": 300000,
   "nonEligibleProspectRatio": 0.25,
   "xp": {

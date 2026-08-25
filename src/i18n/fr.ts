@@ -81,6 +81,15 @@ export const STR = {
       `Nouvelle piste à appeler : ${company} (${sector}).`,
     meetingWon: (company: string, contact: string) =>
       `Rendez-vous décroché : ${contact} vous reçoit chez ${company}. Le dossier entre au CRM.`,
+    // Issues d'un appel sur une piste générée : elles ne donnent jamais de
+    // dossier, donc jamais de contrat — sauf le cas toxique, où l'on a bel et
+    // bien signé quelque chose qui ne vaut rien.
+    noDeal: (company: string) =>
+      `${company} : pas de contrat signé. L’intérêt est là, le rendez-vous n’a pas été décroché.`,
+    toxicSigned: (company: string) =>
+      `${company} : contrat signé… mais rien d’éligible. Cette mission va vous coûter.`,
+    declinedWell: 'Prospect non éligible écarté — bien vu.',
+    noFollowUp: (company: string) => `${company} : pas de suite.`,
     meetingTitle: (company: string) => `Rendez-vous obtenu chez ${company}`,
     meetingSubtitle:
       'Un appel bien mené n’est pas une signature : c’est un rendez-vous de découverte à préparer.',
