@@ -2,6 +2,7 @@ import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
 import { allPortraits } from '../avatars/portraits';
 import { Icon } from '../ui/Icon';
+import { inProgress } from '../engine/session';
 
 /**
  * Scène d'accueil. Les visages des clients et prospects flottent autour du
@@ -76,8 +77,8 @@ export function HomeScreen() {
           <button className="btn btn-primary" onClick={() => newGame()}>
             <Icon name="play" size={18} /> {STR.menu.newGame}
           </button>
-          {save && (
-            <button className="btn" onClick={() => go(save.finished ? 'end' : save.phase === 'DAY' ? 'day' : 'night')}>
+          {inProgress(save) && (
+            <button className="btn" onClick={() => go(save.phase === 'DAY' ? 'day' : 'night')}>
               <Icon name="arrowRight" size={17} /> {STR.menu.continue} — {STR.hud.cycle} {save.cycle}
             </button>
           )}
