@@ -44,7 +44,7 @@ export const FOLLOWUP_AGRI: Scenario = {
       id: 'n2',
       speaker: 'Le client',
       expression: 'agace',
-      text: 'Vous m’avez aussi parlé de séparer les essais de la production. On tourne dans le même atelier, moi.',
+      text: 'Vous voulez qu’on compte à part les heures d’essai et les heures de production normale. Mais chez moi, c’est le même atelier, les mêmes machines et les mêmes gars. Je fais comment ?',
       choices: [
         choice('optimal', 'synthese', 'Une ligne par jour d’essai suffit : le reste part en production, sans discussion.', { relation: 4, security: 10, trust: 3 }, { what: 'Vous tracez la frontière simplement.', why: 'Un partage grossier mais justifié tient mieux qu’un ratio flatteur et invérifiable.', rule: 'Mieux vaut un partage défendable qu’un partage avantageux.' }, null),
         choice('acceptable', 'preuve', 'On reprendra vos plannings d’atelier pour isoler les journées d’essai.', { security: 7, relation: 1 }, { what: 'Vous vous appuyez sur l’existant.', why: 'Le planning n’a pas été tenu pour ça, mais il date les journées.', rule: 'Une pièce née ailleurs peut servir de preuve.' }, null),
