@@ -12,7 +12,9 @@ import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const DIST = 'dist';
-const OUT = 'Learn-CIR-hors-ligne.html';
+// Un cran au-dessus : le fichier jouable est seul à la racine du dépôt, pour
+// qu'on le trouve sans chercher après avoir dézippé.
+const OUT = join('..', 'Learn-CIR-hors-ligne.html');
 
 const dataUri = (mime, buf) => `data:${mime};base64,${buf.toString('base64')}`;
 

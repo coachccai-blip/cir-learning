@@ -17,7 +17,8 @@ compte et sans backend.
 ## Jouer hors ligne, sans rien installer
 
 Téléchargez le dépôt en ZIP (**Code → Download ZIP**), dézippez, puis
-double-cliquez sur **`Learn-CIR-hors-ligne.html`**. C'est tout : pas de
+double-cliquez sur **`Learn-CIR-hors-ligne.html`** — seul fichier à la racine,
+tout le reste du projet étant rangé dans `Learn CIR/`. C'est tout : pas de
 serveur, pas d'installation, aucune connexion. Le fichier se transmet aussi
 par courriel ou clé USB.
 
@@ -26,8 +27,8 @@ Tout y est embarqué — code, styles, polices et les 24 portraits — d'où ses
 page n'a pas le droit de charger un module JavaScript voisin, et les portraits
 ne se chargeraient pas davantage.
 
-> Le `index.html` à la racine du dépôt **ne fonctionne pas** en double-clic :
-> c'est l'entrée du serveur de développement, elle ne fait que pointer vers les
+> Le `index.html` de `Learn CIR/` **ne fonctionne pas** en double-clic : c'est
+> l'entrée du serveur de développement, elle ne fait que pointer vers les
 > sources. C'est `Learn-CIR-hors-ligne.html` qu'il faut ouvrir.
 
 La sauvegarde reste dans le navigateur qui a ouvert le fichier. Si celui-ci
@@ -42,7 +43,10 @@ npm run build:standalone
 
 ## Démarrer
 
+Toutes les commandes se lancent depuis ce dossier.
+
 ```bash
+cd "Learn CIR"
 npm install
 npm run dev        # serveur de développement
 npm run test       # tests (moteur fiscal + validation de contenu)
