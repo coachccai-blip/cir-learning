@@ -10,6 +10,8 @@ export const CURRENT_SCHEMA = 1;
 
 export interface Options {
   volume: number;
+  /** Nappe de fond. Indépendante du volume des bruitages, coupable d'un clic. */
+  music: boolean;
   reduceMotion: boolean;
   textSize: 'normal' | 'large' | 'xlarge';
   /**
@@ -25,7 +27,7 @@ export interface Options {
 // Le son est actif par défaut, à un niveau discret : le jeu répond désormais à
 // chaque interaction, et un joueur qui n'ouvre jamais les options n'entendrait
 // rien du tout. Le curseur reste à zéro en un geste.
-export const DEFAULT_OPTIONS: Options = { volume: 35, reduceMotion: false, textSize: 'normal' };
+export const DEFAULT_OPTIONS: Options = { volume: 35, music: true, reduceMotion: false, textSize: 'normal' };
 
 
 function safeParse<T>(raw: string | null, fallback: T): T {

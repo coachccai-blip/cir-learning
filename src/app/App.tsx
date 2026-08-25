@@ -19,6 +19,7 @@ import { QuizScreen } from '../screens/QuizScreen';
 import { SettlementScreen } from '../screens/SettlementScreen';
 import { PhaseTransition } from '../components/PhaseTransition';
 import { Celebration } from '../components/Celebration';
+import { MusicToggle } from '../components/MusicToggle';
 import { useUiSounds } from './uiSounds';
 
 const TEXT_SCALE = { normal: '1', large: '1.25', xlarge: '1.5' };
@@ -55,6 +56,7 @@ export function App() {
 
   return (
     <div className="app-shell">
+      <MusicToggle />
       {!chromeless && save && <TopBar />}
       <Toasts />
       <PhaseTransition />

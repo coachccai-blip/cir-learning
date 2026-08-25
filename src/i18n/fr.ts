@@ -9,6 +9,10 @@ export const STR = {
   appPitch: 'Décrocher les clients. Monter des dossiers qui tiennent au contrôle.',
   disclaimer:
     'Les cas, entreprises et montants sont fictifs. Ce jeu est un outil pédagogique et ne constitue en aucun cas un conseil fiscal. Les barèmes reflètent l’état du droit au 20 août 2026 (LF 2026 promulguée le 19 février 2026).',
+  music: {
+    on: 'Couper la musique',
+    off: 'Activer la musique',
+  },
   menu: {
     newGame: 'Nouvelle partie',
     continue: 'Continuer',
