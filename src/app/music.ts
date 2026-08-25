@@ -118,17 +118,32 @@ function tick() {
   }
 }
 
-/** Démarre (ou reprend) la nappe. Sans effet si elle tourne déjà. */
+/**
+ * Démarre la nappe, ou la reprend si le navigateur l'avait suspendue.
+ *
+ * Les deux cas doivent cohabiter : au chargement, le contexte audio se crée
+ * mais reste suspendu tant que le joueur n'a rien touché. Le programmateur,
+ * lui, démarre quand même. Il ne faut donc pas sortir d'ici sous prétexte
+ * qu'il tourne déjà — sinon le premier clic ne réveille jamais le son.
+ */
 export function startMusic(): void {
-  if (!wanted || timer !== null) return;
+  if (!wanted) return;
   if (!ensureContext() || !ctx || !master) return;
-  scheduledUntil = ctx.currentTime + 0.15;
-  // Fondu d'entrée : la musique ne doit jamais claquer au premier clic.
+
+  // Le contexte peut avoir été créé suspendu : son horloge n'avance pas, et
+  // les mesures déjà programmées le sont pour un temps révolu. On repart de
+  // l'instant courant dès qu'il redémarre.
+  const suspended = ctx.state !== 'running';
+  if (suspended) void ctx.resume();
+  if (suspended || scheduledUntil < ctx.currentTime) scheduledUntil = ctx.currentTime + 0.15;
+
+  // Fondu d'entrée : la musique ne doit jamais claquer.
   master.gain.cancelScheduledValues(ctx.currentTime);
   master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
   master.gain.linearRampToValueAtTime(LEVEL, ctx.currentTime + 2.5);
+
   tick();
-  timer = setInterval(tick, 500);
+  if (timer === null) timer = setInterval(tick, 500);
 }
 
 /** Coupe la nappe en fondu, et cesse de programmer de nouvelles mesures. */
@@ -157,18 +172,30 @@ export function setMusicEnabled(on: boolean): void {
 }
 
 /**
- * Attend le premier geste du joueur pour démarrer la nappe. Rend une fonction
- * de désinscription, pour que React puisse nettoyer.
+ * Démarre la nappe aussi tôt que le navigateur l'autorise.
+ *
+ * On tente d'abord tout de suite : quand la page a déjà l'activation du
+ * joueur — un rechargement après une première visite, par exemple — le son
+ * part sans qu'il ait rien à faire. Sinon le contexte reste suspendu, et le
+ * premier geste, quel qu'il soit, le réveille. Les écouteurs se retirent
+ * d'eux-mêmes une fois le son lancé : ils n'ont plus rien à faire.
+ *
+ * Rend une fonction de désinscription, pour que React puisse nettoyer.
  */
 export function armMusic(): () => void {
   if (typeof window === 'undefined') return () => {};
+  const events = ['pointerdown', 'pointerup', 'keydown', 'touchend', 'click'] as const;
   const go = () => {
-    if (wanted) startMusic();
+    if (!wanted) return;
+    startMusic();
+    if (ctx && ctx.state === 'running') detach();
   };
-  window.addEventListener('pointerdown', go, { once: false });
-  window.addEventListener('keydown', go, { once: false });
-  return () => {
-    window.removeEventListener('pointerdown', go);
-    window.removeEventListener('keydown', go);
+  const detach = () => {
+    for (const e of events) window.removeEventListener(e, go);
   };
+  for (const e of events) window.addEventListener(e, go);
+  // Une tentative immédiate : si l'autorisation est déjà acquise, le joueur
+  // n'a pas à cliquer pour entendre la musique d'accueil.
+  go();
+  return detach;
 }

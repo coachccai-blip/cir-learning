@@ -339,7 +339,7 @@ export const STR = {
     brief: {
       // Phase Relation client : la consigne suit l'état réel de la journée.
       dayProspect:
-        'Votre portefeuille est vide, et personne ne va le remplir à votre place. Prenez le téléphone : chaque piste bien menée vous décroche un rendez-vous de découverte, et c’est ce rendez-vous qui fait le client. Deux suffisent pour commencer.',
+        'Votre portefeuille est vide, et personne ne va le remplir à votre place. Prenez le téléphone et appelez vos prospects : chaque piste bien menée vous décroche un rendez-vous de découverte, et c’est ce rendez-vous qui fait le client. Deux suffisent pour commencer.',
       dayMeetings:
         'Vous avez des clients : menez-les jusqu’au bout de la journée. Rendez-vous de découverte, proposition, kick-off, suivi de mission — c’est là que se récoltent les pièces dont vous aurez besoin ce soir. Ne passez en phase Technique qu’une fois cette liste vide.',
       dayTechnique:

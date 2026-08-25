@@ -34,14 +34,19 @@ let created = 0;
 let oscillators = 0;
 /** Horloge audio pilotée par le test, indépendante des minuteurs. */
 let audioClock = 0;
+let lastCtx: FakeCtx | null = null;
+/** Le joueur a-t-il déjà interagi avec la page ? */
+let gestured = true;
 class FakeCtx {
   state = 'running';
+  resumed = 0;
   get currentTime() {
     return audioClock;
   }
   destination = {};
   constructor() {
     created++;
+    lastCtx = this as unknown as FakeCtx;
   }
   createGain() {
     return new FakeNode();
@@ -53,7 +58,12 @@ class FakeCtx {
     oscillators++;
     return new FakeNode();
   }
-  resume() {}
+  resume() {
+    this.resumed++;
+    // Comme un vrai navigateur : la reprise n'aboutit qu'après un geste du
+    // joueur. Sans cela, le test validerait une reprise qui n'a pas lieu.
+    if (gestured) this.state = 'running';
+  }
 }
 
 describe('Nappe de fond', () => {
@@ -61,6 +71,8 @@ describe('Nappe de fond', () => {
     created = 0;
     oscillators = 0;
     audioClock = 0;
+    lastCtx = null;
+    gestured = true;
     vi.resetModules();
     vi.useFakeTimers();
     // `resetModules` rend un module neuf mais laisse tourner le minuteur du
@@ -111,5 +123,41 @@ describe('Nappe de fond', () => {
     const { DEFAULT_OPTIONS } = await import('../../src/state/persistence');
     // Le jeu s'ouvre en musique : le bouton sert à la couper, pas à la trouver.
     expect(DEFAULT_OPTIONS.music).toBe(true);
+  });
+
+  it('reprend la nappe au premier geste quand le navigateur l’avait suspendue', async () => {
+    // C'est le cas réel : au chargement le contexte se crée suspendu, son
+    // horloge n'avance pas, et rien ne sort des haut-parleurs.
+    gestured = false;
+    (globalThis as unknown as { AudioContext: unknown }).AudioContext = class extends FakeCtx {
+      state = 'suspended';
+    };
+    const { setMusicEnabled, startMusic } = await import('../../src/app/music');
+    setMusicEnabled(true);
+    expect(created).toBe(1);
+    expect(lastCtx!.state, 'le contexte devrait rester suspendu sans geste').toBe('suspended');
+
+    // Premier geste du joueur : la nappe doit repartir, même si le
+    // programmateur tournait déjà.
+    gestured = true;
+    startMusic();
+    expect(lastCtx!.resumed, 'aucune reprise demandée au premier geste').toBeGreaterThan(0);
+    expect(lastCtx!.state).toBe('running');
+
+    // Et les mesures reprennent bien à l'instant courant, pas dans le passé.
+    const before = oscillators;
+    audioClock += 4;
+    vi.advanceTimersByTime(1000);
+    expect(oscillators).toBeGreaterThan(before);
+  });
+
+  it('tente de démarrer sans attendre de geste', async () => {
+    const { setMusicEnabled, armMusic } = await import('../../src/app/music');
+    setMusicEnabled(true);
+    const detach = armMusic();
+    // L'autorisation est déjà acquise ici : le son part sans clic.
+    expect(created).toBe(1);
+    expect(oscillators).toBeGreaterThan(0);
+    detach();
   });
 });
