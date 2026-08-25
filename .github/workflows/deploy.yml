@@ -26,6 +26,15 @@ jobs:
       - run: npm ci
       - run: npm run test
       - run: npm run build
+      # La version hors ligne est versionnée : si quelqu'un modifie le jeu sans
+      # la régénérer, elle se périme en silence. On la reconstruit ici et on
+      # échoue si elle diffère de celle du dépôt (la sortie est reproductible).
+      - name: Vérifier que la version hors ligne est à jour
+        run: |
+          npm run build:standalone
+          git diff --exit-code -- Learn-CIR-hors-ligne.html \
+            || { echo "::error::Learn-CIR-hors-ligne.html est périmé — lancez « npm run build:standalone » et validez le fichier."; exit 1; }
+          npm run build
       # GitHub Pages en mode « Deploy from a branch » exécute Jekyll, qui ignore
       # tout fichier ou dossier commençant par un souligné. Ce marqueur le coupe.
       - run: touch dist/.nojekyll

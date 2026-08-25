@@ -30,6 +30,38 @@ export interface Options {
 export const DEFAULT_OPTIONS: Options = { volume: 35, music: true, reduceMotion: false, textSize: 'normal' };
 
 
+/**
+ * Accès au stockage local, à l'épreuve des contextes qui le refusent.
+ *
+ * Ouvert depuis un fichier local (`file://`) ou en navigation privée, certains
+ * navigateurs lèvent une exception au simple fait de toucher `localStorage`.
+ * Sans cette précaution, le jeu ne démarrait pas du tout : mieux vaut une
+ * partie qui ne se sauvegarde pas qu'une page blanche.
+ */
+const store = {
+  get(key: string): string | null {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  set(key: string, value: string): void {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // Rien à faire : la partie continue, elle ne survivra pas à la fermeture.
+    }
+  },
+  remove(key: string): void {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Idem.
+    }
+  },
+};
+
 function safeParse<T>(raw: string | null, fallback: T): T {
   if (!raw) return fallback;
   try {
@@ -84,28 +116,28 @@ export function migrateSave(data: unknown): SaveGame | null {
 }
 
 export function loadSave(): SaveGame | null {
-  return migrateSave(safeParse<unknown>(localStorage.getItem(SAVE_KEY), null));
+  return migrateSave(safeParse<unknown>(store.get(SAVE_KEY), null));
 }
 
 export function persistSave(save: SaveGame | null): void {
-  if (save === null) localStorage.removeItem(SAVE_KEY);
-  else localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+  if (save === null) store.remove(SAVE_KEY);
+  else store.set(SAVE_KEY, JSON.stringify(save));
 }
 
 export function loadOptions(): Options {
-  return { ...DEFAULT_OPTIONS, ...safeParse<Partial<Options>>(localStorage.getItem(OPT_KEY), {}) };
+  return { ...DEFAULT_OPTIONS, ...safeParse<Partial<Options>>(store.get(OPT_KEY), {}) };
 }
 
 export function persistOptions(opts: Options): void {
-  localStorage.setItem(OPT_KEY, JSON.stringify(opts));
+  store.set(OPT_KEY, JSON.stringify(opts));
 }
 
 /** Codex lu et badges survivent à une réinitialisation de partie. */
 export function loadCodexRead(): string[] {
-  return safeParse<string[]>(localStorage.getItem(CODEX_READ_KEY), []);
+  return safeParse<string[]>(store.get(CODEX_READ_KEY), []);
 }
 
 export function persistCodexRead(ids: string[]): void {
-  localStorage.setItem(CODEX_READ_KEY, JSON.stringify(ids));
+  store.set(CODEX_READ_KEY, JSON.stringify(ids));
 }
 

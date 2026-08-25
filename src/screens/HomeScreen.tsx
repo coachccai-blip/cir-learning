@@ -1,6 +1,6 @@
 import { STR } from '../i18n/fr';
 import { useStore } from '../state/store';
-import { ALL_PORTRAITS } from '../avatars/portraits';
+import { allPortraits } from '../avatars/portraits';
 import { Icon } from '../ui/Icon';
 
 /**
@@ -38,6 +38,9 @@ const BUBBLES: Bubble[] = [
   { x: 80, y: 50, size: 90, dur: 14, delay: 3, drift: 17, wide: true },
 ];
 
+/** Les portraits ne changent pas d'un rendu à l'autre : on les résout une fois. */
+const PORTRAITS = allPortraits();
+
 export function HomeScreen() {
   const go = useStore((s) => s.go);
   const newGame = useStore((s) => s.newGame);
@@ -60,7 +63,7 @@ export function HomeScreen() {
               '--drift': `${b.drift}px`,
             } as React.CSSProperties}
           >
-            <img src={ALL_PORTRAITS[i % ALL_PORTRAITS.length]} alt="" loading="lazy" />
+            <img src={PORTRAITS[i % PORTRAITS.length]} alt="" loading="lazy" />
           </span>
         ))}
       </div>

@@ -2,12 +2,20 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 // Base path = nom du repo, requis pour GitHub Pages (project page).
-export default defineConfig({
-  base: '/cir-learning/',
+//
+// Le mode `standalone` sert la version hors ligne, en un seul fichier HTML :
+// chemins relatifs, aucun découpage en morceaux et aucun préchargement, sinon
+// le script cherche à recharger un fichier voisin — introuvable depuis le
+// disque. Voir `scripts/build-standalone.mjs`.
+export default defineConfig(({ mode }) => ({
+  base: mode === 'standalone' ? './' : '/cir-learning/',
   plugins: [react()],
   build: {
     target: 'es2020',
     sourcemap: false,
+    modulePreload: mode === 'standalone' ? false : undefined,
+    rollupOptions:
+      mode === 'standalone' ? { output: { inlineDynamicImports: true } } : undefined,
   },
   test: {
     environment: 'node',
@@ -16,4 +24,4 @@ export default defineConfig({
     // le test de contraste des thèmes lit le fichier de tokens tel quel.
     css: true,
   },
-} as ReturnType<typeof defineConfig>);
+})) as ReturnType<typeof defineConfig>;

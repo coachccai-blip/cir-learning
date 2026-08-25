@@ -14,6 +14,32 @@ compte et sans backend.
 > pédagogique et ne constitue **pas un conseil fiscal**. Les barèmes reflètent
 > l'état du droit au 20 août 2026 (LF 2026 promulguée le 19 février 2026).
 
+## Jouer hors ligne, sans rien installer
+
+Téléchargez le dépôt en ZIP (**Code → Download ZIP**), dézippez, puis
+double-cliquez sur **`Learn-CIR-hors-ligne.html`**. C'est tout : pas de
+serveur, pas d'installation, aucune connexion. Le fichier se transmet aussi
+par courriel ou clé USB.
+
+Tout y est embarqué — code, styles, polices et les 24 portraits — d'où ses
+2 Mo. Il fallait un fichier unique : ouverte depuis le disque (`file://`), une
+page n'a pas le droit de charger un module JavaScript voisin, et les portraits
+ne se chargeraient pas davantage.
+
+> Le `index.html` à la racine du dépôt **ne fonctionne pas** en double-clic :
+> c'est l'entrée du serveur de développement, elle ne fait que pointer vers les
+> sources. C'est `Learn-CIR-hors-ligne.html` qu'il faut ouvrir.
+
+La sauvegarde reste dans le navigateur qui a ouvert le fichier. Si celui-ci
+refuse le stockage local, la partie se joue quand même — elle ne survivra
+simplement pas à la fermeture de l'onglet.
+
+Pour régénérer ce fichier après une modification du jeu :
+
+```bash
+npm run build:standalone
+```
+
 ## Démarrer
 
 ```bash
@@ -21,6 +47,7 @@ npm install
 npm run dev        # serveur de développement
 npm run test       # tests (moteur fiscal + validation de contenu)
 npm run build      # build statique dans dist/
+npm run build:standalone  # fichier unique hors ligne (Learn-CIR-hors-ligne.html)
 ```
 
 ## Architecture
