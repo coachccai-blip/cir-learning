@@ -83,8 +83,21 @@ export function frenchVoices(): SpeechSynthesisVoice[] {
   return window.speechSynthesis.getVoices().filter(isFrench);
 }
 
-/** La synthèse est-elle utilisable, avec au moins une voix française ? */
+/**
+ * La lecture à haute voix est-elle possible ?
+ *
+ * On exigeait ici une voix française installée, et le bouton disparaissait
+ * partout ailleurs : sur un système qui n'en a aucune, le joueur n'avait
+ * aucun moyen d'écouter quoi que ce soit, sans jamais savoir pourquoi. Mieux
+ * vaut lire avec la voix par défaut du système — en lui annonçant du français
+ * — que ne rien proposer du tout.
+ */
 export function speechAvailable(): boolean {
+  return typeof window !== 'undefined' && 'speechSynthesis' in window;
+}
+
+/** Une voix française est-elle installée ? Pilote le choix de la voix, pas l'affichage. */
+export function frenchVoiceAvailable(): boolean {
   return frenchVoices().length > 0;
 }
 

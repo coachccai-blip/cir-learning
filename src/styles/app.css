@@ -1778,9 +1778,14 @@
 /* ---------- Accompagnement de la manager (phase Technique) ---------- */
 
 .manager-assist {
+  /* Le bouton d'écoute est en position absolue : sans repère ici, il irait
+     s'ancrer sur la page entière. La réserve à droite l'empêche de recouvrir
+     la fin du texte. */
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: var(--sp-4);
+  padding-right: 60px;
   border-left: 3px solid var(--gauge-relation);
   margin-top: var(--sp-4);
 }

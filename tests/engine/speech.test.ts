@@ -154,3 +154,32 @@ describe('Genre de lecture de chaque personnage', () => {
     expect(displayedSpeaker('Le client', undefined)).toBe('Le client');
   });
 });
+
+describe('Disponibilité du bouton d’écoute', () => {
+  const stub = (voices: { name: string; lang: string }[] | null) => {
+    (globalThis as unknown as { window: unknown }).window =
+      voices === null ? {} : { speechSynthesis: { getVoices: () => voices } };
+  };
+
+  it('s’affiche dès que le navigateur sait parler, même sans voix française', async () => {
+    const { speechAvailable, frenchVoiceAvailable } = await import('../../src/app/speech');
+    stub([{ name: 'Daniel', lang: 'en-GB' }]);
+    // Le bouton doit exister : lire avec la voix du système vaut mieux que
+    // priver le joueur de toute lecture sans lui dire pourquoi.
+    expect(speechAvailable()).toBe(true);
+    expect(frenchVoiceAvailable()).toBe(false);
+  });
+
+  it('reconnaît une voix française quand il y en a une', async () => {
+    const { speechAvailable, frenchVoiceAvailable } = await import('../../src/app/speech');
+    stub([{ name: 'Amélie', lang: 'fr-FR' }]);
+    expect(speechAvailable()).toBe(true);
+    expect(frenchVoiceAvailable()).toBe(true);
+  });
+
+  it('disparaît si le navigateur ne sait pas parler du tout', async () => {
+    const { speechAvailable } = await import('../../src/app/speech');
+    stub(null);
+    expect(speechAvailable()).toBe(false);
+  });
+});
